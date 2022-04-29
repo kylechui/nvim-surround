@@ -26,7 +26,6 @@ map("x", "S", require("nvim-surround").visual_surround, { expr = true })
 
 ## Known Issues
 
-* Doesn't work for multi-line arguments
 * Doesn't have any sort of configuration
 * Lacks deletion or changing surrounding delimiter pair
 
