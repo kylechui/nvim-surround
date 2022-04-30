@@ -22,4 +22,8 @@ M.insert_string = function(original, to_insert, pos)
     return original:sub(1, pos - 1) .. to_insert .. original:sub(pos, #original)
 end
 
+M.delete_char = function(original, pos)
+    return original:sub(1, pos - 1) .. original:sub(pos + 1, #original)
+end
+
 return M

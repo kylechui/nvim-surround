@@ -20,6 +20,8 @@ local map = vim.keymap.set
 -- The basic surround mode that will take a text-object and surround it with a
 -- delimiter, i.e. ysiw'
 map("n", "ys", require("nvim-surround").operator_surround, { expr = true })
+-- Delete a surrounding delimiter, i.e. ds(
+map("n", "ds", require("nvim-surround").delete_surround, { expr = true })
 -- Surrounds a visual selection with a delimiter, i.e. S{
 map("x", "S", require("nvim-surround").visual_surround, { expr = true })
 ```
