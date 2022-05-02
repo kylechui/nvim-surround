@@ -47,13 +47,13 @@ defaults:
 local map = vim.keymap.set
 
 -- Surrounds a text object with a delimiter pair, i.e. ysiw]
-map("n", "ys", require("nvim-surround").operator_surround, { expr = true })
+map("n", "ys", require("nvim-surround").operator_surround)
 -- Delete a surrounding delimiter, i.e. ds(
-map("n", "ds", require("nvim-surround").delete_surround, { expr = true })
+map("n", "ds", require("nvim-surround").delete_surround)
 -- Changes the surrounding delimiter, i.e. cs'"
-map("n", "cs", require("nvim-surround").change_surround, { expr = true })
+map("n", "cs", require("nvim-surround").change_surround)
 -- Surrounds a visual selection with a delimiter, i.e. S{
-map("x", "S", require("nvim-surround").visual_surround, { expr = true })
+map("x", "S", require("nvim-surround").visual_surround)
 ```
 
 ## TODO

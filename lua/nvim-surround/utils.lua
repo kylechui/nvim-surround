@@ -4,19 +4,20 @@ local M = {}
 M._aliases = {
     -- As for now, the aliases are only one character long, although I might
     -- allow for them to go beyond that in the future
-    ["("] = { "( ", " )" },
-    [")"] = { "(", ")" },
-    ["a"] = { "<", ">" },
-    ["<"] = { "<", ">" }, -- TODO: Try implementing surrounds with HTML tags?
-    ["b"] = { "(", ")" },
-    ["B"] = { "{", "}" },
-    ["{"] = { "{ ", " }" },
-    ["}"] = { "{", "}" },
-    ["["] = { "[ ", " ]" },
-    ["]"] = { "[", "]" },
     ["'"] = { "'", "'" },
     ['"'] = { '"', '"' },
     ["`"] = { "`", "`" },
+    ["b"] = { "(", ")" },
+    ["("] = { "( ", " )" },
+    [")"] = { "(", ")" },
+    ["B"] = { "{", "}" },
+    ["{"] = { "{ ", " }" },
+    ["}"] = { "{", "}" },
+    ["a"] = { "<", ">" },
+    ["<"] = { "<", ">" }, -- TODO: Try implementing surrounds with HTML tags?
+    [">"] = { "<", ">" },
+    ["["] = { "[ ", " ]" },
+    ["]"] = { "[", "]" },
 }
 
 --[[
