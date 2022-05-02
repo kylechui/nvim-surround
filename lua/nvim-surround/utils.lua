@@ -93,6 +93,7 @@ M.get_selection = function()
         M.adjust_mark("[")
         M.adjust_mark("]")
     end
+
     -- Get the row and column of the marks
     local start_position = M._get_mark(mark1)
     local end_position = M._get_mark(mark2)
