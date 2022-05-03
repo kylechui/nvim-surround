@@ -74,6 +74,14 @@ M._get_mark = function(mark)
     return position
 end
 
+M._get_lines = function(start, stop)
+    return vim.api.nvim_buf_get_lines(0, start - 1, stop, false)
+end
+
+M._set_lines = function(start, stop, lines)
+    return vim.api.nvim_buf_set_lines(0, start - 1, stop, false, lines)
+end
+
 --[[
 Gets the coordinates of the start and end of a given selection.
 @param mode The current mode that the user is in.
