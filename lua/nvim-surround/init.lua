@@ -2,14 +2,17 @@ local utils = require("nvim-surround.utils")
 
 local M = {}
 
+M._mode = nil
+
 M.setup = function(opts)
     -- TODO: Implement setup function for user configuration
 end
 
 -- API: Insert delimiters around the given selection
 M.insert_surround = function(char, positions)
-    if not char then
+    if not positions then
         vim.go.operatorfunc = "v:lua.require'nvim-surround.callbacks'._insert"
+        M._mode = vim.api.nvim_get_mode()["mode"]
         vim.api.nvim_feedkeys("g@", "n", false)
         return
     end
@@ -19,16 +22,30 @@ M.insert_surround = function(char, positions)
         print("Invalid character entered!")
         return
     end
+
     local lines = utils._get_lines(positions[1], positions[3])
-    -- Insert the right delimiter first so it doesn't mess up positioning for
-    -- the left one
-    -- TODO: Maybe use extmarks instead?
-    -- Insert right delimiter on the last line
-    local line = lines[#lines]
-    lines[#lines] = utils.insert_string(line, delimiters[2], positions[4] + 1)
-    -- Insert left delimiter on the first line
-    line = lines[1]
-    lines[1] = utils.insert_string(line, delimiters[1], positions[2])
+    if M._mode == "V" then -- Visual line mode case (create new lines)
+        -- Get the user-preferred tab character(s) to indent the lines
+        local tab
+        if vim.o.expandtab then
+            tab = string.rep(" ", vim.o.softtabstop)
+        else
+            tab = vim.api.nvim_replace_termcodes("<Tab>", true, false, true)
+        end
+        -- Indent the lines by the tab character(s)
+        for key, line in ipairs(lines) do
+            lines[key] = tab .. line
+        end
+        -- Insert the delimiters at the first and last line of the selection
+        table.insert(lines, 1, delimiters[1])
+        table.insert(lines, #lines + 1, delimiters[2])
+    else -- Default case for normal mode and visual mode
+        -- Insert the right delimiter first to ensure correct indexing
+        local line = lines[#lines]
+        lines[#lines] = utils.insert_string(line, delimiters[2], positions[4] + 1)
+        line = lines[1]
+        lines[1] = utils.insert_string(line, delimiters[1], positions[2])
+    end
     -- Update the buffer with the new lines
     utils._set_lines(positions[1], positions[3], lines)
 end
