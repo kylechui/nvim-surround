@@ -21,7 +21,7 @@ M._aliases = {
 }
 
 --[[
-Returns if a characters is a valid key into the aliases table.
+Returns if a character is a valid key into the aliases table.
 @param char The character to be checked.
 @return Whether or not it is in the aliases table.
 ]]
@@ -74,12 +74,24 @@ M._get_mark = function(mark)
     return position
 end
 
+--[[
+Gets a set of lines from the buffer, inclusive and 1-indexed.
+@param start The starting line.
+@param stop The final line.
+@return A table consisting of the lines from the buffer.
+]]
 M._get_lines = function(start, stop)
     return vim.api.nvim_buf_get_lines(0, start - 1, stop, false)
 end
 
+--[[
+Replaces some lines in the buffer, inclusive and 1-indexed.
+@param start The starting line.
+@param stop The final line.
+@param lines The set of lines to replace the lines in the buffer.
+]]
 M._set_lines = function(start, stop, lines)
-    return vim.api.nvim_buf_set_lines(0, start - 1, stop, false, lines)
+    vim.api.nvim_buf_set_lines(0, start - 1, stop, false, lines)
 end
 
 --[[
