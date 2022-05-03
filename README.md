@@ -60,10 +60,6 @@ map("x", "S", require("nvim-surround").insert_surround)
 
 * Find a better way to use `operatorfunc`
   * There's probably a better way to avoid the `va"` whitespace situation
-* Add a method for surrounding around visual line selections
-* Move more functions out of `init.lua`, start creating files other than
-  `utils.lua` to better sort/separate functions
-  * Perhaps only use `init.lua` for user-facing functions
 * Add some sort of setup function, allowing users to modify delimiter pairs
 
 ## Future Ideas
