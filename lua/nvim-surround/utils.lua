@@ -1,3 +1,5 @@
+local ts_utils = require("nvim-treesitter.ts_utils")
+
 local M = {}
 
 -- A table containing the set of tags associated with delimiter pairs
@@ -31,11 +33,12 @@ end
 
 --[[
 Gets a character input from the user.
-@return The input character, or nil if <Esc> is pressed.
+@return The input character, or nil if a control character is pressed.
 ]]
 M._get_char = function()
     local char_num = vim.fn.getchar()
-    if char_num == 27 then
+    -- Return nil for control characters
+    if char_num < 32 then
         return nil
     end
     local char = vim.fn.nr2char(char_num)
@@ -44,22 +47,32 @@ end
 
 --[[
 Gets a delimiter pair for a user-inputted character.
-@return
-    The corresponding pair from the aliases table if it exists,
-    nil if <Esc> is pressed,
-    A table pair consisting of the character repeated twice otherwise.
+@return A pair of delimiters for the given input, or nil if not applicable.
 ]]
-M._get_delimiters = function()
+M._get_delimiters = function(char)
     -- Get input from the user for what they would like to surround with
     -- Return nil if the user cancels the command
-    local char = M._get_char()
+    local delimiters
+    -- Set the delimiters based on cases
     if char == nil then
         return nil
+    elseif char == "<" then
+        -- Get an HTML tag as input
+        vim.ui.input({
+            prompt = "Enter an HTML tag: ",
+            default = "<",
+        }, function(input)
+            local tag = input:match("^<?(%w+)>?$")
+            if not tag then
+                return nil
+            end
+            delimiters = { "<" .. tag .. ">", "</" .. tag .. ">" }
+        end)
+    else
+        delimiters = M._aliases[char]
     end
-    local delimiters = M._aliases[char]
     -- If the character is not bound to anything, duplicate it
-    delimiters = delimiters or { char, char }
-    return delimiters
+    return delimiters or { char, char }
 end
 
 
@@ -148,35 +161,61 @@ end
 Inserts a string at an index of another string.
 @param str The original string.
 @param to_insert The string to be inserted.
-@param pos The index at which the string will be inserted.
+@param start The index at which the string will be inserted.
 @return The modified string.
 ]]
-M.insert_string = function(str, to_insert, pos)
-    return str:sub(1, pos - 1) .. to_insert .. str:sub(pos, #str)
+M.insert_string = function(str, to_insert, start)
+    return str:sub(1, start - 1) .. to_insert .. str:sub(start, #str)
 end
 
--- TODO: Add a check for whether or not the substring even exists at the index
 --[[
 Deletes a substring at an index of another string.
 @param str The original string.
-@param to_remove The substring to be removed.
-@param pos The index at which the deletion starts.
+@param start The index at which the deletion starts.
+@param stop The index at which the deletion stops (inclusive).
 @return The modified string.
 ]]
-M.delete_string = function(str, to_remove, pos)
-    return str:sub(1, pos - 1) .. str:sub(pos + #to_remove, #str)
+M.delete_string = function(str, start, stop)
+    return str:sub(1, start - 1) .. str:sub(stop + 1, #str)
 end
 
 --[[
 Replaces a substring with a string, within another string.
 @param str The original string.
 @param to_insert The substring to be inserted.
-@param to_replace The substring to be replaced.
-@param pos The index at which the replacement starts.
+@param start The index at which the replacement starts.
+@param stop The index at which the replacement stops (inclusive).
 @return The modified string.
 ]]
-M.change_string = function(str, to_insert, to_replace, pos)
-    return str:sub(1, pos - 1) .. to_insert .. str:sub(pos + #to_replace, #str)
+M.replace_string = function(str, to_insert, start, stop)
+    return str:sub(1, start - 1) .. to_insert .. str:sub(stop + 1, #str)
+end
+
+M._get_tag_range = function()
+    local node = ts_utils.get_node_at_cursor()
+    while node and node:type() ~= "element" do
+        node = node:parent()
+    end
+    if not node then
+        return nil
+    end
+
+    local positions = { -1, -1, -1, -1, -1, -1, -1, -1, }
+    for child in node:iter_children() do
+        if child:type() == "start_tag" then
+            positions[1], positions[2], positions[3], positions[4] = child:range()
+        elseif child:type() == "end_tag" then
+            positions[5], positions[6], positions[7], positions[8] = child:range()
+        end
+    end
+
+    positions[1] = positions[1] + 1
+    positions[2] = positions[2] + 1
+    positions[3] = positions[3] + 1
+    positions[5] = positions[5] + 1
+    positions[6] = positions[6] + 1
+    positions[7] = positions[7] + 1
+    return positions
 end
 
 return M
