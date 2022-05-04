@@ -60,6 +60,7 @@ map("x", "S", require("nvim-surround").insert_surround)
 
 * Find a better way to use `operatorfunc`
   * There's probably a better way to avoid the `va"` whitespace situation
+* Implement dot repeating for modifying surrounds
 * Add some sort of setup function, allowing users to modify delimiter pairs
 
 ## Future Ideas

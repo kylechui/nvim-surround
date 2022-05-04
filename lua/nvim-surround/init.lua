@@ -16,12 +16,13 @@ M.insert_surround = function(char, positions)
         vim.api.nvim_feedkeys("g@", "n", false)
         return
     end
-    -- Get the associated delimiter pair to the user input
-    local delimiters = utils._aliases[char]
-    if not delimiters then
-        print("Invalid character entered!")
-        return
+    -- If there is no valid key input, then we cancel the operation
+    if not char then
+        return nil
     end
+
+    -- Get the associated delimiter pair to the user input
+    local delimiters = utils._aliases[char] or { char, char }
 
     local lines = utils._get_lines(positions[1], positions[3])
     if M._mode == "V" then -- Visual line mode case (create new lines)
