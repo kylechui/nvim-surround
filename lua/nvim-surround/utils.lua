@@ -3,23 +3,25 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 local M = {}
 
 -- A table containing the set of tags associated with delimiter pairs
-M._aliases = {
-    -- As for now, the aliases are only one character long, although I might
-    -- allow for them to go beyond that in the future
-    ["'"] = { "'", "'" },
-    ['"'] = { '"', '"' },
-    ["`"] = { "`", "`" },
-    ["b"] = { "(", ")" },
-    ["("] = { "( ", " )" },
-    [")"] = { "(", ")" },
-    ["B"] = { "{", "}" },
-    ["{"] = { "{ ", " }" },
-    ["}"] = { "{", "}" },
-    ["a"] = { "<", ">" },
-    ["<"] = { "<", ">" }, -- TODO: Try implementing surrounds with HTML tags?
-    [">"] = { "<", ">" },
-    ["["] = { "[ ", " ]" },
-    ["]"] = { "[", "]" },
+M.delimiters = {
+    pairs = {
+        ["b"] = { "(", ")" },
+        ["("] = { "( ", " )" },
+        [")"] = { "(", ")" },
+        ["B"] = { "{", "}" },
+        ["{"] = { "{ ", " }" },
+        ["}"] = { "{", "}" },
+        ["a"] = { "<", ">" },
+        ["<"] = { "<", ">" },
+        [">"] = { "<", ">" },
+        ["["] = { "[ ", " ]" },
+        ["]"] = { "[", "]" },
+    },
+    separators = {
+        ["'"] = { "'", "'" },
+        ['"'] = { '"', '"' },
+        ["`"] = { "`", "`" },
+    },
 }
 
 --[[
@@ -28,7 +30,7 @@ Returns if a character is a valid key into the aliases table.
 @return Whether or not it is in the aliases table.
 ]]
 M._is_valid_alias = function(char)
-    return M._aliases[char] ~= nil
+    return M.delimiters.pairs[char] or M.delimiters.separators[char]
 end
 
 --[[
@@ -49,14 +51,14 @@ end
 Gets a delimiter pair for a user-inputted character.
 @return A pair of delimiters for the given input, or nil if not applicable.
 ]]
-M._get_delimiters = function(char)
+M.get_delimiters = function(char)
     -- Get input from the user for what they would like to surround with
     -- Return nil if the user cancels the command
     local delimiters
     -- Set the delimiters based on cases
     if char == nil then
         return nil
-    elseif char == "<" then
+    elseif char == "<" or char == "t" then
         -- Get an HTML tag as input
         vim.ui.input({
             prompt = "Enter an HTML tag: ",
@@ -69,7 +71,7 @@ M._get_delimiters = function(char)
             delimiters = { "<" .. tag .. ">", "</" .. tag .. ">" }
         end)
     else
-        delimiters = M._aliases[char]
+        delimiters = M.delimiters.pairs[char] or M.delimiters.separators[char]
     end
     -- If the character is not bound to anything, duplicate it
     return delimiters or { char, char }
@@ -109,12 +111,11 @@ end
 
 --[[
 Gets the coordinates of the start and end of a given selection.
-@param mode The current mode that the user is in.
-@return A table containing the start and end positions of the marks.
+@return A table containing the start and end of the selection.
 ]]
 M.get_selection = function()
     -- Get the current cursor mode
-    local mode = vim.api.nvim_get_mode()["mode"]
+    local mode = vim.fn.mode()
     -- Determine whether to use visual marks or operator marks
     local mark1, mark2
     if mode == "v" or mode == "V" then
@@ -127,15 +128,50 @@ M.get_selection = function()
         M.adjust_mark("]")
     end
 
-    -- Get the row and column of the marks
-    local start_position = M._get_mark(mark1)
-    local end_position = M._get_mark(mark2)
+    -- Get the row and column of the first and last characters of the selection
+    local first_position = M._get_mark(mark1)
+    local last_position = M._get_mark(mark2)
     return {
-        start_position[1],
-        start_position[2],
-        end_position[1],
-        end_position[2],
+        first_pos = {
+            first_position[1],
+            first_position[2],
+        },
+        last_pos = {
+            last_position[1],
+            last_position[2],
+        },
     }
+end
+
+--[[
+Gets two selections for the left and right surrounding pair.
+@return A table containing the start and end positions of the marks.
+]]
+M.get_surrounding_selections = function(char)
+    local delimiters = M.get_delimiters(char)
+    if not delimiters then
+        return
+    end
+
+    M.adjust_mark("[")
+    M.adjust_mark("]")
+    local open_first = M._get_mark("[")
+    local close_first = M._get_mark("]")
+
+    local open_last = { open_first[1], open_first[2] + #delimiters[1] - 1 }
+    local close_last = { close_first[1], close_first[2] + #delimiters[2] - 1 }
+
+    local selections = {
+        left = {
+            first_pos = open_first,
+            last_pos = open_last,
+        },
+        right = {
+            first_pos = close_first,
+            last_pos = close_last,
+        },
+    }
+    return selections
 end
 
 --[[
@@ -216,6 +252,21 @@ M._get_tag_range = function()
     positions[6] = positions[6] + 1
     positions[7] = positions[7] + 1
     return positions
+end
+
+M.indent_lines = function(lines)
+    -- Get the user-preferred tab character(s) to indent the lines
+    local tab
+    if vim.o.expandtab then
+        tab = string.rep(" ", vim.o.softtabstop)
+    else
+        tab = vim.api.nvim_replace_termcodes("<Tab>", true, false, true)
+    end
+    -- Indent the lines by the tab character(s)
+    for key, line in ipairs(lines) do
+        lines[key] = tab .. line
+    end
+    return lines
 end
 
 return M
