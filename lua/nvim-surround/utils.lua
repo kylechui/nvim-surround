@@ -11,8 +11,7 @@ M.delimiters = {
         ["B"] = { "{", "}" },
         ["{"] = { "{ ", " }" },
         ["}"] = { "{", "}" },
-        ["a"] = { "<", ">" },
-        ["<"] = { "<", ">" },
+        ["<"] = { "< ", " >" },
         [">"] = { "<", ">" },
         ["["] = { "[ ", " ]" },
         ["]"] = { "[", "]" },
@@ -22,6 +21,9 @@ M.delimiters = {
         ['"'] = { '"', '"' },
         ["`"] = { "`", "`" },
     },
+    HTML = {
+        ["t"] = true,
+    }
 }
 
 --[[
@@ -30,7 +32,17 @@ Returns if a character is a valid key into the aliases table.
 @return Whether or not it is in the aliases table.
 ]]
 M.is_valid_alias = function(char)
-    return M.delimiters.pairs[char] or M.delimiters.separators[char]
+    local delim = M.delimiters
+    return delim.pairs[char] or delim.separators[char] or delim.HTML[char]
+end
+
+--[[
+Returns if a character is a valid HTML tag alias.
+@param char The character to be checked.
+@return Whether or not it is an alias for HTML tags.
+]]
+M.is_HTML = function(char)
+    return M.delimiters.HTML[char]
 end
 
 --[[
@@ -58,7 +70,7 @@ M.get_delimiters = function(char)
     -- Set the delimiters based on cases
     if char == nil then
         return nil
-    elseif char == "<" or char == "t" then
+    elseif M.is_HTML(char) then
         -- Get an HTML tag as input
         vim.ui.input({
             prompt = "Enter an HTML tag: ",
@@ -124,21 +136,32 @@ end
 
 --[[
 Gets two selections for the left and right surrounding pair.
-@return A table containing the start and end positions of the marks.
+@param A character representing what kind of surrounding pair is to be selected
+@return A table containing the start and end positions of the delimiters.
 ]]
 M.get_surrounding_selections = function(char)
-    local delimiters = M.get_delimiters(char)
-    if not delimiters then
-        return nil
-    end
-
     buffer.adjust_mark("[")
     buffer.adjust_mark("]")
-    local open_first = buffer.get_mark("[")
-    local close_first = buffer.get_mark("]")
 
-    local open_last = { open_first[1], open_first[2] + #delimiters[1] - 1 }
-    local close_last = { close_first[1], close_first[2] + #delimiters[2] - 1 }
+    local open_first, open_last, close_first, close_last
+    open_first = buffer.get_mark("[")
+    close_last = buffer.get_mark("]")
+    print(vim.inspect(open_first))
+
+    if M.is_HTML(char) then
+        vim.fn.cursor(close_last)
+        close_first = vim.fn.searchpos("<", "nbW")
+        vim.fn.cursor(open_first)
+        open_last = vim.fn.searchpos(">", "nW")
+    else
+        local delimiters = M.get_delimiters(char)
+        if not delimiters then
+            return nil
+        end
+
+        open_last = { open_first[1], open_first[2] + #delimiters[1] - 1 }
+        close_first = { close_last[1], close_last[2] - #delimiters[2] + 1 }
+    end
 
     local selections = {
         left = {

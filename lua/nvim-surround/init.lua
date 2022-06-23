@@ -56,6 +56,7 @@ M.delete_surround = function(args)
             print("Invalid surrounding pair to delete!")
             return
         end
+
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.delete_callback"
         vim.api.nvim_feedkeys("g@a" .. M.delete_char, "n", false)
         return
@@ -65,6 +66,7 @@ M.delete_surround = function(args)
     if not selections then
         return
     end
+
     local left_sel = selections.left
     local right_sel = selections.right
 
