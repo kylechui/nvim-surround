@@ -71,28 +71,7 @@ M.get_delimiters = function(char)
     if char == nil then
         return nil
     elseif M.is_HTML(char) then
-        -- Get an HTML tag as input
-        vim.ui.input({
-            prompt = "Enter an HTML tag: ",
-        }, function(input)
-            local tag = input:match("^%w+")
-            local attributes = input:match(" +(.+)$")
-            if not tag then
-                return nil
-            end
-
-            if not attributes then
-                delimiters = {
-                    "<" .. tag .. ">",
-                    "</" .. tag .. ">",
-                }
-            else
-                delimiters = {
-                    "<" .. tag .. " " .. attributes .. ">",
-                    "</" .. tag .. ">",
-                }
-            end
-        end)
+        delimiters = M.get_HTML_pair()
     else
         delimiters = M.delimiters.pairs[char] or M.delimiters.separators[char]
     end
@@ -146,7 +125,6 @@ M.get_surrounding_selections = function(char)
     local open_first, open_last, close_first, close_last
     open_first = buffer.get_mark("[")
     close_last = buffer.get_mark("]")
-    print(vim.inspect(open_first))
 
     if M.is_HTML(char) then
         vim.fn.cursor(close_last)
@@ -174,6 +152,58 @@ M.get_surrounding_selections = function(char)
         },
     }
     return selections
+end
+
+--[[
+Adjust the selection boundaries to only select the HTML tag type.
+@param The coordinates of the open and closing HTML tags.
+@return The coordinates of the HTML tag.
+]]
+M.adjust_HTML_selections = function(selections)
+    local open, close = selections.left, selections.right
+    close.first_pos[2] = close.first_pos[2] + 2
+    close.last_pos[2] = close.last_pos[2] - 1
+    open.first_pos[2] = open.first_pos[2] + 1
+    open.last_pos[2] = open.first_pos[2] + close.last_pos[2] - close.first_pos[2]
+    return {
+        left = {
+            first_pos = open.first_pos,
+            last_pos = open.last_pos,
+        },
+        right = {
+            first_pos = close.first_pos,
+            last_pos = close.last_pos,
+        },
+    }
+end
+
+--[[
+Returns a HTML open/closing pair.
+@param Whether or not to include the angle brackets.
+@return The HTML tag pair.
+]]
+M.get_HTML_pair = function(omit_brackets)
+    local pair
+    vim.ui.input({
+        prompt = "Enter an HTML tag: ",
+    }, function(input)
+        local tag = input:match("^%w+")
+        local attributes = input:match(" +(.+)$")
+        if not tag then
+            return nil
+        end
+
+        local open = attributes and tag .. " " .. attributes or tag
+        local close = tag
+
+        if not omit_brackets then
+            open = "<" .. open .. ">"
+            close = "</" .. close .. ">"
+        end
+        pair = { open, close }
+    end)
+
+    return pair
 end
 
 return M

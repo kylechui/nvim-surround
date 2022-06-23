@@ -143,8 +143,18 @@ end
 M.change_callback = function()
     -- Get the positions of the selections and get the replacement delimiters
     local selections = utils.get_surrounding_selections(M.delete_char)
-    local char = utils.get_char()
-    local delimiters = utils.get_delimiters(char)
+    -- Adjust the selections for changing if we are changing a HTML tag
+    if utils.is_HTML(M.delete_char) then
+        selections = utils.adjust_HTML_selections(selections)
+    end
+
+    local delimiters
+    if utils.is_HTML(M.delete_char) then
+        delimiters = utils.get_HTML_pair(true)
+    else
+        local char = utils.get_char()
+        delimiters = utils.get_delimiters(char)
+    end
     if not delimiters then
         return
     end
