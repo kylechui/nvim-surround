@@ -35,6 +35,15 @@ M.replace_string = function(str, to_insert, start, stop)
 end
 
 --[[
+Removes leading and trailing whitespace from a string.
+@param str The original string.
+@return The trimmed string.
+]]
+M.trim_whitespace = function(str)
+    return str:match("^%s*(.*)"):match("(.-)%s*$")
+end
+
+--[[
 Indents a given list of lines using user-preferred <Tab>.
 @param lines The list of lines to be indented.
 @return The indented lines.

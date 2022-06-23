@@ -52,7 +52,7 @@ M.delete_surround = function(args)
         if not M.delete_char then
             return
         end
-        if not utils.is_valid_alias(M.delete_char) then
+        if not utils.is_valid(M.delete_char) then
             print("Invalid surrounding pair to delete!")
             return
         end
@@ -86,7 +86,7 @@ M.change_surround = function(args)
         if not M.delete_char then
             return
         end
-        if not utils.is_valid_alias(M.delete_char) then
+        if not utils.is_valid(M.delete_char) then
             print("Invalid surrounding pair to delete!")
             return
         end

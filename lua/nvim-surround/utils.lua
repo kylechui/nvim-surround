@@ -1,4 +1,5 @@
 local buffer = require("nvim-surround.buffer")
+local strings = require("nvim-surround.strings")
 
 local M = {}
 
@@ -31,7 +32,7 @@ Returns if a character is a valid key into the aliases table.
 @param char The character to be checked.
 @return Whether or not it is in the aliases table.
 ]]
-M.is_valid_alias = function(char)
+M.is_valid = function(char)
     local delim = M.delimiters
     return delim.pairs[char] or delim.separators[char] or delim.HTML[char]
 end
@@ -136,6 +137,8 @@ M.get_surrounding_selections = function(char)
         if not delimiters then
             return nil
         end
+        delimiters[1] = strings.trim_whitespace(delimiters[1])
+        delimiters[2] = strings.trim_whitespace(delimiters[2])
 
         open_last = { open_first[1], open_first[2] + #delimiters[1] - 1 }
         close_first = { close_last[1], close_last[2] - #delimiters[2] + 1 }
