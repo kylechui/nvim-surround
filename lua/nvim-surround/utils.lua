@@ -181,8 +181,13 @@ M.get_nearest_selections = function(char)
         if not near_pos then
             nearest_selections = cur_selections
         elseif near_pos and cur_pos then
-            if near_pos[1] < cur_pos[1] or
-                (near_pos[1] == cur_pos[1] and near_pos[2] < cur_pos[2]) then
+            local selection = {
+                first_pos = cur_selections.left.first_pos,
+                last_pos = cur_selections.right.last_pos,
+            }
+            if (near_pos[1] < cur_pos[1] or
+                (near_pos[1] == cur_pos[1] and near_pos[2] < cur_pos[2])) and
+                M.inside_selection(curpos, selection) then
                 nearest_selections = cur_selections
             end
         end
@@ -191,6 +196,22 @@ M.get_nearest_selections = function(char)
     end
 
     return nearest_selections
+end
+
+--[[
+Returns whether a given position is contained within a given selection.
+@param pos The position to be considered.
+@param selection The selection to potentially contain the position.
+@return A boolean indicating whether the position is contained in the selection.
+]]
+M.inside_selection = function(pos, selection)
+    local first_pos, last_pos = selection.first_pos, selection.last_pos
+    if pos[1] == first_pos[1] and pos[2] < first_pos[2] then
+        return false
+    elseif pos[1] == last_pos[1] and pos[2] > last_pos[2] then
+        return false
+    end
+    return pos[1] >= first_pos[1] and pos[1] <= last_pos[1]
 end
 
 --[[
