@@ -1,6 +1,6 @@
 # nvim-surround
 
-Surrounding structures, simply.
+Surround selections, stylishly :sunglasses:
 
 ***WARNING:*** This plugin is in *very early* development, and things are likely
 to not work, let alone be stable.
@@ -40,8 +40,8 @@ to not work, let alone be stable.
 
 ## Commands
 
-Nothing in this plugin is set up by default, but here are some potential
-defaults:
+There are no keymaps set by default, but here's how to mimic
+[vim-surround](https://github.com/tpope/vim-surround): 
 
 ```lua
 local map = vim.keymap.set
@@ -61,15 +61,16 @@ map("x", "S", require("nvim-surround").insert_surround)
 * Find a better way to use `operatorfunc`
   * There's probably a better way to avoid the `va"` whitespace situation
 * Implement dot repeating for modifying surrounds
-* Add some sort of setup function, allowing users to modify delimiter pairs
+* Add some sort of setup function, allowing users to modify delimiter
+  pairs/aliases without directly modifying internal variables
 
 ## Future Ideas
 
 * Try to implement "aliases" for different delimiter pair types, in a fashion
   similar to [targets.vim](https://github.com/wellle/targets.vim)
-* Implement `t` for HTML tags, i.e. `cst<h1>`, `dst`
 
-## Similar Projects
+## Shoutouts
 
 * [vim-surround](https://github.com/tpope/vim-surround)
 * [mini.surround](https://github.com/echasnovski/mini.nvim#minisurround)
+* Like this project? Give it a :star: to show your support!
