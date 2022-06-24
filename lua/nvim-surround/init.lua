@@ -64,25 +64,25 @@ M.delete_surround = function()
 end
 
 -- API: Change a surrounding delimiter pair, if it exists
-M.change_surround = function(args)
-    if not args then
-        -- Get a character input
-        M.delete_char = utils.get_char()
-        if not M.delete_char then
-            return
-        end
-        if not utils.is_valid(M.delete_char) then
-            print("Invalid surrounding pair to delete!")
-            return
-        end
-        vim.go.operatorfunc = "v:lua.require'nvim-surround'.change_callback"
-        vim.api.nvim_feedkeys("g@a" .. M.delete_char, "n", false)
-        return
+M.change_surround = function()
+    local char = utils.get_char()
+    local selections = utils.get_nearest_selections(char)
+
+    -- Adjust the selections for changing if we are changing a HTML tag
+    if utils.is_HTML(char) then
+        selections = utils.adjust_HTML_selections(selections)
     end
 
-    local selections = args.selections
-    local delimiters = args.delimiters
-    if not selections then
+    -- Get the new surrounding pair
+    local delimiters
+    if utils.is_HTML(char) then
+        delimiters = utils.get_HTML_pair(true)
+    else
+        char = utils.get_char()
+        delimiters = utils.get_delimiters(char)
+    end
+
+    if not delimiters or not selections then
         return
     end
     local left_sel = selections.left
@@ -113,33 +113,6 @@ M.insert_callback = function()
     }
     -- Call the main insert function with some arguments
     M.insert_surround(args)
-end
-
-M.change_callback = function()
-    -- Get the positions of the selections and get the replacement delimiters
-    local selections = utils.get_surrounding_selections(M.delete_char)
-    -- Adjust the selections for changing if we are changing a HTML tag
-    if utils.is_HTML(M.delete_char) then
-        selections = utils.adjust_HTML_selections(selections)
-    end
-
-    local delimiters
-    if utils.is_HTML(M.delete_char) then
-        delimiters = utils.get_HTML_pair(true)
-    else
-        local char = utils.get_char()
-        delimiters = utils.get_delimiters(char)
-    end
-    if not delimiters then
-        return
-    end
-
-    local args = {
-        selections = selections,
-        delimiters = delimiters,
-    }
-    -- Call the main delete function with some arguments
-    M.change_surround(args)
 end
 
 return M

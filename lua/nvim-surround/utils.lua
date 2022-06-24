@@ -199,6 +199,9 @@ Adjust the selection boundaries to only select the HTML tag type.
 @return The coordinates of the HTML tag.
 ]]
 M.adjust_HTML_selections = function(selections)
+    if not selections then
+        return nil
+    end
     local open, close = selections.left, selections.right
     close.first_pos[2] = close.first_pos[2] + 2
     close.last_pos[2] = close.last_pos[2] - 1
