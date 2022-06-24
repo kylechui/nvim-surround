@@ -45,24 +45,9 @@ M.insert_surround = function(args)
 end
 
 -- API: Delete a surrounding delimiter pair, if it exists
-M.delete_surround = function(args)
-    if not args then
-        -- Get a character input
-        M.delete_char = utils.get_char()
-        if not M.delete_char then
-            return
-        end
-        if not utils.is_valid(M.delete_char) then
-            print("Invalid surrounding pair to delete!")
-            return
-        end
-
-        vim.go.operatorfunc = "v:lua.require'nvim-surround'.delete_callback"
-        vim.api.nvim_feedkeys("g@a" .. M.delete_char, "n", false)
-        return
-    end
-
-    local selections = args.selections
+M.delete_surround = function()
+    local char = utils.get_char()
+    local selections = utils.get_nearest_selections(char)
     if not selections then
         return
     end
@@ -128,16 +113,6 @@ M.insert_callback = function()
     }
     -- Call the main insert function with some arguments
     M.insert_surround(args)
-end
-
-M.delete_callback = function()
-    -- Get the positions of the selections and call the main delete function
-    local selections = utils.get_surrounding_selections(M.delete_char)
-    local args = {
-        selections = selections,
-    }
-    -- Call the main delete function with some arguments
-    M.delete_surround(args)
 end
 
 M.change_callback = function()

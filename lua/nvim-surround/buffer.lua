@@ -21,6 +21,15 @@ M.set_lines = function(start, stop, lines)
 end
 
 --[[
+Gets the position of the cursor, 1-indexed.
+@return curpos The position of the cursor.
+]]
+M.get_curpos = function()
+    local curpos = { vim.fn.getcurpos()[2], vim.fn.getcurpos()[3] }
+    return curpos
+end
+
+--[[
 Gets the row and column for a mark, 1-indexed.
 @param mark The mark whose position will be returned.
 @return The position of the mark.

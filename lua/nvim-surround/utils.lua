@@ -1,6 +1,8 @@
 local buffer = require("nvim-surround.buffer")
 local strings = require("nvim-surround.strings")
 
+local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
+
 local M = {}
 
 -- A table containing the set of tags associated with delimiter pairs
@@ -16,6 +18,7 @@ M.delimiters = {
         [">"] = { "<", ">" },
         ["["] = { "[ ", " ]" },
         ["]"] = { "[", "]" },
+        ["r"] = { "[", "]" },
     },
     separators = {
         ["'"] = { "'", "'" },
@@ -24,7 +27,10 @@ M.delimiters = {
     },
     HTML = {
         ["t"] = true,
-    }
+    },
+    aliases = {
+        ["q"] = { '"', "'", "`" },
+    },
 }
 
 --[[
@@ -34,7 +40,7 @@ Returns if a character is a valid key into the aliases table.
 ]]
 M.is_valid = function(char)
     local delim = M.delimiters
-    return delim.pairs[char] or delim.separators[char] or delim.HTML[char]
+    return delim.pairs[char] or delim.separators[char] or delim.HTML[char] or delim.aliases[char]
 end
 
 --[[
@@ -120,10 +126,12 @@ Gets two selections for the left and right surrounding pair.
 @return A table containing the start and end positions of the delimiters.
 ]]
 M.get_surrounding_selections = function(char)
+    local open_first, open_last, close_first, close_last
+    local cmd = ":set opfunc=v:lua.require('nvim-surround'.utils).NOOP" .. cr .. "g@a" .. char
+    vim.api.nvim_feedkeys(cmd, "x", false)
+
     buffer.adjust_mark("[")
     buffer.adjust_mark("]")
-
-    local open_first, open_last, close_first, close_last
     open_first = buffer.get_mark("[")
     close_last = buffer.get_mark("]")
 
@@ -155,6 +163,34 @@ M.get_surrounding_selections = function(char)
         },
     }
     return selections
+end
+
+M.get_nearest_selections = function(char)
+    if not M.delimiters.aliases[char] then
+        return M.get_surrounding_selections(char)
+    end
+
+    local aliases = M.delimiters.aliases[char]
+    local nearest_selections
+    for _, c in ipairs(aliases) do
+        local curpos = buffer.get_curpos()
+
+        local cur_selections = M.get_surrounding_selections(c)
+        local near_pos = nearest_selections and nearest_selections.left.first_pos
+        local cur_pos = cur_selections and cur_selections.left.first_pos
+        if not near_pos then
+            nearest_selections = cur_selections
+        elseif near_pos and cur_pos then
+            if near_pos[1] < cur_pos[1] or
+                (near_pos[1] == cur_pos[1] and near_pos[2] < cur_pos[2]) then
+                nearest_selections = cur_selections
+            end
+        end
+
+        vim.fn.cursor(curpos)
+    end
+
+    return nearest_selections
 end
 
 --[[
