@@ -2,36 +2,9 @@
 
 Surround selections, stylishly :sunglasses:
 
-***WARNING:*** This plugin is in *very early* development, and things are likely
-to not work, let alone be stable.
-
-## Features
-
-### The Basics
-
-* Surround text objects with delimiters using `ys`, e.g. `ysiw"`
-  * Alternatively, visually select text and use `S`, e.g. `Sb`
-* Delete surrounding delimiters using `ds`, e.g. `dsB`
-* Change surrounding delimiters using `cs`, e.g. `csBb`
-* This plugin aims to be more or less compatible with
-  [vim-surround](https://github.com/tpope/vim-surround)
-
-### Bonus!
-
-* Surround using HTML tags, e.g. `ysiwtdiv<CR>`
-  * Changing surrounding HTML tags only changes the tag type, not any attributes
-* Modify surrounding delimiters using aliases, e.g. `q` to represent any quote
-  * By default, nvim-surround will choose the closest pair that the cursor
-    resides in
-  * For example, with the cursor denoted by `^`, if we run `csqb` in
-  ```
-  string s = "Hello 'world'!"
-                      ^
-  ```
-  then we get
-  ```
-  string s = "Hello (world)!"
-  ```
+> **Warning**: This plugin is still in early development, so some things might
+> not be fully fleshed out or stable. Feel free to open an issue or pull
+> request!
 
 ## Installation
 
@@ -63,42 +36,54 @@ to not work, let alone be stable.
 </table>
 
 ## Setup
-
-**TODO:** Document how to setup and use this plugin!
-
-## Commands
-
-TODO: Make these a part of the setup configuration (via variables), and set by
-default
-
-There are no keymaps set by default, but here's how to mimic
-[vim-surround](https://github.com/tpope/vim-surround): 
-
+The default configuration is as follows:
 ```lua
-local map = vim.keymap.set
-
--- Surrounds a text object with a delimiter pair, i.e. ysiw]
-map("n", "ys", require("nvim-surround").insert_surround)
--- Delete a surrounding delimiter, i.e. ds(
-map("n", "ds", require("nvim-surround").delete_surround)
--- Changes the surrounding delimiter, i.e. cs'"
-map("n", "cs", require("nvim-surround").change_surround)
--- Surrounds a visual selection with a delimiter, i.e. S{
-map("x", "S", require("nvim-surround").insert_surround)
+require("nvim-surround").setup({
+    keymaps = {
+        insert = "ys",
+        visual = "S",
+        delete = "ds",
+        change = "cs",
+    }
+})
 ```
+
+## Features
+
+### The Basics
+
+The basic functionality of this plugin can be found in the README of
+[vim-surround](https://github.com/tpope/vim-surround):
+
+* Surround text objects with delimiters
+  * Alternatively, surround using visual selections instead
+* Delete surrounding delimiters
+* Change surrounding delimiters
+
+### Bonus!
+
+* Surround selections using HTML tags
+  * Changing surrounding HTML tags only changes the element, not the attributes
+* Modify surrounding delimiters using aliases, e.g. `q` to represent any quote
+  * By default, nvim-surround will choose the closest pair that the cursor
+    is contained in
+  * For example, with the cursor denoted by `^`, if we run `csqb` on
+    ```
+    string s = "Hello 'world'!"
+                        ^
+    ```
+    then we get
+    ```
+    string s = "Hello (world)!"
+    ```
 
 ## TODO
 
+* Get rid of the ugly `set opfunc=...` when changing/deleting
 * Find a better way to use `operatorfunc`
-  * There's probably a better way to avoid the `va"` whitespace situation
+  * There's probably a better way to avoid the `va"` white space situation
 * Implement dot repeating for modifying surrounds
-* Add some sort of setup function, allowing users to modify delimiter
-  pairs/aliases without directly modifying internal variables
-
-## Future Ideas
-
-* Try to implement "aliases" for different delimiter pair types, in a fashion
-  similar to [targets.vim](https://github.com/wellle/targets.vim)
+* Allow users to modify the delimiter pairs via the setup function
 
 ## Shoutouts
 

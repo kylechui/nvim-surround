@@ -35,6 +35,36 @@ M.delimiters = {
 }
 
 --[[
+Merges two tables, overwriting those in the former with the latter.
+@param t1 The fallback table.
+@param t2 The table to overwrite t1.
+@return The merged table.
+]]
+M.merge_options = function(t1, t2)
+    if not t2 then
+        return t1
+    end
+    for k, v in pairs(t2) do
+        if type(t1[k]) == "nil" then
+            vim.api.nvim_err_writeln("Error: Invalid key used for configuration")
+            return t1
+        end
+
+        if type(v) == "table" then
+            if type(t1[k]) ~= "table" then
+                vim.api.nvim_err_writeln("Error: Invalid value used for configuration")
+                return t1
+            else
+                t1[k] = M.merge_options(t1[k], v)
+            end
+        else
+            t1[k] = v
+        end
+    end
+    return t1
+end
+
+--[[
 Returns if a character is a valid key into the aliases table.
 @param char The character to be checked.
 @return Whether or not it is in the aliases table.

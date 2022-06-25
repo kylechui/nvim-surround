@@ -10,6 +10,9 @@ M.get_tag = function(include_brackets)
     vim.ui.input({
         prompt = "Enter an HTML tag: ",
     }, function(input)
+        if not input then
+            return
+        end
         -- Pattern match the element and attributes
         local element = input:match("^%w+")
         local attributes = input:match(" +(.+)$")
