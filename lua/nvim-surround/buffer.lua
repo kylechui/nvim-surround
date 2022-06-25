@@ -1,5 +1,9 @@
 local M = {}
 
+--[============================================================================[
+                             Line helper functions
+--]============================================================================]
+
 --[[
 Gets a set of lines from the buffer, inclusive and 1-indexed.
 @param start The starting line.
@@ -20,6 +24,10 @@ M.set_lines = function(start, stop, lines)
     vim.api.nvim_buf_set_lines(0, start - 1, stop, false, lines)
 end
 
+--[============================================================================[
+                            Cursor helper functions
+--]============================================================================]
+
 --[[
 Gets the position of the cursor, 1-indexed.
 @return curpos The position of the cursor.
@@ -28,6 +36,10 @@ M.get_curpos = function()
     local curpos = { vim.fn.getcurpos()[2], vim.fn.getcurpos()[3] }
     return curpos
 end
+
+--[============================================================================[
+                             Mark helper functions
+--]============================================================================]
 
 --[[
 Gets the row and column for a mark, 1-indexed.

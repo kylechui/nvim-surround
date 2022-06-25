@@ -96,8 +96,6 @@ M.get_selection = function(mode)
     local mark1, mark2
     if mode == "n" then
         mark1, mark2 = "[", "]"
-        -- Adjust the start and end marks for weird situations where certain
-        -- actions like va" result in surrounding whitespace being selected
         buffer.adjust_mark("[")
         buffer.adjust_mark("]")
     else
@@ -126,6 +124,7 @@ M.get_surrounding_selections = function(char)
     local open_first, open_last, close_first, close_last
     local curpos = buffer.get_curpos()
 
+    -- Set the [ and ] marks by calling an operatorfunc
     local cmd = ":set opfunc=v:lua.require('nvim-surround'.utils).NOOP" .. cr .. "g@a" .. char
     vim.api.nvim_feedkeys(cmd, "x", false)
 
@@ -150,19 +149,21 @@ M.get_surrounding_selections = function(char)
     end
 
     if M.is_HTML(char) then
+        -- Find the correct selection boundaries for HTML tags
         vim.fn.cursor(close_last)
         close_first = vim.fn.searchpos("<", "nbW")
         vim.fn.cursor(open_first)
         open_last = vim.fn.searchpos(">", "nW")
     else
+        -- Get the corresponding delimiter pair for the character
         local delimiters = M.get_delimiters(char)
         if not delimiters then
             vim.fn.cursor(curpos)
             return nil
         end
+        -- Use the length of the pair to find the proper selection boundaries
         delimiters[1] = strings.trim_whitespace(delimiters[1])
         delimiters[2] = strings.trim_whitespace(delimiters[2])
-
         open_last = { open_first[1], open_first[2] + #delimiters[1] - 1 }
         close_first = { close_last[1], close_last[2] - #delimiters[2] + 1 }
     end
@@ -182,12 +183,16 @@ M.get_surrounding_selections = function(char)
 end
 
 M.get_nearest_selections = function(char)
+    -- If there are no aliases, simply return the surrounding selection for that character
     if not M.delimiters.aliases[char] then
         return M.get_surrounding_selections(char)
     end
 
     local aliases = M.delimiters.aliases[char]
     local nearest_selections
+    -- Iterate through all possible selections for each aliased character, and
+    -- find the pair that is closest to the cursor position (that also still
+    -- surrounds the cursor)
     for _, c in ipairs(aliases) do
         local cur_selections = M.get_surrounding_selections(c)
         local near_pos = nearest_selections and nearest_selections.left.first_pos
@@ -231,6 +236,7 @@ M.adjust_HTML_selections = function(selections)
         return nil
     end
     local open, close = selections.left, selections.right
+    -- Move the boundaries to deselect the angle brackets and attributes
     close.first_pos[2] = close.first_pos[2] + 2
     close.last_pos[2] = close.last_pos[2] - 1
     open.first_pos[2] = open.first_pos[2] + 1
