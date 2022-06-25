@@ -5,6 +5,34 @@ Surround selections, stylishly :sunglasses:
 ***WARNING:*** This plugin is in *very early* development, and things are likely
 to not work, let alone be stable.
 
+## Features
+
+### The Basics
+
+* Surround text objects with delimiters using `ys`, e.g. `ysiw"`
+  * Alternatively, visually select text and use `S`, e.g. `Sb`
+* Delete surrounding delimiters using `ds`, e.g. `dsB`
+* Change surrounding delimiters using `cs`, e.g. `csBb`
+* This plugin aims to be more or less compatible with
+  [vim-surround](https://github.com/tpope/vim-surround)
+
+### Bonus!
+
+* Surround using HTML tags, e.g. `ysiwtdiv<CR>`
+  * Changing surrounding HTML tags only changes the tag type, not any attributes
+* Modify surrounding delimiters using aliases, e.g. `q` to represent any quote
+  * By default, nvim-surround will choose the closest pair that the cursor
+    resides in
+  * For example, with the cursor denoted by `^`, if we run `csqb` in
+  ```
+  string s = "Hello 'world'!"
+                      ^
+  ```
+  then we get
+  ```
+  string s = "Hello (world)!"
+  ```
+
 ## Installation
 
 <table style="text-align:center">
@@ -39,6 +67,9 @@ to not work, let alone be stable.
 **TODO:** Document how to setup and use this plugin!
 
 ## Commands
+
+TODO: Make these a part of the setup configuration (via variables), and set by
+default
 
 There are no keymaps set by default, but here's how to mimic
 [vim-surround](https://github.com/tpope/vim-surround): 
