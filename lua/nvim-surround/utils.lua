@@ -1,8 +1,8 @@
 local buffer = require("nvim-surround.buffer")
+local html = require("nvim-surround.html")
 local strings = require("nvim-surround.strings")
 
 local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
-local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
 
 local M = {}
 
@@ -79,7 +79,7 @@ M.get_delimiters = function(char)
     if char == nil then
         return nil
     elseif M.is_HTML(char) then
-        delimiters = M.get_HTML_pair()
+        delimiters = html.get_tag(true)
     else
         delimiters = M.delimiters.pairs[char] or M.delimiters.separators[char]
     end
@@ -91,19 +91,17 @@ end
 Gets the coordinates of the start and end of a given selection.
 @return A table containing the start and end of the selection.
 ]]
-M.get_selection = function()
-    -- Get the current cursor mode
-    local mode = vim.fn.mode()
+M.get_selection = function(mode)
     -- Determine whether to use visual marks or operator marks
     local mark1, mark2
-    if mode == "v" or mode == "V" then
-        mark1, mark2 = "<", ">"
-    else
+    if mode == "n" then
         mark1, mark2 = "[", "]"
         -- Adjust the start and end marks for weird situations where certain
         -- actions like va" result in surrounding whitespace being selected
         buffer.adjust_mark("[")
         buffer.adjust_mark("]")
+    else
+        mark1, mark2 = "<", ">"
     end
 
     -- Get the row and column of the first and last characters of the selection
@@ -113,8 +111,7 @@ M.get_selection = function()
         first_pos = first_position,
         last_pos = last_position,
     }
-    local curpos = buffer.get_curpos()
-    return M.inside_selection(curpos, selection) and selection
+    return selection
 end
 
 --[[
@@ -191,7 +188,6 @@ M.get_nearest_selections = function(char)
 
     local aliases = M.delimiters.aliases[char]
     local nearest_selections
-    print(vim.inspect(aliases))
     for _, c in ipairs(aliases) do
         local cur_selections = M.get_surrounding_selections(c)
         local near_pos = nearest_selections and nearest_selections.left.first_pos
@@ -249,35 +245,6 @@ M.adjust_HTML_selections = function(selections)
             last_pos = close.last_pos,
         },
     }
-end
-
---[[
-Returns a HTML open/closing pair.
-@param Whether or not to include the angle brackets.
-@return The HTML tag pair.
-]]
-M.get_HTML_pair = function(omit_brackets)
-    local pair
-    vim.ui.input({
-        prompt = "Enter an HTML tag: ",
-    }, function(input)
-        local tag = input:match("^%w+")
-        local attributes = input:match(" +(.+)$")
-        if not tag then
-            return nil
-        end
-
-        local open = attributes and tag .. " " .. attributes or tag
-        local close = tag
-
-        if not omit_brackets then
-            open = "<" .. open .. ">"
-            close = "</" .. close .. ">"
-        end
-        pair = { open, close }
-    end)
-
-    return pair
 end
 
 return M

@@ -1,4 +1,5 @@
 local buffer = require("nvim-surround.buffer")
+local html = require("nvim-surround.html")
 local strings = require("nvim-surround.strings")
 local utils = require("nvim-surround.utils")
 
@@ -76,7 +77,7 @@ M.change_surround = function()
     -- Get the new surrounding pair
     local delimiters
     if utils.is_HTML(char) then
-        delimiters = utils.get_HTML_pair(true)
+        delimiters = html.get_tag()
     else
         char = utils.get_char()
         delimiters = utils.get_delimiters(char)
@@ -105,7 +106,7 @@ M.insert_callback = function()
     if not char then
         return
     end
-    local selection = utils.get_selection()
+    local selection = utils.get_selection(M.mode)
 
     local args = {
         char = char,
