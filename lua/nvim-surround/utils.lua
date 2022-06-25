@@ -2,6 +2,7 @@ local buffer = require("nvim-surround.buffer")
 local strings = require("nvim-surround.strings")
 
 local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
+local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
 
 local M = {}
 
@@ -108,16 +109,12 @@ M.get_selection = function()
     -- Get the row and column of the first and last characters of the selection
     local first_position = buffer.get_mark(mark1)
     local last_position = buffer.get_mark(mark2)
-    return {
-        first_pos = {
-            first_position[1],
-            first_position[2],
-        },
-        last_pos = {
-            last_position[1],
-            last_position[2],
-        },
+    local selection = {
+        first_pos = first_position,
+        last_pos = last_position,
     }
+    local curpos = buffer.get_curpos()
+    return M.inside_selection(curpos, selection) and selection
 end
 
 --[[
@@ -126,7 +123,12 @@ Gets two selections for the left and right surrounding pair.
 @return A table containing the start and end positions of the delimiters.
 ]]
 M.get_surrounding_selections = function(char)
+    if not char then
+        return nil
+    end
     local open_first, open_last, close_first, close_last
+    local curpos = buffer.get_curpos()
+
     local cmd = ":set opfunc=v:lua.require('nvim-surround'.utils).NOOP" .. cr .. "g@a" .. char
     vim.api.nvim_feedkeys(cmd, "x", false)
 
@@ -134,6 +136,21 @@ M.get_surrounding_selections = function(char)
     buffer.adjust_mark("]")
     open_first = buffer.get_mark("[")
     close_last = buffer.get_mark("]")
+    -- If the operatorfunc "fails", return no selection found
+    if open_first[1] == 1 and open_first[2] == 1 and close_last[1] == #buffer.get_lines(1, -1) and
+        close_last[2] == 1 then
+        return nil
+    end
+    -- If the cursor is not contained within the selection, return no selection found
+    local selection = {
+        first_pos = open_first,
+        last_pos = close_last,
+    }
+    if not M.inside_selection(curpos, selection) then
+        -- Reset cursor position
+        vim.fn.cursor(curpos)
+        return nil
+    end
 
     if M.is_HTML(char) then
         vim.fn.cursor(close_last)
@@ -143,6 +160,7 @@ M.get_surrounding_selections = function(char)
     else
         local delimiters = M.get_delimiters(char)
         if not delimiters then
+            vim.fn.cursor(curpos)
             return nil
         end
         delimiters[1] = strings.trim_whitespace(delimiters[1])
@@ -162,6 +180,7 @@ M.get_surrounding_selections = function(char)
             last_pos = close_last,
         },
     }
+    vim.fn.cursor(curpos)
     return selections
 end
 
@@ -172,27 +191,19 @@ M.get_nearest_selections = function(char)
 
     local aliases = M.delimiters.aliases[char]
     local nearest_selections
+    print(vim.inspect(aliases))
     for _, c in ipairs(aliases) do
-        local curpos = buffer.get_curpos()
-
         local cur_selections = M.get_surrounding_selections(c)
         local near_pos = nearest_selections and nearest_selections.left.first_pos
         local cur_pos = cur_selections and cur_selections.left.first_pos
         if not near_pos then
             nearest_selections = cur_selections
-        elseif near_pos and cur_pos then
-            local selection = {
-                first_pos = cur_selections.left.first_pos,
-                last_pos = cur_selections.right.last_pos,
-            }
-            if (near_pos[1] < cur_pos[1] or
-                (near_pos[1] == cur_pos[1] and near_pos[2] < cur_pos[2])) and
-                M.inside_selection(curpos, selection) then
+        elseif cur_pos then
+            if near_pos[1] < cur_pos[1] or
+                (near_pos[1] == cur_pos[1] and near_pos[2] < cur_pos[2]) then
                 nearest_selections = cur_selections
             end
         end
-
-        vim.fn.cursor(curpos)
     end
 
     return nearest_selections
