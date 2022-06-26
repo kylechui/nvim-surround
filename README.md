@@ -6,40 +6,54 @@ Surround selections, stylishly :sunglasses:
 > not be fully fleshed out or stable. Feel free to open an issue or pull
 > request!
 
-## Installation
+## :sparkles: Features
 
-<table style="text-align:center">
-   <thead>
-      <tr>
-         <th>Package Manager</th>
-         <th>Installation Code</th>
-      </tr>
-   </thead>
-   <tbody>
-      <tr>
-         <td>
-          <a href = "https://github.com/wbthomason/packer.nvim">packer.nvim</a>
-         </td>
-         <td>
-          <code>use "kylechui/nvim-surround"</code>
-         </td>
-      </tr>
-      <tr>
-        <td>
-          <a href = "https://github.com/junegunn/vim-plug">vim-plug</a>
-        </td>
-        <td>
-          <code>Plug "kylechui/nvim-surround"</code>
-        </td>
-      </tr>
-   </tbody>
-</table>
+* Surround text objects/visual selections with delimiter pairs
+* Delete/Change surrounding delimiters
+* Quickly add/change/remove surrounding HTML tags
+  * Change *only* the surrounding HTML tag's element type, and leave its
+    attributes
+* Use a single character as an alias for several text-objects
+  * E.g. `q` is aliased to <code>`,',"</code>, so <code>csqb</code> replaces
+    the *nearest* set of quotes with parentheses
 
-## Setup
+## :package: Installation
+
+Install this plugin with your favorite package manager:
+
+### [packer.nvim](https://github.com/wbthomason/packer.nvim)
+
+```lua
+-- Lua
+use({
+    "kylechui/nvim-surround",
+    config = function()
+        require("nvim-surround").setup({
+            -- Configuration here, or leave empty to use defaults
+        })
+    end
+})
+```
+
+### [vim-plug](https://github.com/junegunn/vim-plug)
+
+```vim
+" Vim Script
+Plug "kylechui/nvim-surround"
+
+lua << EOF
+    require("nvim-surround").setup({
+        -- Configuration here, or leave empty to use defaults
+    })
+EOF
+```
+
+## :gear: Configuration
+
 The default configuration is as follows:
 ```lua
 require("nvim-surround").setup({
-    keymaps = {
+    keymaps = { -- vim-surround style keymaps
         insert = "ys",
         visual = "S",
         delete = "ds",
@@ -48,45 +62,17 @@ require("nvim-surround").setup({
 })
 ```
 
-## Features
-
-### The Basics
-
-The basic functionality of this plugin can be found in the README of
-[vim-surround](https://github.com/tpope/vim-surround):
-
-* Surround text objects with delimiters
-  * Alternatively, surround using visual selections instead
-* Delete surrounding delimiters
-* Change surrounding delimiters
-
-### Bonus!
-
-* Surround selections using HTML tags
-  * Changing surrounding HTML tags only changes the element, not the attributes
-* Modify surrounding delimiters using aliases, e.g. `q` to represent any quote
-  * By default, nvim-surround will choose the closest pair that the cursor
-    is contained in
-  * For example, with the cursor denoted by `^`, if we run `csqb` on
-    ```
-    string s = "Hello 'world'!"
-                        ^
-    ```
-    then we get
-    ```
-    string s = "Hello (world)!"
-    ```
-
-## TODO
+## :white_check_mark: TODO
 
 * Get rid of the ugly `set opfunc=...` when changing/deleting
 * Find a better way to use `operatorfunc`
   * There's probably a better way to avoid the `va"` white space situation
 * Implement dot repeating for modifying surrounds
 * Allow users to modify the delimiter pairs via the setup function
+* Add GIF demonstrating functionality in README
 
 ## Shoutouts
 
 * [vim-surround](https://github.com/tpope/vim-surround)
-* [mini.surround](https://github.com/echasnovski/mini.nvim#minisurround)
+* [mini.surround](https://github.com/echasnovski/mini.nvimminisurround)
 * Like this project? Give it a :star: to show your support!
