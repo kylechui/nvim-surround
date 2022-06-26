@@ -64,7 +64,6 @@ require("nvim-surround").setup({
 
 ## :white_check_mark: TODO
 
-* Get rid of the ugly `set opfunc=...` when changing/deleting
 * Find a better way to use `operatorfunc`
   * There's probably a better way to avoid the `va"` white space situation
 * Implement dot repeating for modifying surrounds

@@ -157,6 +157,8 @@ M.get_surrounding_selections = function(char)
     -- Set the [ and ] marks by calling an operatorfunc
     local cmd = ":set opfunc=v:lua.require('nvim-surround'.utils).NOOP" .. cr .. "g@a" .. char
     vim.api.nvim_feedkeys(cmd, "x", false)
+    -- Clear the command line
+    vim.cmd("echon ''")
 
     buffer.adjust_mark("[")
     buffer.adjust_mark("]")
