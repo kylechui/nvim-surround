@@ -59,7 +59,49 @@ require("nvim-surround").setup({
         visual = "S",
         delete = "ds",
         change = "cs",
+    },
+    delimiters = {
+        pairs = {
+            ["b"] = { "(", ")" },
+            ["("] = { "( ", " )" },
+            [")"] = { "(", ")" },
+            ["B"] = { "{", "}" },
+            ["{"] = { "{ ", " }" },
+            ["}"] = { "{", "}" },
+            ["<"] = { "< ", " >" },
+            [">"] = { "<", ">" },
+            ["["] = { "[ ", " ]" },
+            ["]"] = { "[", "]" },
+        },
+        separators = {
+            ["'"] = { "'", "'" },
+            ['"'] = { '"', '"' },
+            ["`"] = { "`", "`" },
+        },
+        HTML = { -- List of keymaps to trigger HTML mappings, set to true
+            ["t"] = true,
+        },
+        aliases = { -- Takes the key and aliases it to represent any value on the RHS
+            ["q"] = { '"', "'", "`" },
+        },
     }
+})
+```
+
+All keys should be one character *exactly*. To overwrite any functionality, you
+only need to specify the keys that you wish to modify. To disable any
+functionality, simply set the corresponding key's value to `false`. For example,
+
+```lua
+require('nvim-surround').setup({
+    delimiters = {
+        pairs = {
+            ["b"] = { "{", "}" },
+        },
+        HTML = { -- Disables HTML-style mappings
+            ["t"] = false,
+        },
+    },
 })
 ```
 
@@ -67,8 +109,8 @@ require("nvim-surround").setup({
 
 * Find a better way to use `operatorfunc`
   * There's probably a better way to avoid the `va"` white space situation
+* Add/implement single-char aliasing
 * Implement dot repeating for modifying surrounds
-* Allow users to modify the delimiter pairs via the setup function
 * Add GIF demonstrating functionality in README
 
 ## Shoutouts
