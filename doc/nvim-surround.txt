@@ -1,0 +1,113 @@
+================================================================================
+                                                               *nvim-surround*
+
+nvim-surround is a plugin for modifying "surroundings" in Neovim, allowing you
+to efficiently:
+* Add/change/delete surrounding delimiter pairs
+* Manipulate HTML-style tags
+* Alias delimiter types to other characters
+
+                                                       *nvim-surround.setup()*
+nvim-surround.setup({opts})
+    Setup function to be run by the user, which configures the default
+    keymaps and delimiter types.
+
+    Note: The setup must be called with a table (empty table uses defaults).
+
+    Usage:
+>
+    require("nvim-surround").setup({
+        keymaps = {
+            -- Overwrite keymaps here
+        },
+        delimiters = {
+            -- Customize builtin delimiter types here
+        },
+    })
+<
+
+
+    Valid keys for {opts}
+
+                                                       *nvim-surround.keymaps*
+    keymaps:~
+        Defines what keymaps are used to interact with the plugin.
+
+        Default: {
+            insert = "ys",
+            visual = "S",
+            delete = "ds",
+            change = "cs",
+        }
+
+                                                    *nvim-surround.delimiters*
+    delimiters:~
+        A table of various types of delimiters that are available to the user.
+
+    Types of {opts.delimiters}
+
+                                              *nvim-surround.delimiters.pairs*
+        pairs:~
+            A table that associates characters with a pair of distinct
+            delimiters, used for inserting/changing/deleting.
+
+            Default: {
+                ["("] = { "( ", " )" },
+                [")"] = { "(", ")" },
+                ["{"] = { "{ ", " }" },
+                ["}"] = { "{", "}" },
+                ["<"] = { "< ", " >" },
+                [">"] = { "<", ">" },
+                ["["] = { "[ ", " ]" },
+                ["]"] = { "[", "]" },
+            }
+
+                                         *nvim-surround.delimiters.separators*
+        separators:~
+            A table that associates characters with a pair of non-distinct
+            delimiters, used for inserting/changing/deleting.
+
+            Default: {
+                ["'"] = { "'", "'" },
+                ['"'] = { '"', '"' },
+                ["`"] = { "`", "`" },
+            }
+
+                                               *nvim-surround.delimiters.HTML*
+        HTML:~
+            A table of characters used to trigger HTML-style mappings, each
+            associated to a true value.
+
+            Default: {
+                ["t"] = true,
+            }
+
+                                            *nvim-surround.delimiters.aliases*
+        aliases:~
+            A table that aliases characters {alias} to output characters. If
+            the associated value is a character {char}, then you may use {alias}
+            to stand in for {char} while changing/deleting surrounding
+            delimiter pairs.
+
+            Note: Only Neovim builtin text-objects may be inserted in this
+            manner.
+
+            For example, `ysibB` has the same effect as typing `ysi)},` but
+            `ysarb` is invalid. However, `csar` behaves the same as `cs>]`.
+
+            If the associated value to {alias} is a table {chars}, then when
+            changing/deleting surrounding delimiter pairs, {alias} will
+            instead find the nearest surrounding pair of all text-objects in
+            {chars}, and modify that pair.
+
+            Note: These kinds of aliases cannot be used for inserting
+            surrounding pairs.
+
+            For example: `dsq` at position 1 will delete the double quotes,
+            while `dsq` at position 2 will delete the single quotes instead.
+>
+            Cursor:                      2             1
+            Buffer: vim.fn.execute("echo 'Hello world!'")
+<
+
+vim:tw=78:ts=8:ft=help:norl:
