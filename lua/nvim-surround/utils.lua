@@ -40,17 +40,32 @@ M.get_char = function()
 end
 
 --[[
+Returns the value that the input is aliased to, or the character if no alias exists.
+@param char The input character.
+@return The aliased character if it exists, or the original if none exists.
+]]
+M.get_alias = function(char)
+    if type(M.delimiters.aliases[char]) == "string" and #M.delimiters.aliases[char] == 1 then
+        return M.delimiters.aliases[char]
+    end
+    return char
+end
+
+--[[
 Gets a delimiter pair for a user-inputted character.
 @return A pair of delimiters for the given input, or nil if not applicable.
 ]]
 M.get_delimiters = function(char)
+    char = M.get_alias(char)
     -- Get input from the user for what they would like to surround with
     -- Return nil if the user cancels the command
     local delimiters
-    -- Set the delimiters based on cases
-    if char == nil then
+    if not char then
         return nil
-    elseif M.is_HTML(char) then
+    end
+
+
+    if M.is_HTML(char) then
         delimiters = html.get_tag(true)
     else
         delimiters = M.delimiters.pairs[char] or M.delimiters.separators[char]
@@ -90,6 +105,7 @@ Gets two selections for the left and right surrounding pair.
 @return A table containing the start and end positions of the delimiters.
 ]]
 M.get_surrounding_selections = function(char)
+    char = M.get_alias(char)
     if not char then
         return nil
     end
@@ -157,6 +173,7 @@ M.get_surrounding_selections = function(char)
 end
 
 M.get_nearest_selections = function(char)
+    char = M.get_alias(char)
     -- If there are no aliases, simply return the surrounding selection for that character
     if not M.delimiters.aliases[char] then
         return M.get_surrounding_selections(char)
