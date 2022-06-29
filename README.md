@@ -14,7 +14,7 @@ Surround selections, stylishly :sunglasses:
   * Change *only* the surrounding HTML tag's element type, and leave its
     attributes
 * Use a single character as an alias for several text-objects
-  * E.g. `q` is aliased to <code>`,',"</code>, so <code>csqb</code> replaces
+  * E.g. `q` is aliased to <code>\`,',"</code>, so <code>csqb</code> replaces
     the *nearest* set of quotes with parentheses
 
 ## :package: Installation
@@ -51,6 +51,7 @@ EOF
 ## :gear: Configuration
 
 The default configuration is as follows:
+
 ```lua
 require("nvim-surround").setup({
     keymaps = { -- vim-surround style keymaps
@@ -62,7 +63,7 @@ require("nvim-surround").setup({
 })
 ```
 
-## :white_check_mark: TODO
+## :white\_check\_mark: TODO
 
 * Find a better way to use `operatorfunc`
   * There's probably a better way to avoid the `va"` white space situation

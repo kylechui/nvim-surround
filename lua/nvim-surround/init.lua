@@ -1,6 +1,5 @@
-local map = vim.keymap.set
-
 local buffer = require("nvim-surround.buffer")
+local config = require("nvim-surround.config")
 local html = require("nvim-surround.html")
 local strings = require("nvim-surround.strings")
 local utils = require("nvim-surround.utils")
@@ -10,22 +9,9 @@ local M = {}
 M.delete_char = nil
 M.mode = nil
 
-M.default_opts = {
-    keymaps = {
-        insert = "ys",
-        visual = "S",
-        delete = "ds",
-        change = "cs",
-    }
-}
-
+-- Setup the plugin with user-defined options
 M.setup = function(user_opts)
-    -- Overwrite default options with user-defined options, if they exist
-    local opts = utils.merge_options(M.default_opts, user_opts)
-    map("n", opts.keymaps.insert, M.insert_surround, { silent = true })
-    map("x", opts.keymaps.visual, M.insert_surround, { silent = true })
-    map("n", opts.keymaps.delete, M.delete_surround, { silent = true })
-    map("n", opts.keymaps.change, M.change_surround, { silent = true })
+    config.setup(user_opts)
 end
 
 -- API: Insert delimiters around the given selection

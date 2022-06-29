@@ -1,16 +1,62 @@
 describe("nvim-surround", function()
-    it("can be required with no setup table", function()
-        require("nvim-surround").setup()
-    end)
-
     it("can be required with an empty setup table", function()
         require("nvim-surround").setup({})
+        assert.are.same(
+            require("nvim-surround.utils").delimiters,
+            require("nvim-surround.config").default_opts.delimiters
+        )
     end)
 
-    local buffer_contents = {
-        [[local str = test]],
-    }
-    vim.api.nvim_buf_set_lines(0, 0, -1, true, buffer_contents)
+    it("can modify/disable default delimiters", function()
+        require("nvim-surround").setup({
+            delimiters = {
+                pairs = {
+                    ["b"] = { "{", "}" },
+                    ["B"] = false,
+                },
+                HTML = {
+                    ["t"] = false,
+                },
+            }
+        })
+
+        local utils = require("nvim-surround.utils")
+        assert.are.same(
+            { "{", "}" },
+            utils.delimiters.pairs.b
+        )
+        assert.are.same(
+            false,
+            utils.delimiters.pairs.B
+        )
+        assert.are.same(
+            false,
+            utils.delimiters.HTML.t
+        )
+    end)
+
+    it("can modify aliases", function()
+        require("nvim-surround").setup({
+            delimiters = {
+                pairs = {
+                    ["b"] = false,
+                },
+                aliases = {
+                    ["b"] = { ")", "}" }
+                }
+            }
+        })
+
+        local utils = require("nvim-surround.utils")
+        assert.are.same(
+            false,
+            utils.delimiters.pairs.b
+        )
+        assert.are.same(
+            { ")", "}" },
+            utils.delimiters.aliases.b
+        )
+    end)
 
     --[=[
     it("can delete surrounding quotes", function()
