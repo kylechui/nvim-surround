@@ -113,6 +113,7 @@ require("nvim-surround").setup({
   * There's probably a better way to avoid the `va"` white space situation
 * Implement dot repeating for modifying surrounds
 * Add GIF demonstrating functionality in README
+* Figure out how to test *changing* surrounding delimiters with `plenary`
 
 ## Shoutouts
 
