@@ -31,8 +31,6 @@ M.insert_surround = function(args)
     local lines = buffer.get_lines(first_pos[1], last_pos[1])
 
     if M.mode == "V" then -- Visual line mode case (need to create new lines)
-        -- Indent the inner lines
-        lines = strings.indent_lines(lines)
         -- Insert the delimiters at the first and last line of the selection
         table.insert(lines, 1, delimiters[1])
         table.insert(lines, #lines + 1, delimiters[2])
@@ -45,6 +43,10 @@ M.insert_surround = function(args)
     end
     -- Update the buffer with the new lines
     buffer.set_lines(first_pos[1], last_pos[1], lines)
+    -- If the selection was in visual line mode, reformat
+    if M.mode == "V" then
+        vim.cmd("normal! `<v`>2j=")
+    end
 end
 
 -- API: Delete a surrounding delimiter pair, if it exists

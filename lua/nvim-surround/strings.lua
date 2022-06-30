@@ -43,24 +43,4 @@ M.trim_whitespace = function(str)
     return str:match("^%s*(.*)"):match("(.-)%s*$")
 end
 
---[[
-Indents a given list of lines using user-preferred <Tab>.
-@param lines The list of lines to be indented.
-@return The indented lines.
-]]
-M.indent_lines = function(lines)
-    -- Get the user-preferred tab character(s) to indent the lines
-    local tab
-    if vim.o.expandtab then
-        tab = string.rep(" ", vim.o.softtabstop)
-    else
-        tab = vim.api.nvim_replace_termcodes("<Tab>", true, false, true)
-    end
-    -- Indent the lines by the tab character(s)
-    for key, line in ipairs(lines) do
-        lines[key] = tab .. line
-    end
-    return lines
-end
-
 return M
