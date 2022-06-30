@@ -50,9 +50,9 @@ M.insert_surround = function(args)
 end
 
 -- API: Delete a surrounding delimiter pair, if it exists
-M.delete_surround = function()
-    local char = utils.get_char()
-    local selections = utils.get_nearest_selections(char)
+M.delete_surround = function(del_char)
+    del_char = del_char or utils.get_char()
+    local selections = utils.get_nearest_selections(del_char)
     if not selections then
         return
     end
@@ -69,22 +69,22 @@ M.delete_surround = function()
 end
 
 -- API: Change a surrounding delimiter pair, if it exists
-M.change_surround = function()
-    local char = utils.get_char()
-    local selections = utils.get_nearest_selections(char)
+M.change_surround = function(del_char, ins_char)
+    del_char = del_char or utils.get_char()
+    local selections = utils.get_nearest_selections(del_char)
 
     -- Adjust the selections for changing if we are changing a HTML tag
-    if utils.is_HTML(char) then
+    if utils.is_HTML(del_char) then
         selections = utils.adjust_HTML_selections(selections)
     end
 
     -- Get the new surrounding pair
     local delimiters
-    if utils.is_HTML(char) then
+    if utils.is_HTML(del_char) then
         delimiters = html.get_tag()
     else
-        char = utils.get_char()
-        delimiters = utils.get_delimiters(char)
+        ins_char = ins_char or utils.get_char()
+        delimiters = utils.get_delimiters(ins_char)
     end
 
     if not delimiters or not selections then
