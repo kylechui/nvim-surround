@@ -109,5 +109,12 @@ nvim-surround.setup({opts})
             Cursor:                      2             1
             Buffer: vim.fn.execute("echo 'Hello world!'")
 <
+            Default: {
+                ["a"] = ">",
+                ["b"] = ")",
+                ["B"] = "}",
+                ["r"] = "]",
+                ["q"] = { '"', "'", "`" },
+            }
 
 vim:tw=78:ts=8:ft=help:norl:
