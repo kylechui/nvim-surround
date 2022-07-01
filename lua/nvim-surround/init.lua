@@ -75,7 +75,7 @@ M.change_surround = function(del_char, ins_char)
 
     -- Adjust the selections for changing if we are changing a HTML tag
     if utils.is_HTML(del_char) then
-        selections = utils.adjust_HTML_selections(selections)
+        selections = html.adjust_selections(selections)
     end
 
     -- Get the new surrounding pair

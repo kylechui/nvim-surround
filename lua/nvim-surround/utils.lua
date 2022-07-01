@@ -115,6 +115,7 @@ M.get_surrounding_selections = function(char)
     local open_first, open_last, close_first, close_last
     local curpos = buffer.get_curpos()
 
+    -- Clear the [ and ] marks
     buffer.del_mark("[")
     buffer.del_mark("]")
     -- Set the [ and ] marks by calling an operatorfunc
@@ -224,33 +225,6 @@ M.inside_selection = function(pos, selection)
         return false
     end
     return pos[1] >= first_pos[1] and pos[1] <= last_pos[1]
-end
-
---[[
-Adjust the selection boundaries to only select the HTML tag type.
-@param The coordinates of the open and closing HTML tags.
-@return The coordinates of the HTML tag.
-]]
-M.adjust_HTML_selections = function(selections)
-    if not selections then
-        return nil
-    end
-    local open, close = selections.left, selections.right
-    -- Move the boundaries to deselect the angle brackets and attributes
-    close.first_pos[2] = close.first_pos[2] + 2
-    close.last_pos[2] = close.last_pos[2] - 1
-    open.first_pos[2] = open.first_pos[2] + 1
-    open.last_pos[2] = open.first_pos[2] + close.last_pos[2] - close.first_pos[2]
-    return {
-        left = {
-            first_pos = open.first_pos,
-            last_pos = open.last_pos,
-        },
-        right = {
-            first_pos = close.first_pos,
-            last_pos = close.last_pos,
-        },
-    }
 end
 
 return M
