@@ -32,6 +32,10 @@ describe("nvim-surround", function()
         require("nvim-surround").setup({})
     end)
 
+    it("can be setup without a table", function()
+        require("nvim-surround").setup()
+    end)
+
     it("can surround text-objects", function()
         set_lines({ "local str = test" })
         cursor({ 1, 13 })

@@ -42,7 +42,7 @@ M.default_opts = {
 
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
-    local opts = M.merge_options(M.default_opts, user_opts)
+    local opts = user_opts and M.merge_options(M.default_opts, user_opts) or M.default_opts
 
     -- Setup keymaps for calling plugin behavior
     map("n", opts.keymaps.insert, require("nvim-surround").insert_surround, { silent = true })
