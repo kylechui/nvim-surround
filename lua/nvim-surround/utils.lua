@@ -112,11 +112,12 @@ M.get_surrounding_selections = function(char)
     local open_first, open_last, close_first, close_last
     local curpos = buffer.get_curpos()
 
+    buffer.reset_operator_marks()
     -- Set the [ and ] marks by calling an operatorfunc
     local cmd = ":set opfunc=v:lua.require('nvim-surround'.utils).NOOP" .. cr .. "g@a" .. char
     vim.api.nvim_feedkeys(cmd, "x", false)
     -- Clear the command line
-    vim.cmd("echon ''")
+    vim.cmd("echon")
 
     buffer.adjust_mark("[")
     buffer.adjust_mark("]")
@@ -133,7 +134,6 @@ M.get_surrounding_selections = function(char)
         last_pos = close_last,
     }
     if not M.inside_selection(curpos, selection) then
-        -- Reset cursor position
         vim.fn.cursor(curpos)
         return nil
     end
@@ -144,6 +144,9 @@ M.get_surrounding_selections = function(char)
         close_first = vim.fn.searchpos("<", "nbW")
         vim.fn.cursor(open_first)
         open_last = vim.fn.searchpos(">", "nW")
+        if close_first == { 0, 0 } or open_last == { 0, 0 } then
+            return nil
+        end
     else
         -- Get the corresponding delimiter pair for the character
         local delimiters = M.get_delimiters(char)
@@ -174,11 +177,12 @@ end
 
 M.get_nearest_selections = function(char)
     char = M.get_alias(char)
-    -- If there are no aliases, simply return the surrounding selection for that character
+    -- If there are no tabular aliases, simply return the surrounding selection for that character
     if not M.delimiters.aliases[char] then
         return M.get_surrounding_selections(char)
     end
 
+    buffer.reset_operator_marks()
     local aliases = M.delimiters.aliases[char]
     local nearest_selections
     -- Iterate through all possible selections for each aliased character, and

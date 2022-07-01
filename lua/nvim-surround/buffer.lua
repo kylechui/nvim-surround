@@ -62,6 +62,14 @@ M.set_mark = function(mark, position)
 end
 
 --[[
+Resets the positions of the operator-pending marks [ and ].
+]]
+M.reset_operator_marks = function()
+    M.set_mark("[", { 1, 1 })
+    M.set_mark("]", { 1, 1 })
+end
+
+--[[
 Moves operator marks to not be on whitespace characters.
 @param mark The mark to potentially move.
 ]]

@@ -6,6 +6,10 @@ Surround selections, stylishly :sunglasses:
 > not be fully fleshed out or stable. Feel free to open an issue or pull
 > request!
 
+<div align="center">
+  <video src="https://user-images.githubusercontent.com/48545987/176824692-28c16e7b-5f30-4ba9-8f23-6d4b9c050428.mp4" type="video/mp4" width="800">
+</div>
+
 ## :sparkles: Features
 
 * Surround text objects/visual selections with delimiter pairs
@@ -112,8 +116,6 @@ require("nvim-surround").setup({
 * Find a better way to use `operatorfunc`
   * There's probably a better way to avoid the `va"` white space situation
 * Implement dot repeating for modifying surrounds
-* Add GIF demonstrating functionality in README
-* Figure out how to test *changing* surrounding delimiters with `plenary`
 
 ## Shoutouts
 
