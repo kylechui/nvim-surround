@@ -82,6 +82,13 @@ describe("nvim-surround", function()
         check_lines({ "local str = test" })
     end)
 
+    it("can modify surrounds that appear at 1, 1", function()
+        set_lines({ "({", "some text", "})" })
+        delete_surround("b")
+        change_surround("B", "b")
+        check_lines({ "(", "some text", ")" })
+    end)
+
     it("can do the demonstration", function()
         set_lines({
             "# This is a demonstration for nvim-surround",

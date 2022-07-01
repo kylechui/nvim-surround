@@ -42,12 +42,15 @@ end
 --]============================================================================]
 
 --[[
-Gets the row and column for a mark, 1-indexed.
+Gets the row and column for a mark, 1-indexed, if it exists, returns nil otherwise.
 @param mark The mark whose position will be returned.
 @return The position of the mark.
 ]]
 M.get_mark = function(mark)
     local position = vim.api.nvim_buf_get_mark(0, mark)
+    if position[1] == 0 then
+        return nil
+    end
     position[2] = position[2] + 1
     return position
 end
@@ -62,11 +65,11 @@ M.set_mark = function(mark, position)
 end
 
 --[[
-Resets the positions of the operator-pending marks [ and ].
+Deletes a mark from the buffer.
+@param mark The mark to be deleted.
 ]]
-M.reset_operator_marks = function()
-    M.set_mark("[", { 1, 1 })
-    M.set_mark("]", { 1, 1 })
+M.del_mark = function(mark)
+    vim.api.nvim_buf_del_mark(0, mark)
 end
 
 --[[
@@ -75,6 +78,11 @@ Moves operator marks to not be on whitespace characters.
 ]]
 M.adjust_mark = function(mark)
     local pos = M.get_mark(mark)
+    -- Do nothing if the mark doesn't exist
+    if not pos then
+        return
+    end
+
     local line = M.get_lines(pos[1], pos[1])[1]
     if mark == "[" then
         while line:sub(pos[2], pos[2]) == " " do

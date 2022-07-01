@@ -112,7 +112,8 @@ M.get_surrounding_selections = function(char)
     local open_first, open_last, close_first, close_last
     local curpos = buffer.get_curpos()
 
-    buffer.reset_operator_marks()
+    buffer.del_mark("[")
+    buffer.del_mark("]")
     -- Set the [ and ] marks by calling an operatorfunc
     local cmd = ":set opfunc=v:lua.require('nvim-surround'.utils).NOOP" .. cr .. "g@a" .. char
     vim.api.nvim_feedkeys(cmd, "x", false)
@@ -123,9 +124,9 @@ M.get_surrounding_selections = function(char)
     buffer.adjust_mark("]")
     open_first = buffer.get_mark("[")
     close_last = buffer.get_mark("]")
+
     -- If the operatorfunc "fails", return no selection found
-    if open_first[1] == 1 and open_first[2] == 1 and close_last[1] == #buffer.get_lines(1, -1) and
-        close_last[2] == 1 then
+    if not open_first or not close_last then
         return nil
     end
     -- If the cursor is not contained within the selection, return no selection found
@@ -182,7 +183,6 @@ M.get_nearest_selections = function(char)
         return M.get_surrounding_selections(char)
     end
 
-    buffer.reset_operator_marks()
     local aliases = M.delimiters.aliases[char]
     local nearest_selections
     -- Iterate through all possible selections for each aliased character, and
@@ -192,12 +192,14 @@ M.get_nearest_selections = function(char)
         local cur_selections = M.get_surrounding_selections(c)
         local near_pos = nearest_selections and nearest_selections.left.first_pos
         local cur_pos = cur_selections and cur_selections.left.first_pos
-        if not near_pos then
-            nearest_selections = cur_selections
-        elseif cur_pos then
-            if near_pos[1] < cur_pos[1] or
-                (near_pos[1] == cur_pos[1] and near_pos[2] < cur_pos[2]) then
+        if cur_pos then
+            if not near_pos then
                 nearest_selections = cur_selections
+            else
+                if near_pos[1] < cur_pos[1] or
+                    (near_pos[1] == cur_pos[1] and near_pos[2] < cur_pos[2]) then
+                    nearest_selections = cur_selections
+                end
             end
         end
     end
