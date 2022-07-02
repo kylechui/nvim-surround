@@ -57,15 +57,9 @@ M.delete_surround = function(del_char)
         return
     end
 
-    local left_sel = selections.left
-    local right_sel = selections.right
-
-    local lines = buffer.get_lines(left_sel.first_pos[1], right_sel.first_pos[1])
-    -- Remove the delimiting pair
-    lines[#lines] = strings.delete_string(lines[#lines], right_sel.first_pos[2], right_sel.last_pos[2])
-    lines[1] = strings.delete_string(lines[1], left_sel.first_pos[2], left_sel.last_pos[2])
-    -- Update the range of lines
-    buffer.set_lines(left_sel.first_pos[1], right_sel.first_pos[1], lines)
+    -- Delete the right selection first to ensure selection positions are correct
+    buffer.delete_selection(selections.right)
+    buffer.delete_selection(selections.left)
 end
 
 -- API: Change a surrounding delimiter pair, if it exists

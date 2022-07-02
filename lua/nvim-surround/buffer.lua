@@ -96,4 +96,21 @@ M.adjust_mark = function(mark)
     M.set_mark(mark, pos)
 end
 
+--[============================================================================[
+                        Buffer contents helper functions
+--]============================================================================]
+
+--[[
+Deletes a given selection from the buffer.
+@param selection The given selection.
+]]
+M.delete_selection = function(selection)
+    local first_lnum, last_lnum = selection.first_pos[1], selection.last_pos[1]
+    local first_col, last_col = selection.first_pos[2], selection.last_pos[2]
+    local first_line = M.get_lines(first_lnum, first_lnum)[1]
+    local last_line = M.get_lines(last_lnum, last_lnum)[1]
+    local replacement = first_line:sub(1, first_col - 1) .. last_line:sub(last_col + 1, #last_line)
+    M.set_lines(first_lnum, last_lnum, { replacement })
+end
+
 return M
