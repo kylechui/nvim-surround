@@ -12,11 +12,10 @@ Surround selections, stylishly :sunglasses:
 
 ## :sparkles: Features
 
-* Surround text objects/visual selections with delimiter pairs
-* Delete/Change surrounding delimiters
-* Quickly add/change/remove surrounding HTML tags
-  * Change *only* the surrounding HTML tag's element type, and leave its
-    attributes
+* Add/change/remove surrounding pairs and HTML tags
+* Dot-repeat previous actions
+* Change *only* the surrounding HTML tag's element type, and leave its
+  attributes
 * Use a single character as an alias for several text-objects
   * E.g. `q` is aliased to <code>\`,',"</code>, so <code>csqb</code> replaces
     the *nearest* set of quotes with parentheses
@@ -115,7 +114,6 @@ require("nvim-surround").setup({
 
 * Find a better way to use `operatorfunc`
   * There's probably a better way to avoid the `va"` white space situation
-* Implement dot repeating for modifying surrounds
 
 ## Shoutouts
 

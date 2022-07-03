@@ -27,7 +27,7 @@ M.insert_surround = function(args)
         M.insert_char = nil
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.insert_callback"
-        vim.api.nvim_feedkeys("g@", "n", false)
+        utils.feedkeys("g@", "n")
         return
     end
 
@@ -50,7 +50,7 @@ M.visual_surround = function(ins_char, mode)
     -- Call the operatorfunc if it has not been called yet
     if not ins_char then
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.visual_callback"
-        vim.api.nvim_feedkeys("g@", "n", false)
+        utils.feedkeys("g@", "n")
         return
     end
 
@@ -92,7 +92,7 @@ M.delete_surround = function(del_char)
         M.delete_char = nil
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.delete_callback"
-        vim.api.nvim_feedkeys("g@l", "n", false)
+        utils.feedkeys("g@l", "n")
         return
     end
 
@@ -105,7 +105,7 @@ M.delete_surround = function(del_char)
     buffer.delete_selection(selections.right)
     buffer.delete_selection(selections.left)
     -- Cache callback (since finding selections overwrites opfunc)
-    vim.api.nvim_feedkeys(":set opfunc=v:lua.require'nvim-surround.utils'.NOOP" .. cr .. "g@l", "x", false)
+    utils.feedkeys(":set opfunc=v:lua.require'nvim-surround.utils'.NOOP" .. cr .. "g@l", "x")
     vim.go.operatorfunc = "v:lua.require'nvim-surround'.delete_callback"
 end
 
@@ -117,7 +117,7 @@ M.change_surround = function(del_char, ins_char)
         M.change_chars = nil
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.change_callback"
-        vim.api.nvim_feedkeys("g@l", "n", false)
+        utils.feedkeys("g@l", "n")
         return
     end
 
@@ -149,7 +149,7 @@ M.change_surround = function(del_char, ins_char)
     -- Update the range of lines
     buffer.set_lines(left_sel.first_pos[1], right_sel.first_pos[1], lines)
     -- Cache callback (since finding selections overwrites opfunc)
-    vim.api.nvim_feedkeys(":set opfunc=v:lua.require'nvim-surround.utils'.NOOP" .. cr .. "g@l", "x", false)
+    utils.feedkeys(":set opfunc=v:lua.require'nvim-surround.utils'.NOOP" .. cr .. "g@l", "x")
     vim.go.operatorfunc = "v:lua.require'nvim-surround'.change_callback"
 end
 

@@ -9,6 +9,11 @@ local M = {}
 -- Do nothing.
 M.NOOP = function() end
 
+-- Custom feedkeys wrapper
+M.feedkeys = function(string, flags)
+    vim.api.nvim_feedkeys(string, flags, false)
+end
+
 --[[
 Returns if a character is a valid key into the aliases table.
 @param char The character to be checked.
@@ -123,7 +128,7 @@ M.get_surrounding_selections = function(char)
     buffer.del_mark("]")
     -- Set the [ and ] marks by calling an operatorfunc
     local cmd = ":set opfunc=v:lua.require('nvim-surround.utils').NOOP" .. cr .. "g@a" .. char
-    vim.api.nvim_feedkeys(cmd, "x", false)
+    M.feedkeys(cmd, "x")
     -- Clear the command line
     vim.cmd("echon")
 
