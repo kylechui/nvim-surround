@@ -38,9 +38,9 @@ Gets a character input from the user.
 @return The input character, or nil if a control character is pressed.
 ]]
 M.get_char = function()
-    local char_num = vim.fn.getchar()
-    -- Return nil for control characters
-    if char_num < 32 then
+    local ret_val, char_num = pcall(vim.fn.getchar)
+    -- Return nil if error (e.g. <C-c>) or for control characters
+    if not ret_val or char_num < 32 then
         return nil
     end
     local char = vim.fn.nr2char(char_num)
