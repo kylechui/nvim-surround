@@ -6,15 +6,12 @@ local utils = require("nvim-surround.utils")
 
 local M = {}
 
-M.delete_char = nil
-M.mode = nil
-
 -- Setup the plugin with user-defined options
 M.setup = function(user_opts)
     config.setup(user_opts)
 end
 
--- API: Insert delimiters around the given selection
+-- API: Insert delimiters around a text object
 M.insert_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args then
@@ -30,11 +27,40 @@ M.insert_surround = function(args)
     local first_pos, last_pos = args.selection.first_pos, args.selection.last_pos
     local lines = buffer.get_lines(first_pos[1], last_pos[1])
 
-    if M.mode == "V" then -- Visual line mode case (need to create new lines)
+    -- Insert the right delimiter first to ensure correct indexing
+    local line = lines[#lines]
+    lines[#lines] = strings.insert_string(line, delimiters[2], last_pos[2] + 1)
+    line = lines[1]
+    lines[1] = strings.insert_string(line, delimiters[1], first_pos[2])
+    -- Update the buffer with the new lines
+    buffer.set_lines(first_pos[1], last_pos[1], lines)
+end
+
+-- API: Insert delimiters around a visual selection
+M.visual_surround = function(ins_char, mode)
+    -- Call the operatorfunc if it has not been called yet
+    if not ins_char then
+        vim.go.operatorfunc = "v:lua.require'nvim-surround'.visual_callback"
+        vim.api.nvim_feedkeys("g@", "n", false)
+        return
+    end
+
+    -- Get the visual selection
+    local selection = utils.get_selection(true)
+    if not selection then
+        return
+    end
+
+    -- Define some local variables based on the arguments
+    local delimiters = utils.get_delimiters(ins_char) or {}
+    local first_pos, last_pos = selection.first_pos, selection.last_pos
+    local lines = buffer.get_lines(first_pos[1], last_pos[1])
+
+    if mode == "line" then -- Visual line mode case (need to create new lines)
         -- Insert the delimiters at the first and last line of the selection
         table.insert(lines, 1, delimiters[1])
         table.insert(lines, #lines + 1, delimiters[2])
-    else -- Default case for normal mode and visual mode
+    else -- Regular visual mode case
         -- Insert the right delimiter first to ensure correct indexing
         local line = lines[#lines]
         lines[#lines] = strings.insert_string(line, delimiters[2], last_pos[2] + 1)
@@ -44,7 +70,7 @@ M.insert_surround = function(args)
     -- Update the buffer with the new lines
     buffer.set_lines(first_pos[1], last_pos[1], lines)
     -- If the selection was in visual line mode, reformat
-    if M.mode == "V" then
+    if mode == "line" then
         vim.cmd("normal! `<v`>2j=")
     end
 end
@@ -104,7 +130,7 @@ M.insert_callback = function()
     if not char then
         return
     end
-    local selection = utils.get_selection(M.mode)
+    local selection = utils.get_selection(false)
 
     local args = {
         char = char,
@@ -112,6 +138,17 @@ M.insert_callback = function()
     }
     -- Call the main insert function with some arguments
     M.insert_surround(args)
+end
+
+M.visual_callback = function(mode)
+    -- Get a character input and the positions of the selection
+    local char = utils.get_char()
+    if not char then
+        return
+    end
+
+    -- Call the main visual function with some arguments
+    M.visual_surround(char, mode)
 end
 
 return M

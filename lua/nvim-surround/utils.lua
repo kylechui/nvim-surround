@@ -81,20 +81,23 @@ end
 Gets the coordinates of the start and end of a given selection.
 @return A table containing the start and end of the selection.
 ]]
-M.get_selection = function(mode)
+M.get_selection = function(is_visual)
     -- Determine whether to use visual marks or operator marks
     local mark1, mark2
-    if mode == "n" then
+    if is_visual then
+        mark1, mark2 = "<", ">"
+    else
         mark1, mark2 = "[", "]"
         buffer.adjust_mark("[")
         buffer.adjust_mark("]")
-    else
-        mark1, mark2 = "<", ">"
     end
 
     -- Get the row and column of the first and last characters of the selection
     local first_position = buffer.get_mark(mark1)
     local last_position = buffer.get_mark(mark2)
+    if not first_position or not last_position then
+        return nil
+    end
     local selection = {
         first_pos = first_position,
         last_pos = last_position,
