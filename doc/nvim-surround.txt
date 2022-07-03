@@ -1,9 +1,10 @@
 ================================================================================
                                                                *nvim-surround*
 
-nvim-surround is a plugin for modifying "surroundings" in Neovim, allowing you
+|nvim-surround| is a plugin for modifying "surroundings" in Neovim, allowing you
 to efficiently:
 * Add/change/delete surrounding delimiter pairs
+* Dot-repeat previous surround actions
 * Manipulate HTML-style tags
 * Alias delimiter types to other characters
 
