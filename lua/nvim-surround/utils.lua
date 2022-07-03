@@ -72,7 +72,6 @@ M.get_delimiters = function(char)
         return nil
     end
 
-
     if M.is_HTML(char) then
         delimiters = html.get_tag(true)
     else

@@ -101,6 +101,18 @@ end
 --]============================================================================]
 
 --[[
+Inserts a set of lines into the buffer at a given position.
+@param pos The position to be inserted at.
+@param lines The lines to be inserted.
+]]
+M.insert_lines = function(pos, lines)
+    local line = M.get_lines(pos[1], pos[1])[1]
+    lines[1] = line:sub(1, pos[2] - 1) .. lines[1]
+    lines[#lines] = lines[#lines] .. line:sub(pos[2], #line)
+    M.set_lines(pos[1], pos[1], lines)
+end
+
+--[[
 Deletes a given selection from the buffer.
 @param selection The given selection.
 ]]

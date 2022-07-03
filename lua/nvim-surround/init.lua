@@ -33,24 +33,27 @@ M.insert_surround = function(args)
 
     -- Define some local variables based on the arguments
     local delimiters = utils.get_delimiters(args.char) or {}
-    local first_pos, last_pos = args.selection.first_pos, args.selection.last_pos
-    local lines = buffer.get_lines(first_pos[1], last_pos[1])
+    local first_pos = args.selection.first_pos
+    -- Adjust last position of the selection so delimiter is inserted after it
+    local last_pos = { args.selection.last_pos[1], args.selection.last_pos[2] + 1 }
 
-    -- Insert the right delimiter first to ensure correct indexing
-    local line = lines[#lines]
-    lines[#lines] = strings.insert_string(line, delimiters[2], last_pos[2] + 1)
-    line = lines[1]
-    lines[1] = strings.insert_string(line, delimiters[1], first_pos[2])
-    -- Update the buffer with the new lines
-    buffer.set_lines(first_pos[1], last_pos[1], lines)
+    buffer.insert_lines(last_pos, { delimiters[2] })
+    buffer.insert_lines(first_pos, { delimiters[1] })
 end
 
 -- API: Insert delimiters around a visual selection
 M.visual_surround = function(ins_char, mode)
+    -- Fix: Weird behavior with key inputs where the mode must be saved "first",
+    -- before exiting visual mode; while loop is needed for some reason
+    if vim.fn.mode():lower() == "v" then
+        mode = vim.fn.mode()
+    end
+    while vim.fn.mode():lower() == "v" do
+        utils.feedkeys("v", "x")
+    end
     -- Call the operatorfunc if it has not been called yet
     if not ins_char then
-        vim.go.operatorfunc = "v:lua.require'nvim-surround'.visual_callback"
-        utils.feedkeys("g@", "n")
+        M.visual_callback(mode)
         return
     end
 
@@ -65,7 +68,7 @@ M.visual_surround = function(ins_char, mode)
     local first_pos, last_pos = selection.first_pos, selection.last_pos
     local lines = buffer.get_lines(first_pos[1], last_pos[1])
 
-    if mode == "line" then -- Visual line mode case (need to create new lines)
+    if mode == "V" then -- Visual line mode case (need to create new lines)
         -- Insert the delimiters at the first and last line of the selection
         table.insert(lines, 1, delimiters[1])
         table.insert(lines, #lines + 1, delimiters[2])
@@ -79,7 +82,7 @@ M.visual_surround = function(ins_char, mode)
     -- Update the buffer with the new lines
     buffer.set_lines(first_pos[1], last_pos[1], lines)
     -- If the selection was in visual line mode, reformat
-    if mode == "line" then
+    if mode == "V" then
         vim.cmd("normal! `<v`>2j=")
     end
 end
