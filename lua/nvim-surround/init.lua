@@ -6,7 +6,9 @@ local utils = require("nvim-surround.utils")
 
 local M = {}
 
-M.ins_char = nil
+M.insert_char = nil
+M.delete_char = nil
+M.change_chars = nil
 
 -- Setup the plugin with user-defined options
 M.setup = function(user_opts)
@@ -20,7 +22,7 @@ M.insert_surround = function(args)
         -- Save the current mode
         M.mode = vim.fn.mode()
         -- Clear the insert char (since it was user-called)
-        M.ins_char = nil
+        M.insert_char = nil
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.insert_callback"
         vim.api.nvim_feedkeys("g@", "n", false)
@@ -82,7 +84,16 @@ end
 
 -- API: Delete a surrounding delimiter pair, if it exists
 M.delete_surround = function(del_char)
-    del_char = del_char or utils.get_char()
+    -- Call the operatorfunc if it has not been called yet
+    if not del_char then
+        -- Clear the insert char (since it was user-called)
+        M.delete_char = nil
+
+        vim.go.operatorfunc = "v:lua.require'nvim-surround'.delete_callback"
+        vim.api.nvim_feedkeys("g@l", "n", false)
+        return
+    end
+
     local selections = utils.get_nearest_selections(del_char)
     if not selections then
         return
@@ -91,6 +102,8 @@ M.delete_surround = function(del_char)
     -- Delete the right selection first to ensure selection positions are correct
     buffer.delete_selection(selections.right)
     buffer.delete_selection(selections.left)
+    -- Set cache
+    vim.go.operatorfunc = "v:lua.require'nvim-surround'.delete_callback"
 end
 
 -- API: Change a surrounding delimiter pair, if it exists
@@ -129,17 +142,17 @@ end
 --[============================================================================[
                                Callback Functions
 --]============================================================================]
+
 M.insert_callback = function()
     -- Get a character input and the positions of the selection
-    local char = M.ins_char or utils.get_char()
-    M.ins_char = char
-    if not char then
+    M.insert_char = M.insert_char or utils.get_char()
+    if not M.insert_char then
         return
     end
     local selection = utils.get_selection(false)
 
     local args = {
-        char = char,
+        char = M.insert_char,
         selection = selection,
     }
     -- Call the main insert function with some arguments
@@ -155,6 +168,18 @@ M.visual_callback = function(mode)
 
     -- Call the main visual function with some arguments
     M.visual_surround(char, mode)
+end
+
+M.delete_callback = function()
+    -- Get a character input
+    M.delete_char = M.delete_char or utils.get_char()
+    if not M.delete_char then
+        return
+    end
+    M.delete_surround(M.delete_char)
+end
+
+M.change_callback = function()
 end
 
 return M
