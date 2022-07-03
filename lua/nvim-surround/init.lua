@@ -4,6 +4,8 @@ local html = require("nvim-surround.html")
 local strings = require("nvim-surround.strings")
 local utils = require("nvim-surround.utils")
 
+local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
+
 local M = {}
 
 M.insert_char = nil
@@ -102,7 +104,8 @@ M.delete_surround = function(del_char)
     -- Delete the right selection first to ensure selection positions are correct
     buffer.delete_selection(selections.right)
     buffer.delete_selection(selections.left)
-    -- Set cache
+    -- Cache callback (since finding selections overwrites opfunc)
+    vim.api.nvim_feedkeys(":set opfunc=v:lua.require'nvim-surround.utils'.NOOP" .. cr .. "g@l", "x", false)
     vim.go.operatorfunc = "v:lua.require'nvim-surround'.delete_callback"
 end
 
@@ -145,7 +148,8 @@ M.change_surround = function(del_char, ins_char)
     lines[1] = strings.replace_string(lines[1], delimiters[1], left_sel.first_pos[2], left_sel.last_pos[2])
     -- Update the range of lines
     buffer.set_lines(left_sel.first_pos[1], right_sel.first_pos[1], lines)
-    -- Set cache
+    -- Cache callback (since finding selections overwrites opfunc)
+    vim.api.nvim_feedkeys(":set opfunc=v:lua.require'nvim-surround.utils'.NOOP" .. cr .. "g@l", "x", false)
     vim.go.operatorfunc = "v:lua.require'nvim-surround'.change_callback"
 end
 
