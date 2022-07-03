@@ -45,10 +45,10 @@ M.setup = function(user_opts)
     local opts = user_opts and M.merge_options(M.default_opts, user_opts) or M.default_opts
 
     -- Setup keymaps for calling plugin behavior
-    map("n", opts.keymaps.insert, require("nvim-surround").insert_surround, { silent = true })
-    map("x", opts.keymaps.visual, require("nvim-surround").visual_surround, { silent = true })
-    map("n", opts.keymaps.delete, require("nvim-surround").delete_surround, { silent = true })
-    map("n", opts.keymaps.change, require("nvim-surround").change_surround, { silent = true })
+    map("n", opts.keymaps.insert, require("nvim-surround").insert_surround, { silent = true, expr = true })
+    map("x", opts.keymaps.visual, require("nvim-surround").visual_surround, { silent = true, expr = true })
+    map("n", opts.keymaps.delete, require("nvim-surround").delete_surround, { silent = true, expr = true })
+    map("n", opts.keymaps.change, require("nvim-surround").change_surround, { silent = true, expr = true })
 
     -- Setup delimiters table in utils
     utils.delimiters = opts.delimiters
