@@ -1,13 +1,12 @@
 local cursor = vim.fn.cursor
 local insert_surround = function(textobj, ins_char)
-    if textobj then
-        local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
-        vim.api.nvim_feedkeys("ys" .. esc, "x", false)
-        vim.api.nvim_feedkeys("g@" .. textobj .. ins_char, "x", false)
-    else
-        require("nvim-surround").insert_surround()
-        vim.api.nvim_feedkeys(ins_char, "x", false)
-    end
+    local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
+    vim.api.nvim_feedkeys("ys" .. esc, "x", false)
+    vim.api.nvim_feedkeys("g@" .. textobj .. ins_char, "x", false)
+end
+
+local visual_surround = function(ins_char)
+    require("nvim-surround").visual_surround(ins_char)
 end
 
 local delete_surround = function(del_char)
@@ -125,7 +124,7 @@ describe("nvim-surround", function()
         set_lines({ "local str = This is a sentence with a lot of nested strings in it" })
     end)
 
-    it("can dot-repeat deletions (aliased)", function()
+    it("can dot-repeat changes (aliased)", function()
         set_lines({ "local str = \"This is 'a sentence `with a lot of` nested strings' in it\"" })
         cursor({ 1, 43 })
         change_surround("q", "r")
@@ -156,7 +155,7 @@ describe("nvim-surround", function()
         change_surround("q", "`")
         cursor({ 3, 6 })
         vim.cmd("normal! ve")
-        insert_surround(nil, "*")
+        visual_surround("*")
         cursor({ 10, 9 })
         insert_surround("a'", "b")
         cursor({ 10, 11 })
