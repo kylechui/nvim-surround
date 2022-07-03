@@ -6,6 +6,8 @@ local utils = require("nvim-surround.utils")
 
 local M = {}
 
+M.ins_char = nil
+
 -- Setup the plugin with user-defined options
 M.setup = function(user_opts)
     config.setup(user_opts)
@@ -17,6 +19,9 @@ M.insert_surround = function(args)
     if not args then
         -- Save the current mode
         M.mode = vim.fn.mode()
+        -- Clear the insert char (since it was user-called)
+        M.ins_char = nil
+
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.insert_callback"
         vim.api.nvim_feedkeys("g@", "n", false)
         return
@@ -126,7 +131,8 @@ end
 --]============================================================================]
 M.insert_callback = function()
     -- Get a character input and the positions of the selection
-    local char = utils.get_char()
+    local char = M.ins_char or utils.get_char()
+    M.ins_char = char
     if not char then
         return
     end
