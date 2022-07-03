@@ -108,7 +108,16 @@ end
 
 -- API: Change a surrounding delimiter pair, if it exists
 M.change_surround = function(del_char, ins_char)
-    del_char = del_char or utils.get_char()
+    -- Call the operatorfunc if it has not been called yet
+    if not del_char or not ins_char then
+        -- Clear the insert char (since it was user-called)
+        M.change_chars = nil
+
+        vim.go.operatorfunc = "v:lua.require'nvim-surround'.change_callback"
+        vim.api.nvim_feedkeys("g@l", "n", false)
+        return
+    end
+
     local selections = utils.get_nearest_selections(del_char)
 
     -- Adjust the selections for changing if we are changing a HTML tag
@@ -121,7 +130,6 @@ M.change_surround = function(del_char, ins_char)
     if utils.is_HTML(del_char) then
         delimiters = html.get_tag()
     else
-        ins_char = ins_char or utils.get_char()
         delimiters = utils.get_delimiters(ins_char)
     end
 
@@ -137,6 +145,8 @@ M.change_surround = function(del_char, ins_char)
     lines[1] = strings.replace_string(lines[1], delimiters[1], left_sel.first_pos[2], left_sel.last_pos[2])
     -- Update the range of lines
     buffer.set_lines(left_sel.first_pos[1], right_sel.first_pos[1], lines)
+    -- Set cache
+    vim.go.operatorfunc = "v:lua.require'nvim-surround'.change_callback"
 end
 
 --[============================================================================[
@@ -180,6 +190,25 @@ M.delete_callback = function()
 end
 
 M.change_callback = function()
+    -- Get character inputs
+    if not M.change_chars then
+        local del_char = utils.get_char()
+        if not del_char then
+            return
+        end
+
+        local ins_char
+        if utils.is_HTML(del_char) then
+            ins_char = del_char
+        else
+            ins_char = utils.get_char()
+        end
+        if not ins_char then
+            return
+        end
+        M.change_chars = { del_char, ins_char }
+    end
+    M.change_surround(M.change_chars[1], M.change_chars[2])
 end
 
 return M
