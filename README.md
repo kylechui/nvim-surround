@@ -118,5 +118,5 @@ require("nvim-surround").setup({
 ## Shoutouts
 
 * [vim-surround](https://github.com/tpope/vim-surround)
-* [mini.surround](https://github.com/echasnovski/mini.nvimminisurround)
+* [mini.surround](https://github.com/echasnovski/mini.nvim#minisurround)
 * Like this project? Give it a :star: to show your support!
