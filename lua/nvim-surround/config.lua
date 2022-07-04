@@ -52,6 +52,10 @@ M.setup = function(user_opts)
 
     -- Setup delimiters table in utils
     utils.delimiters = opts.delimiters
+    -- Configure highlight group
+    vim.cmd([[
+        highlight default link HighlightTextObject Visual
+    ]])
 end
 
 --[[

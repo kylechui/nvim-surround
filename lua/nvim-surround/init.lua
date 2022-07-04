@@ -150,8 +150,12 @@ end
 --]============================================================================]
 
 M.insert_callback = function()
+    -- Highlight the range and force an update immediately
+    buffer.highlight_range()
     -- Get a character input and the positions of the selection
     M.insert_char = M.insert_char or utils.get_char()
+    -- Clear the highlights right after the action is no longer pending
+    buffer.clear_highlights()
     if not M.insert_char then
         return
     end
