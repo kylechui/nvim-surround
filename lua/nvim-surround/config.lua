@@ -37,12 +37,18 @@ M.default_opts = {
             ["r"] = "]",
             ["q"] = { '"', "'", "`" },
         },
+    },
+    highlight_motion = {
+        duration = 0,
     }
 }
+
+M.user_opts = nil
 
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
     local opts = user_opts and M.merge_options(M.default_opts, user_opts) or M.default_opts
+    M.user_opts = opts
 
     -- Setup keymaps for calling plugin behavior
     map("n", opts.keymaps.insert, require("nvim-surround").insert_surround, { silent = true, expr = true })
@@ -53,9 +59,11 @@ M.setup = function(user_opts)
     -- Setup delimiters table in utils
     utils.delimiters = opts.delimiters
     -- Configure highlight group
-    vim.cmd([[
-        highlight default link HighlightTextObject Visual
-    ]])
+    if opts.highlight_motion then
+        vim.cmd([[
+            highlight default link NvimSurroundHighlightTextObject Visual
+        ]])
+    end
 end
 
 --[[

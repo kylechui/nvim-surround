@@ -132,7 +132,6 @@ M.highlight_range = function()
     M.adjust_mark("[")
     M.adjust_mark("]")
     local namespace = vim.api.nvim_create_namespace("NvimSurround")
-    print(namespace)
     local first_pos, last_pos = M.get_mark("["), M.get_mark("]")
     if not first_pos or not last_pos then
         return
@@ -142,7 +141,7 @@ M.highlight_range = function()
     vim.highlight.range(
         0,
         namespace,
-        "HighlightTextObject",
+        "NvimSurroundHighlightTextObject",
         first_pos,
         last_pos,
         { inclusive = true }
@@ -156,7 +155,6 @@ Clears all nvim-surround highlights for the buffer.
 ]]
 M.clear_highlights = function()
     local namespace = vim.api.nvim_create_namespace("NvimSurround")
-    print(namespace)
     vim.api.nvim_buf_clear_namespace(0, namespace, 0, -1)
     -- Force the screen to clear the highlight immediately
     vim.cmd("redraw")
