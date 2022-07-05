@@ -98,7 +98,8 @@ M.delete_surround = function(del_char)
     buffer.delete_selection(selections.right)
     buffer.delete_selection(selections.left)
     -- Cache callback (since finding selections overwrites opfunc)
-    utils.feedkeys(":set opfunc=v:lua.require'nvim-surround.utils'.NOOP" .. cr .. "g@l", "x")
+    vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
+    utils.feedkeys("g@l", "x")
     vim.go.operatorfunc = "v:lua.require'nvim-surround'.delete_callback"
 end
 
@@ -141,7 +142,8 @@ M.change_surround = function(del_char, ins_char)
     -- Update the range of lines
     buffer.set_lines(left_sel.first_pos[1], right_sel.first_pos[1], lines)
     -- Cache callback (since finding selections overwrites opfunc)
-    utils.feedkeys(":set opfunc=v:lua.require'nvim-surround.utils'.NOOP" .. cr .. "g@l", "x")
+    vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
+    utils.feedkeys("g@l", "x")
     vim.go.operatorfunc = "v:lua.require'nvim-surround'.change_callback"
 end
 
