@@ -19,6 +19,7 @@ Surround selections, stylishly :sunglasses:
 * Use a single character as an alias for several text-objects
   * E.g. `q` is aliased to <code>\`,',"</code>, so <code>csqb</code> replaces
     the *nearest* set of quotes with parentheses
+* Highlight the section that you are about to surround, as a visual indicator
 
 ## :package: Installation
 
@@ -89,6 +90,9 @@ require("nvim-surround").setup({
             ["r"] = "]",
             ["q"] = { '"', "'", "`" }, -- Table aliases only apply for changes/deletions
         },
+    },
+    highlight_motion = {
+        duration = 0,
     }
 })
 ```
@@ -112,6 +116,7 @@ require("nvim-surround").setup({
 
 ## :white\_check\_mark: TODO
 
+* Fix the bajillion bugs that exist
 * Find a better way to use `operatorfunc`
   * There's probably a better way to avoid the `va"` white space situation
 
@@ -119,4 +124,5 @@ require("nvim-surround").setup({
 
 * [vim-surround](https://github.com/tpope/vim-surround)
 * [mini.surround](https://github.com/echasnovski/mini.nvim#minisurround)
+* [vim-sandwich](https://github.com/machakann/vim-sandwich)
 * Like this project? Give it a :star: to show your support!
