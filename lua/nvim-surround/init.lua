@@ -149,7 +149,16 @@ end
                                Callback Functions
 --]============================================================================]
 
-M.insert_callback = function()
+M.insert_callback = function(mode)
+    -- Adjust the ] mark if the operator was in line-mode
+    if mode == "line" then
+        local pos = buffer.get_mark("]")
+        if not pos then
+            return
+        end
+        pos = { pos[1], #buffer.get_lines(pos[1], pos[1])[1] }
+        buffer.set_mark("]", pos)
+    end
     -- Highlight the range and set a timer to clear it if necessary
     buffer.highlight_range()
     local highlight_motion = config.user_opts.highlight_motion
@@ -163,6 +172,7 @@ M.insert_callback = function()
     if not M.insert_char then
         return
     end
+
     local selection = utils.get_selection(false)
 
     local args = {
