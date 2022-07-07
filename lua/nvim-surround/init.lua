@@ -4,8 +4,6 @@ local html = require("nvim-surround.html")
 local strings = require("nvim-surround.strings")
 local utils = require("nvim-surround.utils")
 
-local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
-
 local M = {}
 
 M.insert_char = nil
@@ -31,7 +29,10 @@ M.insert_surround = function(args)
     end
 
     -- Define some local variables based on the arguments
-    local delimiters = utils.get_delimiters(args.char) or {}
+    local delimiters = utils.get_delimiters(args.char)
+    if not delimiters then
+        return
+    end
     local first_pos = args.selection.first_pos
     -- Adjust last position of the selection so delimiter is inserted after it
     local last_pos = { args.selection.last_pos[1], args.selection.last_pos[2] + 1 }
@@ -55,7 +56,10 @@ M.visual_surround = function(ins_char, mode)
     end
 
     -- Define some local variables based on the arguments
-    local delimiters = utils.get_delimiters(ins_char) or {}
+    local delimiters = utils.get_delimiters(ins_char)
+    if not delimiters then
+        return
+    end
     local first_pos, last_pos = selection.first_pos, selection.last_pos
     local lines = buffer.get_lines(first_pos[1], last_pos[1])
 

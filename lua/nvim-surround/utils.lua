@@ -2,8 +2,6 @@ local buffer = require("nvim-surround.buffer")
 local html = require("nvim-surround.html")
 local strings = require("nvim-surround.strings")
 
-local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
-
 local M = {}
 
 -- Do nothing.
@@ -128,7 +126,6 @@ M.get_surrounding_selections = function(char)
     -- Set the [ and ] marks by calling an operatorfunc
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
     M.feedkeys("g@a" .. char, "x")
-
     buffer.adjust_mark("[")
     buffer.adjust_mark("]")
     open_first = buffer.get_mark("[")
