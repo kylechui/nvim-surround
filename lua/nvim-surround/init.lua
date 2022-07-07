@@ -155,12 +155,30 @@ end
                                Callback Functions
 --]============================================================================]
 
-M.insert_callback = function()
+M.insert_callback = function(mode)
+    -- Adjust the ] mark if the operator was in line-mode
+    if mode == "line" then
+        local pos = buffer.get_mark("]")
+        if not pos then
+            return
+        end
+        pos = { pos[1], #buffer.get_lines(pos[1], pos[1])[1] }
+        buffer.set_mark("]", pos)
+    end
+    -- Highlight the range and set a timer to clear it if necessary
+    buffer.highlight_range()
+    local highlight_motion = config.user_opts.highlight_motion
+    if highlight_motion and highlight_motion.duration > 0 then
+        vim.defer_fn(buffer.clear_highlights, highlight_motion.duration)
+    end
     -- Get a character input and the positions of the selection
     M.insert_char = M.insert_char or utils.get_char()
+    -- Clear the highlights right after the action is no longer pending
+    buffer.clear_highlights()
     if not M.insert_char then
         return
     end
+
     local selection = utils.get_selection(false)
 
     local args = {

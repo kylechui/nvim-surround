@@ -13,7 +13,8 @@ nvim-surround.setup({opts})
     Setup function to be run by the user, which configures the default
     keymaps and delimiter types.
 
-    Note: The setup must be called with a table (empty table uses defaults).
+    Note: Calling the setup function with no arguments or an empty table uses
+    the defaults.
 
     Usage:
 >
@@ -117,5 +118,20 @@ nvim-surround.setup({opts})
                 ["r"] = "]",
                 ["q"] = { '"', "'", "`" },
             }
+
+                                              *nvim-surround.highlight_motion*
+    When inserting a surrounding pair around a text-object selection, one may
+    optionally highlight the selection. The highlighting is done using the
+    group "NvimSurroundHighlightTextObject", which can be configured
+    separately.
+
+    duration:~
+        A positive value that represents how long to highlight the given
+        text-object selection (in milliseconds).
+
+        Note: A value of 0 means that the highlight has no timeout, persisting
+        until either the action is canceled or completed.
+
+        Default: 0
 
 vim:tw=78:ts=8:ft=help:norl:

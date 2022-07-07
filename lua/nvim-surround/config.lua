@@ -37,39 +37,33 @@ M.default_opts = {
             ["r"] = "]",
             ["q"] = { '"', "'", "`" },
         },
+    },
+    highlight_motion = {
+        duration = 0,
     }
 }
 
+M.user_opts = nil
+
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
-    local opts = user_opts and M.merge_options(M.default_opts, user_opts) or M.default_opts
+    user_opts = user_opts and vim.tbl_deep_extend("force", M.default_opts, user_opts) or M.default_opts
+    M.user_opts = user_opts
 
     -- Setup keymaps for calling plugin behavior
-    map("n", opts.keymaps.insert, require("nvim-surround").insert_surround, { silent = true, expr = true })
-    map("x", opts.keymaps.visual, require("nvim-surround").visual_surround, { silent = true, expr = true })
-    map("n", opts.keymaps.delete, require("nvim-surround").delete_surround, { silent = true, expr = true })
-    map("n", opts.keymaps.change, require("nvim-surround").change_surround, { silent = true, expr = true })
+    map("n", user_opts.keymaps.insert, require("nvim-surround").insert_surround, { silent = true, expr = true })
+    map("x", user_opts.keymaps.visual, require("nvim-surround").visual_surround, { silent = true, expr = true })
+    map("n", user_opts.keymaps.delete, require("nvim-surround").delete_surround, { silent = true, expr = true })
+    map("n", user_opts.keymaps.change, require("nvim-surround").change_surround, { silent = true, expr = true })
 
     -- Setup delimiters table in utils
-    utils.delimiters = opts.delimiters
-end
-
---[[
-Merges two tables, overwriting values in the former with the corresponding values in the latter
-@param t1 The fallback table.
-@param t2 The table to overwrite t1.
-@return The merged table.
-]]
-M.merge_options = function(t1, t2)
-    for k, v in pairs(t2) do
-        -- If t2 is an array, then early return
-        if type(k) == "number" then
-            return t2
-        end
-
-        t1[k] = type(v) == "table" and M.merge_options(t1[k], v) or v
+    utils.delimiters = user_opts.delimiters
+    -- Configure highlight group
+    if user_opts.highlight_motion then
+        vim.cmd([[
+            highlight default link NvimSurroundHighlightTextObject Visual
+        ]])
     end
-    return t1
 end
 
 return M
