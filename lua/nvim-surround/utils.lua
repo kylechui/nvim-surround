@@ -83,13 +83,19 @@ M.get_delimiters = function(char)
     if M.is_HTML(char) then
         delimiters = html.get_tag(true)
     else
-        delimiters = M.delimiters.pairs[char] or M.delimiters.separators[char]
-        local left_delim = delimiters[1]()
-        local right_delim = delimiters[2]()
-        return { left_delim, right_delim }
+        -- If the character is not bound to anything, duplicate it
+        delimiters = M.delimiters.pairs[char] or M.delimiters.separators[char] or { char, char }
     end
-    -- If the character is not bound to anything, duplicate it
-    return delimiters or { char, char }
+
+    local copy = { delimiters[1], delimiters[2] }
+    -- Evaluate the function values, if needed
+    if type(copy[1]) == "function" then
+        copy[1] = copy[1]()
+    end
+    if type(copy[2]) == "function" then
+        copy[2] = copy[2]()
+    end
+    return copy
 end
 
 --[[
