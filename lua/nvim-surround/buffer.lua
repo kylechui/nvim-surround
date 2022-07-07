@@ -72,6 +72,22 @@ M.adjust_mark = function(mark)
     M.set_mark(mark, pos)
 end
 
+--[[
+Sets the operator marks according to a given character.
+@param char The given character.
+]]
+M.set_operator_marks = function(char)
+    -- Clear the [ and ] marks
+    M.del_mark("[")
+    M.del_mark("]")
+    -- Set the [ and ] marks by calling an operatorfunc
+    vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
+    vim.api.nvim_feedkeys("g@a" .. char, "x", false)
+    -- Adjust the marks to not reside on whitespace
+    M.adjust_mark("[")
+    M.adjust_mark("]")
+end
+
 --[============================================================================[
                         Buffer contents helper functions
 --]============================================================================]
