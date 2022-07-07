@@ -6,7 +6,30 @@ Returns a HTML open/closing pair.
 @return The HTML tag pair.
 ]]
 M.get_tag = function(include_brackets)
-    local tag
+    local input = vim.fn.input({
+        prompt = "Enter an HTML tag: ",
+        cancelreturn = nil,
+    })
+    if not input then
+        return nil
+    end
+    local element = input:match("^[%w-]+")
+    local attributes = input:match(" +(.+)$")
+    if not element then
+        return nil
+    end
+    -- Only include attributes if they exist
+    local open = attributes and element .. " " .. attributes or element
+    local close = element
+    -- Optionally include the angle brackets around the tag
+    if include_brackets then
+        open = "<" .. open .. ">"
+        close = "</" .. close .. ">"
+    end
+    local tag = { open, close }
+
+    return tag
+    --[[ TODO: Figure out how to make vim.ui.input blocking
     vim.ui.input({
         prompt = "Enter an HTML tag: ",
     }, function(input)
@@ -30,9 +53,7 @@ M.get_tag = function(include_brackets)
             close = "</" .. close .. ">"
         end
         tag = { open, close }
-    end)
-
-    return tag
+    end) ]]
 end
 
 --[[
