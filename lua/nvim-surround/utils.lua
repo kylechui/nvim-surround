@@ -2,8 +2,6 @@ local buffer = require("nvim-surround.buffer")
 local html = require("nvim-surround.html")
 local strings = require("nvim-surround.strings")
 
-local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
-
 local M = {}
 
 -- Do nothing.
@@ -121,18 +119,9 @@ M.get_surrounding_selections = function(char)
     end
     local open_first, open_last, close_first, close_last
     local curpos = buffer.get_curpos()
-
-    -- Clear the [ and ] marks
-    buffer.del_mark("[")
-    buffer.del_mark("]")
-    -- Set the [ and ] marks by calling an operatorfunc
-    local cmd = ":set opfunc=v:lua.require('nvim-surround.utils').NOOP" .. cr .. "g@a" .. char
-    M.feedkeys(cmd, "x")
-    -- Clear the command line
-    vim.cmd("echon")
-
-    buffer.adjust_mark("[")
-    buffer.adjust_mark("]")
+    -- Use the correct quotes to surround the arguments for setting the marks
+    local args = char == "'" and [["'"]] or "'" .. char .. "'"
+    vim.cmd("silent call v:lua.require'nvim-surround.buffer'.set_operator_marks(" .. args .. ")")
     open_first = buffer.get_mark("[")
     close_last = buffer.get_mark("]")
 
