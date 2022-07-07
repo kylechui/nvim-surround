@@ -87,15 +87,8 @@ M.get_delimiters = function(char)
         delimiters = M.delimiters.pairs[char] or M.delimiters.separators[char] or { char, char }
     end
 
-    local copy = { delimiters[1], delimiters[2] }
-    -- Evaluate the function values, if needed
-    if type(copy[1]) == "function" then
-        copy[1] = copy[1]()
-    end
-    if type(copy[2]) == "function" then
-        copy[2] = copy[2]()
-    end
-    return copy
+    -- Evaluate the function if necessary
+    return type(delimiters) == "function" and delimiters() or delimiters
 end
 
 --[[
