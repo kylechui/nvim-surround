@@ -75,14 +75,32 @@ M.setup = function(user_opts)
     map("n", user_opts.keymaps.delete, require("nvim-surround").delete_surround, { silent = true, expr = true })
     map("n", user_opts.keymaps.change, require("nvim-surround").change_surround, { silent = true, expr = true })
 
-    -- Setup delimiters table in utils
-    utils.delimiters = user_opts.delimiters
     -- Configure highlight group
     if user_opts.highlight_motion then
         vim.cmd([[
             highlight default link NvimSurroundHighlightTextObject Visual
         ]])
     end
+    -- Configure buffer setup autocommand
+    local buffer_setup_group = vim.api.nvim_create_augroup("nvimSurroundBufferSetup", {})
+    vim.api.nvim_create_autocmd("BufEnter", {
+        callback = M.buffer_setup,
+        group = buffer_setup_group,
+    })
+end
+
+M.buffer_setup = function(buffer_opts)
+    -- Grab the current buffer-local options, or the global user options otherwise
+    local cur_opts = vim.b[0].buffer_opts and vim.b[0].buffer_opts or M.user_opts
+    -- Overwrite the current options with buffer-local options, if they exist
+    buffer_opts = buffer_opts and vim.tbl_deep_extend("force", cur_opts, buffer_opts) or cur_opts
+    vim.b[0].buffer_opts = buffer_opts
+
+    -- Setup keymaps for calling plugin behavior
+    map("n", buffer_opts.keymaps.insert, require("nvim-surround").insert_surround, { silent = true, expr = true })
+    map("x", buffer_opts.keymaps.visual, require("nvim-surround").visual_surround, { silent = true, expr = true })
+    map("n", buffer_opts.keymaps.delete, require("nvim-surround").delete_surround, { silent = true, expr = true })
+    map("n", buffer_opts.keymaps.change, require("nvim-surround").change_surround, { silent = true, expr = true })
 end
 
 return M

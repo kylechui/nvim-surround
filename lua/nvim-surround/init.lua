@@ -15,6 +15,11 @@ M.setup = function(user_opts)
     config.setup(user_opts)
 end
 
+-- Configure the plugin on a per-buffer basis
+M.buffer_setup = function(buffer_opts)
+    config.buffer_setup(buffer_opts)
+end
+
 -- API: Insert delimiters around a text object
 M.insert_surround = function(args)
     -- Call the operatorfunc if it has not been called yet

@@ -2,6 +2,8 @@ local buffer = require("nvim-surround.buffer")
 local html = require("nvim-surround.html")
 local strings = require("nvim-surround.strings")
 
+local b = vim.b[0]
+
 local M = {}
 
 -- Do nothing.
@@ -18,7 +20,7 @@ Returns if a character is a valid key into the aliases table.
 @return Whether or not it is in the aliases table.
 ]]
 M.is_valid = function(char)
-    local delim = M.delimiters
+    local delim = b.buffer_opts.delimiters
     return delim.pairs[char] or delim.separators[char] or delim.HTML[char] or delim.aliases[char]
 end
 
@@ -28,7 +30,7 @@ Returns if a character is a valid HTML tag alias.
 @return Whether or not it is an alias for HTML tags.
 ]]
 M.is_HTML = function(char)
-    return M.delimiters.HTML[char]
+    return b.buffer_opts.delimiters.HTML[char]
 end
 
 --[[
@@ -62,8 +64,8 @@ Returns the value that the input is aliased to, or the character if no alias exi
 @return The aliased character if it exists, or the original if none exists.
 ]]
 M.get_alias = function(char)
-    if type(M.delimiters.aliases[char]) == "string" and #M.delimiters.aliases[char] == 1 then
-        return M.delimiters.aliases[char]
+    if type(b.buffer_opts.delimiters.aliases[char]) == "string" and #b.buffer_opts.delimiters.aliases[char] == 1 then
+        return b.buffer_opts.delimiters.aliases[char]
     end
     return char
 end
@@ -84,7 +86,7 @@ M.get_delimiters = function(char)
         delimiters = html.get_tag(true)
     else
         -- If the character is not bound to anything, duplicate it
-        delimiters = M.delimiters.pairs[char] or M.delimiters.separators[char] or { char, char }
+        delimiters = b.buffer_opts.delimiters.pairs[char] or b.buffer_opts.delimiters.separators[char] or { char, char }
     end
 
     -- Evaluate the function if necessary
@@ -191,11 +193,11 @@ end
 M.get_nearest_selections = function(char)
     char = M.get_alias(char)
     -- If there are no tabular aliases, simply return the surrounding selection for that character
-    if not M.delimiters.aliases[char] then
+    if not b.buffer_opts.delimiters.aliases[char] then
         return M.get_surrounding_selections(char)
     end
 
-    local aliases = M.delimiters.aliases[char]
+    local aliases = b.buffer_opts.delimiters.aliases[char]
     local nearest_selections
     -- Iterate through all possible selections for each aliased character, and
     -- find the pair that is closest to the cursor position (that also still
