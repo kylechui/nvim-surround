@@ -21,6 +21,24 @@ M.default_opts = {
             [">"] = { "<", ">" },
             ["["] = { "[ ", " ]" },
             ["]"] = { "[", "]" },
+            ["i"] = function()
+                return {
+                    require("nvim-surround.utils").get_input(
+                        "Enter the left delimiter: "
+                    ),
+                    require("nvim-surround.utils").get_input(
+                        "Enter the right delimiter: "
+                    )
+                }
+            end,
+            ["f"] = function()
+                return {
+                    require("nvim-surround.utils").get_input(
+                        "Enter the function name: "
+                    ) .. "(",
+                    ")"
+                }
+            end,
         },
         separators = {
             ["'"] = { "'", "'" },
