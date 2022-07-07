@@ -88,10 +88,12 @@ require("nvim-surround").setup({
             ["b"] = ")",
             ["B"] = "}",
             ["r"] = "]",
-            ["q"] = { '"', "'", "`" }, -- Table aliases only apply for changes/deletions
+            -- Table aliases only apply for changes/deletions
+            ["q"] = { '"', "'", "`" }, -- Any quote character
+            ["s"] = { ")", "]", "}", ">", "'", '"', "`" }, -- Any surrounding delimiter
         },
     },
-    highlight_motion = {
+    highlight_motion = { -- Highlight text-objects before surrounding them
         duration = 0,
     }
 })
