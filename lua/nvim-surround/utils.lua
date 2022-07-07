@@ -107,6 +107,16 @@ M.get_selection = function(is_visual)
     return selection
 end
 
+M.set_operator_marks = function(char)
+    -- Clear the [ and ] marks
+    buffer.del_mark("[")
+    buffer.del_mark("]")
+    -- Set the [ and ] marks by calling an operatorfunc
+    vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
+    M.feedkeys("g@a" .. char, "x")
+    buffer.adjust_mark("[")
+    buffer.adjust_mark("]")
+end
 --[[
 Gets two selections for the left and right surrounding pair.
 @param A character representing what kind of surrounding pair is to be selected
@@ -120,14 +130,15 @@ M.get_surrounding_selections = function(char)
     local open_first, open_last, close_first, close_last
     local curpos = buffer.get_curpos()
 
-    -- Clear the [ and ] marks
+    --[[ -- Clear the [ and ] marks
     buffer.del_mark("[")
     buffer.del_mark("]")
     -- Set the [ and ] marks by calling an operatorfunc
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
     M.feedkeys("g@a" .. char, "x")
     buffer.adjust_mark("[")
-    buffer.adjust_mark("]")
+    buffer.adjust_mark("]") ]]
+    vim.cmd("silent call v:lua.require'nvim-surround.utils'.set_operator_marks('" .. char .. "')")
     open_first = buffer.get_mark("[")
     close_last = buffer.get_mark("]")
 
