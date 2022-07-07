@@ -46,6 +46,17 @@ M.get_char = function()
 end
 
 --[[
+Gets a string input from the user.
+@return The input string, or nil if the operation is cancelled.
+]]
+M.get_input = function(prompt)
+    return string.format("%s", vim.fn.input({
+        prompt = prompt,
+        cancelreturn = nil,
+    }))
+end
+
+--[[
 Returns the value that the input is aliased to, or the character if no alias exists.
 @param char The input character.
 @return The aliased character if it exists, or the original if none exists.
@@ -63,20 +74,21 @@ Gets a delimiter pair for a user-inputted character.
 ]]
 M.get_delimiters = function(char)
     char = M.get_alias(char)
-    -- Get input from the user for what they would like to surround with
     -- Return nil if the user cancels the command
-    local delimiters
     if not char then
         return nil
     end
 
+    local delimiters
     if M.is_HTML(char) then
         delimiters = html.get_tag(true)
     else
-        delimiters = M.delimiters.pairs[char] or M.delimiters.separators[char]
+        -- If the character is not bound to anything, duplicate it
+        delimiters = M.delimiters.pairs[char] or M.delimiters.separators[char] or { char, char }
     end
-    -- If the character is not bound to anything, duplicate it
-    return delimiters or { char, char }
+
+    -- Evaluate the function if necessary
+    return type(delimiters) == "function" and delimiters() or delimiters
 end
 
 --[[
