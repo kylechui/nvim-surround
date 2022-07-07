@@ -129,16 +129,9 @@ M.get_surrounding_selections = function(char)
     end
     local open_first, open_last, close_first, close_last
     local curpos = buffer.get_curpos()
-
-    --[[ -- Clear the [ and ] marks
-    buffer.del_mark("[")
-    buffer.del_mark("]")
-    -- Set the [ and ] marks by calling an operatorfunc
-    vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
-    M.feedkeys("g@a" .. char, "x")
-    buffer.adjust_mark("[")
-    buffer.adjust_mark("]") ]]
-    vim.cmd("silent call v:lua.require'nvim-surround.utils'.set_operator_marks('" .. char .. "')")
+    -- Use the correct quotes to surround the arguments for setting the marks
+    local args = char == "'" and [["'"]] or "'" .. char .. "'"
+    vim.cmd("silent call v:lua.require'nvim-surround.utils'.set_operator_marks(" .. args .. ")")
     open_first = buffer.get_mark("[")
     close_last = buffer.get_mark("]")
 
