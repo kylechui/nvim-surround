@@ -69,7 +69,7 @@ end
 M.delete_surround = function(del_char)
     -- Call the operatorfunc if it has not been called yet
     if not del_char then
-        -- Clear the insert char (since it was user-called)
+        -- Clear the delete cache (since it was user-called)
         cache.delete = {}
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.delete_callback"
@@ -77,14 +77,12 @@ M.delete_surround = function(del_char)
     end
 
     local selections = utils.get_nearest_selections(del_char)
-    if not selections then
-        cache.set_callback("v:lua.require'nvim-surround'.delete_callback")
-        return
+    if selections then
+        -- Delete the right selection first to ensure selection positions are correct
+        buffer.delete_selection(selections.right)
+        buffer.delete_selection(selections.left)
     end
 
-    -- Delete the right selection first to ensure selection positions are correct
-    buffer.delete_selection(selections.right)
-    buffer.delete_selection(selections.left)
     cache.set_callback("v:lua.require'nvim-surround'.delete_callback")
 end
 
@@ -92,7 +90,7 @@ end
 M.change_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args then
-        -- Clear the insert char (since it was user-called)
+        -- Clear the change cache (since it was user-called)
         cache.change = {}
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.change_callback"
@@ -105,15 +103,12 @@ M.change_surround = function(args)
     if utils.is_HTML(args.del_char) then
         selections = html.adjust_selections(selections)
     end
-    if not selections then
-        cache.set_callback("v:lua.require'nvim-surround'.change_callback")
-        return
-    end
-    local left_sel = selections.left
-    local right_sel = selections.right
 
-    buffer.change_selection(right_sel, args.ins_delimiters[2])
-    buffer.change_selection(left_sel, args.ins_delimiters[1])
+    if selections then
+        -- Change the right selection first to ensure selection positions are correct
+        buffer.change_selection(selections.right, args.ins_delimiters[2])
+        buffer.change_selection(selections.left, args.ins_delimiters[1])
+    end
     cache.set_callback("v:lua.require'nvim-surround'.change_callback")
 end
 
