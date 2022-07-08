@@ -143,6 +143,7 @@ M.insert_callback = function(mode)
         -- Get the delimiter pair based on the insert character
         cache.insert.delimiters = cache.insert.delimiters or utils.get_delimiters(char)
         if not cache.insert.delimiters then
+            buffer.clear_highlights()
             return
         end
     end
