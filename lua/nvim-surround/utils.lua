@@ -90,7 +90,13 @@ M.get_delimiters = function(char)
     end
 
     -- Evaluate the function if necessary
-    return type(delimiters) == "function" and delimiters() or delimiters
+    if type(delimiters) == "function" then
+        delimiters = delimiters()
+    end
+    -- Wrap the delimiters in a table if necessary
+    delimiters[1] = type(delimiters[1]) == "string" and { delimiters[1] } or delimiters[1]
+    delimiters[2] = type(delimiters[2]) == "string" and { delimiters[2] } or delimiters[2]
+    return { delimiters[1], delimiters[2] }
 end
 
 --[[
@@ -170,10 +176,16 @@ M.get_surrounding_selections = function(char)
             return nil
         end
         -- Use the length of the pair to find the proper selection boundaries
-        delimiters[1] = strings.trim_whitespace(delimiters[1])
-        delimiters[2] = strings.trim_whitespace(delimiters[2])
-        open_last = { open_first[1], open_first[2] + #delimiters[1] - 1 }
-        close_first = { close_last[1], close_last[2] - #delimiters[2] + 1 }
+        local open_line = buffer.get_lines(open_first[1], open_first[1])[1]
+        local close_line = buffer.get_lines(close_last[1], close_last[1])[1]
+        open_last = { open_first[1], open_first[2] + #delimiters[1][1] - 1 }
+        close_first = { close_last[1], close_last[2] - #delimiters[2][1] + 1 }
+        -- Validate that the pair actually exists at the given selection
+        if open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1] or
+            close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1] then
+            vim.fn.cursor(curpos)
+            return nil
+        end
     end
 
     local selections = {

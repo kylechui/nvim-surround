@@ -42,8 +42,8 @@ M.insert_surround = function(args)
     -- Adjust last position of the selection so delimiter is inserted after it
     local last_pos = { args.selection.last_pos[1], args.selection.last_pos[2] + 1 }
 
-    buffer.insert_lines(last_pos, { delimiters[2] })
-    buffer.insert_lines(first_pos, { delimiters[1] })
+    buffer.insert_lines(last_pos, delimiters[2])
+    buffer.insert_lines(first_pos, delimiters[1])
 end
 
 -- API: Insert delimiters around a visual selection
@@ -66,24 +66,20 @@ M.visual_surround = function(ins_char, mode)
         return
     end
     local first_pos, last_pos = selection.first_pos, selection.last_pos
-    local lines = buffer.get_lines(first_pos[1], last_pos[1])
 
+    -- Insert the right delimiter first to ensure correct indexing
     if mode == "line" then -- Visual line mode case (need to create new lines)
-        -- Insert the delimiters at the first and last line of the selection
-        table.insert(lines, 1, delimiters[1])
-        table.insert(lines, #lines + 1, delimiters[2])
+        buffer.insert_lines({ last_pos[1] + 1, 1 }, { "", "" })
+        buffer.insert_lines({ last_pos[1] + 1, 1 }, delimiters[2])
+        buffer.insert_lines({ first_pos[1], 1 }, { "", "" })
+        buffer.insert_lines({ first_pos[1], 1 }, delimiters[1])
+        -- Reformat the text
+        vim.cmd(string.format("normal! %dG=%dG",
+            first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2]
+        ))
     else -- Regular visual mode case
-        -- Insert the right delimiter first to ensure correct indexing
-        local line = lines[#lines]
-        lines[#lines] = strings.insert_string(line, delimiters[2], last_pos[2] + 1)
-        line = lines[1]
-        lines[1] = strings.insert_string(line, delimiters[1], first_pos[2])
-    end
-    -- Update the buffer with the new lines
-    buffer.set_lines(first_pos[1], last_pos[1], lines)
-    -- If the selection was in visual line mode, reformat
-    if mode == "line" then
-        vim.cmd("normal! `<v`>2j=")
+        buffer.insert_lines({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
+        buffer.insert_lines(first_pos, delimiters[1])
     end
 end
 
@@ -144,12 +140,8 @@ M.change_surround = function(del_char, ins_char)
     local left_sel = selections.left
     local right_sel = selections.right
 
-    local lines = buffer.get_lines(left_sel.first_pos[1], right_sel.first_pos[1])
-    -- Update the delimiting pair
-    lines[#lines] = strings.replace_string(lines[#lines], delimiters[2], right_sel.first_pos[2], right_sel.last_pos[2])
-    lines[1] = strings.replace_string(lines[1], delimiters[1], left_sel.first_pos[2], left_sel.last_pos[2])
-    -- Update the range of lines
-    buffer.set_lines(left_sel.first_pos[1], right_sel.first_pos[1], lines)
+    buffer.change_selection(right_sel, delimiters[2])
+    buffer.change_selection(left_sel, delimiters[1])
     -- Cache callback (since finding selections overwrites opfunc)
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
     utils.feedkeys("g@l", "x")
