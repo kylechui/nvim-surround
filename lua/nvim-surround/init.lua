@@ -1,14 +1,10 @@
 local buffer = require("nvim-surround.buffer")
+local cache = require("nvim-surround.cache")
 local config = require("nvim-surround.config")
 local html = require("nvim-surround.html")
-local strings = require("nvim-surround.strings")
 local utils = require("nvim-surround.utils")
 
 local M = {}
-
-M.insert_char = nil
-M.delete_char = nil
-M.change_chars = nil
 
 -- Setup the plugin with user-defined options
 M.setup = function(user_opts)
@@ -24,26 +20,18 @@ end
 M.insert_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args then
-        -- Save the current mode
-        M.mode = vim.fn.mode()
-        -- Clear the insert char (since it was user-called)
-        M.insert_char = nil
+        -- Clear the insert cache (since it was user-called)
+        cache.insert = {}
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.insert_callback"
         return "g@"
     end
 
-    -- Define some local variables based on the arguments
-    local delimiters = utils.get_delimiters(args.char)
-    if not delimiters then
-        return
-    end
     local first_pos = args.selection.first_pos
-    -- Adjust last position of the selection so delimiter is inserted after it
     local last_pos = { args.selection.last_pos[1], args.selection.last_pos[2] + 1 }
 
-    buffer.insert_lines(last_pos, delimiters[2])
-    buffer.insert_lines(first_pos, delimiters[1])
+    buffer.insert_lines(last_pos, args.delimiters[2])
+    buffer.insert_lines(first_pos, args.delimiters[1])
 end
 
 -- API: Insert delimiters around a visual selection
@@ -74,7 +62,7 @@ M.visual_surround = function(ins_char, mode)
         buffer.insert_lines({ first_pos[1], 1 }, { "", "" })
         buffer.insert_lines({ first_pos[1], 1 }, delimiters[1])
         -- Reformat the text
-        vim.cmd(string.format("normal! %dG=%dG",
+        vim.cmd(string.format("silent normal! %dG=%dG",
             first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2]
         ))
     else -- Regular visual mode case
@@ -88,7 +76,7 @@ M.delete_surround = function(del_char)
     -- Call the operatorfunc if it has not been called yet
     if not del_char then
         -- Clear the insert char (since it was user-called)
-        M.delete_char = nil
+        cache.delete = {}
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.delete_callback"
         return "g@l"
@@ -109,39 +97,30 @@ M.delete_surround = function(del_char)
 end
 
 -- API: Change a surrounding delimiter pair, if it exists
-M.change_surround = function(del_char, ins_char)
+M.change_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
-    if not del_char or not ins_char then
+    if not args then
         -- Clear the insert char (since it was user-called)
-        M.change_chars = nil
+        cache.change = {}
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.change_callback"
         return "g@l"
     end
 
-    local selections = utils.get_nearest_selections(del_char)
+    local selections = utils.get_nearest_selections(args.del_char)
 
     -- Adjust the selections for changing if we are changing a HTML tag
-    if utils.is_HTML(del_char) then
+    if utils.is_HTML(args.del_char) then
         selections = html.adjust_selections(selections)
     end
-
-    -- Get the new surrounding pair
-    local delimiters
-    if utils.is_HTML(del_char) then
-        delimiters = html.get_tag()
-    else
-        delimiters = utils.get_delimiters(ins_char)
-    end
-
-    if not delimiters or not selections then
+    if not selections then
         return
     end
     local left_sel = selections.left
     local right_sel = selections.right
 
-    buffer.change_selection(right_sel, delimiters[2])
-    buffer.change_selection(left_sel, delimiters[1])
+    buffer.change_selection(right_sel, args.ins_delimiters[2])
+    buffer.change_selection(left_sel, args.ins_delimiters[1])
     -- Cache callback (since finding selections overwrites opfunc)
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
     utils.feedkeys("g@l", "x")
@@ -169,17 +148,22 @@ M.insert_callback = function(mode)
         vim.defer_fn(buffer.clear_highlights, highlight_motion.duration)
     end
     -- Get a character input and the positions of the selection
-    M.insert_char = M.insert_char or utils.get_char()
+    cache.insert.char = cache.insert.char or utils.get_char()
     -- Clear the highlights right after the action is no longer pending
     buffer.clear_highlights()
-    if not M.insert_char then
+    if not cache.insert.char then
         return
     end
 
+    -- Get the delimiter pair based on the insert character
+    cache.insert.delimiters = cache.insert.delimiters or utils.get_delimiters(cache.insert.char)
+    if not cache.insert.delimiters then
+        return
+    end
     local selection = utils.get_selection(false)
 
     local args = {
-        char = M.insert_char,
+        delimiters = cache.insert.delimiters,
         selection = selection,
     }
     -- Call the main insert function with some arguments
@@ -198,17 +182,17 @@ M.visual_callback = function(mode)
 end
 
 M.delete_callback = function()
-    -- Get a character input
-    M.delete_char = M.delete_char or utils.get_char()
-    if not M.delete_char then
+    -- Get a character input if not cached
+    cache.delete.char = cache.delete.char or utils.get_char()
+    if not cache.delete.char then
         return
     end
-    M.delete_surround(M.delete_char)
+    M.delete_surround(cache.delete.char)
 end
 
 M.change_callback = function()
-    -- Get character inputs
-    if not M.change_chars then
+    -- Get character inputs if not cached
+    if vim.tbl_isempty(cache.change) then
         local del_char = utils.get_char()
         if not del_char then
             return
@@ -223,9 +207,26 @@ M.change_callback = function()
         if not ins_char then
             return
         end
-        M.change_chars = { del_char, ins_char }
+
+        -- Get the new surrounding pair
+        local delimiters
+        if utils.is_HTML(del_char) then
+            delimiters = html.get_tag()
+        else
+            delimiters = utils.get_delimiters(ins_char)
+        end
+
+        if not delimiters then
+            return
+        end
+        -- Set the cache
+        cache.change = {
+            del_char = del_char,
+            ins_delimiters = delimiters,
+        }
     end
-    M.change_surround(M.change_chars[1], M.change_chars[2])
+
+    M.change_surround(vim.deepcopy(cache.change))
 end
 
 return M

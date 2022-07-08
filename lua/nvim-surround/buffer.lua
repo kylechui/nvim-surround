@@ -119,9 +119,11 @@ Inserts a set of lines into the buffer at a given position.
 ]]
 M.insert_lines = function(pos, lines)
     local line = M.get_lines(pos[1], pos[1])[1]
-    lines[1] = line:sub(1, pos[2] - 1) .. lines[1]
-    lines[#lines] = lines[#lines] .. line:sub(pos[2], #line)
-    M.set_lines(pos[1], pos[1], lines)
+    -- Make a copy of the lines to avoid modifying delimiters
+    local lns = vim.deepcopy(lines)
+    lns[1] = line:sub(1, pos[2] - 1) .. lns[1]
+    lns[#lns] = lns[#lns] .. line:sub(pos[2], #line)
+    M.set_lines(pos[1], pos[1], lns)
 end
 
 --[[
