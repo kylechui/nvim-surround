@@ -1,6 +1,5 @@
 local buffer = require("nvim-surround.buffer")
 local html = require("nvim-surround.html")
-local strings = require("nvim-surround.strings")
 
 local b = vim.b[0]
 
