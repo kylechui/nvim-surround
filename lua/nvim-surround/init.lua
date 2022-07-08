@@ -147,19 +147,18 @@ M.insert_callback = function(mode)
     if highlight_motion and highlight_motion.duration > 0 then
         vim.defer_fn(buffer.clear_highlights, highlight_motion.duration)
     end
-    -- Get a character input and the positions of the selection
-    cache.insert.char = cache.insert.char or utils.get_char()
+    -- Get a character input and the delimiters (if not cached)
+    if not cache.insert.delimiters then
+        local char = utils.get_char()
+        -- Get the delimiter pair based on the insert character
+        cache.insert.delimiters = cache.insert.delimiters or utils.get_delimiters(char)
+        if not cache.insert.delimiters then
+            return
+        end
+    end
     -- Clear the highlights right after the action is no longer pending
     buffer.clear_highlights()
-    if not cache.insert.char then
-        return
-    end
 
-    -- Get the delimiter pair based on the insert character
-    cache.insert.delimiters = cache.insert.delimiters or utils.get_delimiters(cache.insert.char)
-    if not cache.insert.delimiters then
-        return
-    end
     local selection = utils.get_selection(false)
 
     local args = {
@@ -192,7 +191,7 @@ end
 
 M.change_callback = function()
     -- Get character inputs if not cached
-    if vim.tbl_isempty(cache.change) then
+    if not cache.change.del_char or not cache.change.ins_delimiters then
         local del_char = utils.get_char()
         if not del_char then
             return
