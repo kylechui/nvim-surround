@@ -26,7 +26,7 @@ M.get_tag = function(include_brackets)
         open = "<" .. open .. ">"
         close = "</" .. close .. ">"
     end
-    local tag = { open, close }
+    local tag = { { open }, { close } }
 
     return tag
     --[[ TODO: Figure out how to make vim.ui.input blocking
