@@ -16,6 +16,9 @@ nvim-surround.setup({opts})
     Note: Calling the setup function with no arguments or an empty table uses
     the defaults.
 
+    Note: To disable any unwanted feature, set the corresponding value in the
+    setup table to false.
+
     Usage:
 >
     require("nvim-surround").setup({

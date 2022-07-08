@@ -16,13 +16,14 @@ Surround selections, stylishly :sunglasses:
   * Change *only* the surrounding HTML tag's element type, and leave its
     attributes
 * Dot-repeat previous actions
-* Set buffer-local mappings, e.g. have different mappings for different file
-  types and more
-* Surround with powerful pairs that depend on user input
+* Set buffer-local mappings and surrounds
+* Surround using powerful pairs that depend on user input
 * Use a single character as an alias for several text-objects
   * E.g. `q` is aliased to <code>\`,',"</code>, so <code>csqb</code> replaces
     the *nearest* set of quotes with parentheses
 * Highlight the section that you are about to surround, as a visual indicator
+
+For more information, see `:h nvim-surround`
 
 ## :package: Installation
 
