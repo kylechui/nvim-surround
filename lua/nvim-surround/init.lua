@@ -42,15 +42,9 @@ M.visual_surround = function(ins_char, mode)
         return "g@"
     end
 
-    -- Get the visual selection
-    local selection = utils.get_selection(true)
-    if not selection then
-        return
-    end
-
-    -- Define some local variables based on the arguments
     local delimiters = utils.get_delimiters(ins_char)
-    if not delimiters then
+    local selection = utils.get_selection(true)
+    if not delimiters or not selection then
         return
     end
     local first_pos, last_pos = selection.first_pos, selection.last_pos
@@ -84,16 +78,14 @@ M.delete_surround = function(del_char)
 
     local selections = utils.get_nearest_selections(del_char)
     if not selections then
+        cache.set_callback("v:lua.require'nvim-surround'.delete_callback")
         return
     end
 
     -- Delete the right selection first to ensure selection positions are correct
     buffer.delete_selection(selections.right)
     buffer.delete_selection(selections.left)
-    -- Cache callback (since finding selections overwrites opfunc)
-    vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
-    utils.feedkeys("g@l", "x")
-    vim.go.operatorfunc = "v:lua.require'nvim-surround'.delete_callback"
+    cache.set_callback("v:lua.require'nvim-surround'.delete_callback")
 end
 
 -- API: Change a surrounding delimiter pair, if it exists
@@ -114,6 +106,7 @@ M.change_surround = function(args)
         selections = html.adjust_selections(selections)
     end
     if not selections then
+        cache.set_callback("v:lua.require'nvim-surround'.change_callback")
         return
     end
     local left_sel = selections.left
@@ -121,10 +114,7 @@ M.change_surround = function(args)
 
     buffer.change_selection(right_sel, args.ins_delimiters[2])
     buffer.change_selection(left_sel, args.ins_delimiters[1])
-    -- Cache callback (since finding selections overwrites opfunc)
-    vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
-    utils.feedkeys("g@l", "x")
-    vim.go.operatorfunc = "v:lua.require'nvim-surround'.change_callback"
+    cache.set_callback("v:lua.require'nvim-surround'.change_callback")
 end
 
 --[============================================================================[
