@@ -23,17 +23,17 @@ M.default_opts = {
             ["]"] = { "[", "]" },
             ["i"] = function()
                 return {
-                    require("nvim-surround.utils").get_input(
+                    utils.get_input(
                         "Enter the left delimiter: "
                     ),
-                    require("nvim-surround.utils").get_input(
+                    utils.get_input(
                         "Enter the right delimiter: "
                     )
                 }
             end,
             ["f"] = function()
                 return {
-                    require("nvim-surround.utils").get_input(
+                    utils.get_input(
                         "Enter the function name: "
                     ) .. "(",
                     ")"
@@ -70,10 +70,18 @@ M.setup = function(user_opts)
     M.user_opts = user_opts
 
     -- Setup keymaps for calling plugin behavior
-    map("n", user_opts.keymaps.insert, require("nvim-surround").insert_surround, { silent = true, expr = true })
-    map("x", user_opts.keymaps.visual, require("nvim-surround").visual_surround, { silent = true, expr = true })
-    map("n", user_opts.keymaps.delete, require("nvim-surround").delete_surround, { silent = true, expr = true })
-    map("n", user_opts.keymaps.change, require("nvim-surround").change_surround, { silent = true, expr = true })
+    map("n", user_opts.keymaps.insert, require("nvim-surround").insert_surround,
+        { silent = true, expr = true }
+    )
+    map("x", user_opts.keymaps.visual, require("nvim-surround").visual_surround,
+        { silent = true, expr = true }
+    )
+    map("n", user_opts.keymaps.delete, require("nvim-surround").delete_surround,
+        { silent = true, expr = true }
+    )
+    map("n", user_opts.keymaps.change, require("nvim-surround").change_surround,
+        { silent = true, expr = true }
+    )
 
     -- Configure highlight group
     if user_opts.highlight_motion then
@@ -96,11 +104,19 @@ M.buffer_setup = function(buffer_opts)
     buffer_opts = buffer_opts and vim.tbl_deep_extend("force", cur_opts, buffer_opts) or cur_opts
     vim.b[0].buffer_opts = buffer_opts
 
-    -- Setup keymaps for calling plugin behavior
-    map("n", buffer_opts.keymaps.insert, require("nvim-surround").insert_surround, { silent = true, expr = true })
-    map("x", buffer_opts.keymaps.visual, require("nvim-surround").visual_surround, { silent = true, expr = true })
-    map("n", buffer_opts.keymaps.delete, require("nvim-surround").delete_surround, { silent = true, expr = true })
-    map("n", buffer_opts.keymaps.change, require("nvim-surround").change_surround, { silent = true, expr = true })
+    -- Setup buffer-local keymaps for calling plugin behavior
+    map("n", buffer_opts.keymaps.insert, require("nvim-surround").insert_surround,
+        { silent = true, expr = true, buffer = true }
+    )
+    map("x", buffer_opts.keymaps.visual, require("nvim-surround").visual_surround,
+        { silent = true, expr = true, buffer = true }
+    )
+    map("n", buffer_opts.keymaps.delete, require("nvim-surround").delete_surround,
+        { silent = true, expr = true, buffer = true }
+    )
+    map("n", buffer_opts.keymaps.change, require("nvim-surround").change_surround,
+        { silent = true, expr = true, buffer = true }
+    )
 end
 
 return M
