@@ -13,9 +13,12 @@ Surround selections, stylishly :sunglasses:
 ## :sparkles: Features
 
 * Add/change/remove surrounding pairs and HTML tags
+  * Change *only* the surrounding HTML tag's element type, and leave its
+    attributes
 * Dot-repeat previous actions
-* Change *only* the surrounding HTML tag's element type, and leave its
-  attributes
+* Set buffer-local mappings, e.g. have different mappings for different file
+  types and more
+* Surround with powerful pairs that depend on user input
 * Use a single character as an alias for several text-objects
   * E.g. `q` is aliased to <code>\`,',"</code>, so <code>csqb</code> replaces
     the *nearest* set of quotes with parentheses
@@ -132,6 +135,43 @@ require("nvim-surround").setup({
             ["t"] = false,
         },
     },
+})
+```
+
+For buffer-local configurations, just call
+`require("nvim-surround").buffer_setup` for any buffer that you would like to
+configure, e.g.
+
+```lua
+-- ftplugin/python.lua
+require("nvim-surround").buffer_setup({
+    delimiters = {
+        pairs = {
+            ["f"] = function()
+                return {
+                    "def " .. require("nvim-surround.utils").get_input(
+                        "Enter the function name: "
+                    ) .. "(",
+                    "):"
+                }
+            end,
+        }
+    }
+})
+-- ftplugin/lua.lua
+require("nvim-surround").buffer_setup({
+    delimiters = {
+        pairs = {
+            ["f"] = function()
+                return {
+                    "function " .. require("nvim-surround.utils").get_input(
+                        "Enter the function name: "
+                    ) .. "(",
+                    ")"
+                }
+            end,
+        }
+    }
 })
 ```
 
