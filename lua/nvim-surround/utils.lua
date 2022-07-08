@@ -2,6 +2,8 @@ local buffer = require("nvim-surround.buffer")
 local html = require("nvim-surround.html")
 local strings = require("nvim-surround.strings")
 
+local b = vim.b[0]
+
 local M = {}
 
 -- Do nothing.
@@ -18,7 +20,7 @@ Returns if a character is a valid key into the aliases table.
 @return Whether or not it is in the aliases table.
 ]]
 M.is_valid = function(char)
-    local delim = M.delimiters
+    local delim = b.buffer_opts.delimiters
     return delim.pairs[char] or delim.separators[char] or delim.HTML[char] or delim.aliases[char]
 end
 
@@ -28,7 +30,7 @@ Returns if a character is a valid HTML tag alias.
 @return Whether or not it is an alias for HTML tags.
 ]]
 M.is_HTML = function(char)
-    return M.delimiters.HTML[char]
+    return b.buffer_opts.delimiters.HTML[char]
 end
 
 --[[
@@ -62,8 +64,8 @@ Returns the value that the input is aliased to, or the character if no alias exi
 @return The aliased character if it exists, or the original if none exists.
 ]]
 M.get_alias = function(char)
-    if type(M.delimiters.aliases[char]) == "string" and #M.delimiters.aliases[char] == 1 then
-        return M.delimiters.aliases[char]
+    if type(b.buffer_opts.delimiters.aliases[char]) == "string" and #b.buffer_opts.delimiters.aliases[char] == 1 then
+        return b.buffer_opts.delimiters.aliases[char]
     end
     return char
 end
@@ -84,11 +86,17 @@ M.get_delimiters = function(char)
         delimiters = html.get_tag(true)
     else
         -- If the character is not bound to anything, duplicate it
-        delimiters = M.delimiters.pairs[char] or M.delimiters.separators[char] or { char, char }
+        delimiters = b.buffer_opts.delimiters.pairs[char] or b.buffer_opts.delimiters.separators[char] or { char, char }
     end
 
     -- Evaluate the function if necessary
-    return type(delimiters) == "function" and delimiters() or delimiters
+    if type(delimiters) == "function" then
+        delimiters = delimiters()
+    end
+    -- Wrap the delimiters in a table if necessary
+    delimiters[1] = type(delimiters[1]) == "string" and { delimiters[1] } or delimiters[1]
+    delimiters[2] = type(delimiters[2]) == "string" and { delimiters[2] } or delimiters[2]
+    return { delimiters[1], delimiters[2] }
 end
 
 --[[
@@ -168,10 +176,16 @@ M.get_surrounding_selections = function(char)
             return nil
         end
         -- Use the length of the pair to find the proper selection boundaries
-        delimiters[1] = strings.trim_whitespace(delimiters[1])
-        delimiters[2] = strings.trim_whitespace(delimiters[2])
-        open_last = { open_first[1], open_first[2] + #delimiters[1] - 1 }
-        close_first = { close_last[1], close_last[2] - #delimiters[2] + 1 }
+        local open_line = buffer.get_lines(open_first[1], open_first[1])[1]
+        local close_line = buffer.get_lines(close_last[1], close_last[1])[1]
+        open_last = { open_first[1], open_first[2] + #delimiters[1][1] - 1 }
+        close_first = { close_last[1], close_last[2] - #delimiters[2][1] + 1 }
+        -- Validate that the pair actually exists at the given selection
+        if open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1] or
+            close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1] then
+            vim.fn.cursor(curpos)
+            return nil
+        end
     end
 
     local selections = {
@@ -191,11 +205,11 @@ end
 M.get_nearest_selections = function(char)
     char = M.get_alias(char)
     -- If there are no tabular aliases, simply return the surrounding selection for that character
-    if not M.delimiters.aliases[char] then
+    if not b.buffer_opts.delimiters.aliases[char] then
         return M.get_surrounding_selections(char)
     end
 
-    local aliases = M.delimiters.aliases[char]
+    local aliases = b.buffer_opts.delimiters.aliases[char]
     local nearest_selections
     -- Iterate through all possible selections for each aliased character, and
     -- find the pair that is closest to the cursor position (that also still

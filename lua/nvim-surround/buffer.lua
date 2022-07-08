@@ -137,6 +137,26 @@ M.delete_selection = function(selection)
     M.set_lines(first_lnum, last_lnum, { replacement })
 end
 
+--[[
+Replaces a given selection with a set of lines.
+@param selection The given selection.
+@param lines The given lines to replace the selection.
+]]
+M.change_selection = function(selection, lines)
+    local first_lnum, last_lnum = selection.first_pos[1], selection.last_pos[1]
+    local first_col, last_col = selection.first_pos[2], selection.last_pos[2]
+    local first_line = M.get_lines(first_lnum, first_lnum)[1]
+    local last_line = M.get_lines(last_lnum, last_lnum)[1]
+    -- Edge case where the selection is only one line
+    if #lines == 1 then
+        lines[1] = first_line:sub(1, first_col - 1) .. lines[1] .. first_line:sub(last_col + 1, #first_line)
+    else
+        lines[#lines] = last_line:sub(last_col + 1, #last_line) .. lines[#lines]
+        lines[1] = first_line:sub(1, first_col - 1) .. lines[1]
+    end
+    M.set_lines(first_lnum, last_lnum, lines)
+end
+
 --[============================================================================[
                         Highlight helper functions
 --]============================================================================]

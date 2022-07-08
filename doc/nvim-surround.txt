@@ -16,6 +16,9 @@ nvim-surround.setup({opts})
     Note: Calling the setup function with no arguments or an empty table uses
     the defaults.
 
+    Note: To disable any unwanted feature, set the corresponding value in the
+    setup table to false.
+
     Usage:
 >
     require("nvim-surround").setup({
@@ -24,6 +27,9 @@ nvim-surround.setup({opts})
         },
         delimiters = {
             -- Customize builtin delimiter types here
+        },
+        highlight_motion = {
+            -- Customize highlight properties here
         },
     })
 <
@@ -53,6 +59,16 @@ nvim-surround.setup({opts})
             A table that associates characters with a pair of distinct
             delimiters, used for inserting/changing/deleting.
 
+            More powerful pairs can be created using an anonymous function
+            that returns a table of two delimiters. This can be used to query
+            the user for input and use the input to create the pair, or to tap
+            into any other Lua functions.
+
+            In the default configuration, the `i` mapping queries the user for
+            both left and right delimiters, while the `f` mapping surrounds
+            the selection with parentheses and prepends a user-given function
+            name.
+
             Default: {
                 ["("] = { "( ", " )" },
                 [")"] = { "(", ")" },
@@ -62,6 +78,24 @@ nvim-surround.setup({opts})
                 [">"] = { "<", ">" },
                 ["["] = { "[ ", " ]" },
                 ["]"] = { "[", "]" },
+                ["i"] = function()
+                    return {
+                        utils.get_input(
+                            "Enter the left delimiter: "
+                        ),
+                        utils.get_input(
+                            "Enter the right delimiter: "
+                        )
+                    }
+                end,
+                ["f"] = function()
+                    return {
+                        utils.get_input(
+                            "Enter the function name: "
+                        ) .. "(",
+                        ")"
+                    }
+                end,
             }
 
                                          *nvim-surround.delimiters.separators*
@@ -117,6 +151,7 @@ nvim-surround.setup({opts})
                 ["B"] = "}",
                 ["r"] = "]",
                 ["q"] = { '"', "'", "`" },
+                ["s"] = { ")", "]", "}", ">", "'", '"', "`" },
             }
 
                                               *nvim-surround.highlight_motion*
@@ -134,4 +169,43 @@ nvim-surround.setup({opts})
 
         Default: 0
 
+                                                *nvim-surround.buffer_setup()*
+nvim-surround.buffer_setup({opts})
+    Sets up user configuration options for the current buffer. It allows users
+    to have different mappings per buffer (importantly, file type).
+
+    One example is to set up different `f` mappings for Python and Lua file
+    types via:
+>
+    -- ftplugin/python.lua
+    require("nvim-surround").buffer_setup({
+        delimiters = {
+            pairs = {
+                ["f"] = function()
+                    return {
+                        "def " .. require("nvim-surround.utils").get_input(
+                            "Enter the function name: "
+                        ) .. "(",
+                        "):"
+                    }
+                end,
+            }
+        }
+    })
+    -- ftplugin/lua.lua
+    require("nvim-surround").buffer_setup({
+        delimiters = {
+            pairs = {
+                ["f"] = function()
+                    return {
+                        "function " .. require("nvim-surround.utils").get_input(
+                            "Enter the function name: "
+                        ) .. "(",
+                        ")"
+                    }
+                end,
+            }
+        }
+    })
+<
 vim:tw=78:ts=8:ft=help:norl:
