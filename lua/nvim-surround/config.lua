@@ -7,6 +7,7 @@ local M = {}
 M.default_opts = {
     keymaps = {
         insert = "ys",
+        insert_line = "yss",
         visual = "S",
         delete = "ds",
         change = "cs",
@@ -108,6 +109,9 @@ M.buffer_setup = function(buffer_opts)
     map("n", buffer_opts.keymaps.insert, require("nvim-surround").insert_surround,
         { silent = true, expr = true, buffer = true }
     )
+    map("n", buffer_opts.keymaps.insert_line, function()
+        return "^" .. tostring(vim.v.count1) .. buffer_opts.keymaps.insert .. "g_"
+    end, { silent = true, expr = true, buffer = true, remap = true })
     map("x", buffer_opts.keymaps.visual, require("nvim-surround").visual_surround,
         { silent = true, expr = true, buffer = true }
     )

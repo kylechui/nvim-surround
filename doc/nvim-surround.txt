@@ -43,6 +43,7 @@ nvim-surround.setup({opts})
 
         Default: {
             insert = "ys",
+            insert_line = "yss",
             visual = "S",
             delete = "ds",
             change = "cs",
