@@ -5,6 +5,7 @@
 to efficiently:
 * Add/change/delete surrounding delimiter pairs
 * Dot-repeat previous surround actions
+* Configure buffer-local mappings and customizations
 * Manipulate HTML-style tags
 * Alias delimiter types to other characters
 
@@ -39,7 +40,10 @@ nvim-surround.setup({opts})
 
                                                        *nvim-surround.keymaps*
     keymaps:~
-        Defines what keymaps are used to interact with the plugin.
+        Defines what keymaps are used to interact with the plugin. The
+        {insert_line} key is used to surround the current line (not including
+        leading nor trailing whitespace), and can be thought of as a special
+        case of {insert}.
 
         Default: {
             insert = "ys",
@@ -58,12 +62,16 @@ nvim-surround.setup({opts})
                                               *nvim-surround.delimiters.pairs*
         pairs:~
             A table that associates characters with a pair of distinct
-            delimiters, used for inserting/changing/deleting.
+            delimiters, used for inserting/changing/deleting. Each delimiter
+            can either be a simple string, or a table containing strings,
+            where each element of the table will be put on its own line.
 
             More powerful pairs can be created using an anonymous function
             that returns a table of two delimiters. This can be used to query
             the user for input and use the input to create the pair, or to tap
-            into any other Lua functions.
+            into any other Lua functions. This function can also optionally
+            take a parameter {text}, which is a table containing the selected
+            text.
 
             In the default configuration, the `i` mapping queries the user for
             both left and right delimiters, while the `f` mapping surrounds
