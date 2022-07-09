@@ -1,22 +1,21 @@
+local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
 local cursor = vim.fn.cursor
+local config = require("nvim-surround.config")
+
 local insert_surround = function(textobj, ins_char)
-    local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
-    vim.api.nvim_feedkeys("ys" .. esc, "x", false)
-    vim.api.nvim_feedkeys("g@" .. textobj .. ins_char, "x", false)
+    vim.cmd("normal ys" .. textobj .. ins_char)
 end
 
 local visual_surround = function(ins_char)
-    require("nvim-surround").visual_surround(ins_char)
+    vim.cmd("normal S" .. ins_char)
 end
 
 local delete_surround = function(del_char)
-    require("nvim-surround").delete_surround()
-    vim.api.nvim_feedkeys(del_char, "x", false)
+    vim.cmd("normal ds" .. del_char)
 end
 
 local change_surround = function(del_char, ins_char)
-    require("nvim-surround").change_surround()
-    vim.api.nvim_feedkeys(del_char .. ins_char, "x", false)
+    vim.cmd("normal cs" .. del_char .. ins_char)
 end
 
 local set_lines = function(lines)
@@ -100,7 +99,7 @@ describe("nvim-surround", function()
     it("can dot-repeat deletions", function()
         set_lines({ "(((test)))" })
         delete_surround("b")
-        vim.cmd("normal! .")
+        vim.cmd("normal! ..")
         check_lines({ "(test)" })
         vim.cmd("normal! .")
         check_lines({ "test" })
@@ -185,6 +184,34 @@ describe("nvim-surround", function()
         })
     end)
 
+    it("can insert user-inputted delimiters", function()
+        set_lines({ "some text" })
+        cursor({ 1, 3 })
+        vim.cmd("normal! vwl")
+        visual_surround("i" .. "|left|" .. cr .. "|right|" .. cr)
+        check_lines({ "so|left|me te|right|xt" })
+        cursor({ 1, 9 })
+        insert_surround("iw", "f" .. "func_name" .. cr)
+        check_lines({ "so|left|func_name(me) te|right|xt" })
+    end)
+
+    it("can dot-repeat user-inputted delimiters", function()
+        set_lines({ "here", "are", "some", "lines" })
+        insert_surround("iw", "f" .. "func_name" .. cr)
+        cursor({ 2, 3 })
+        vim.cmd("normal! .")
+        cursor({ 3, 4 })
+        vim.cmd("normal! .")
+        cursor({ 4, 2 })
+        vim.cmd("normal! .")
+        check_lines({
+            "func_name(here)",
+            "func_name(are)",
+            "func_name(some)",
+            "func_name(lines)",
+        })
+    end)
+
     it("can disable default delimiters", function()
         require("nvim-surround").setup({
             delimiters = {
@@ -194,10 +221,9 @@ describe("nvim-surround", function()
             }
         })
 
-        local utils = require("nvim-surround.utils")
         assert.are.same(
             false,
-            utils.delimiters.HTML.t
+            config.user_opts.delimiters.HTML.t
         )
     end)
 
@@ -213,14 +239,13 @@ describe("nvim-surround", function()
             }
         })
 
-        local utils = require("nvim-surround.utils")
         assert.are.same(
             false,
-            utils.delimiters.pairs.b
+            config.user_opts.delimiters.pairs.b
         )
         assert.are.same(
             { ")", "}" },
-            utils.delimiters.aliases.b
+            config.user_opts.delimiters.aliases.b
         )
     end)
 end)
