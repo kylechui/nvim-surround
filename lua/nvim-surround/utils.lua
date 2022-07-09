@@ -73,7 +73,7 @@ end
 Gets a delimiter pair for a user-inputted character.
 @return A pair of delimiters for the given input, or nil if not applicable.
 ]]
-M.get_delimiters = function(char)
+M.get_delimiters = function(char, selection)
     char = M.get_alias(char)
     -- Return nil if the user cancels the command
     if not char then
@@ -90,7 +90,7 @@ M.get_delimiters = function(char)
 
     -- Evaluate the function if necessary
     if type(delimiters) == "function" then
-        delimiters = delimiters()
+        delimiters = delimiters(buffer.get_selection(selection))
     end
     -- Wrap the delimiters in a table if necessary
     delimiters[1] = type(delimiters[1]) == "string" and { delimiters[1] } or delimiters[1]
