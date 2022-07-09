@@ -1,25 +1,21 @@
-local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
+local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
 local cursor = vim.fn.cursor
 local config = require("nvim-surround.config")
 
 local insert_surround = function(textobj, ins_char)
-    vim.api.nvim_feedkeys("ys" .. esc, "x", false)
-    vim.api.nvim_feedkeys("g@" .. textobj .. ins_char, "x", false)
+    vim.cmd("normal ys" .. textobj .. ins_char)
 end
 
 local visual_surround = function(ins_char)
-    vim.api.nvim_feedkeys("S" .. esc, "x", false)
-    vim.api.nvim_feedkeys("g@l" .. ins_char, "x", false)
+    vim.cmd("normal S" .. ins_char)
 end
 
 local delete_surround = function(del_char)
-    vim.api.nvim_feedkeys("ds" .. esc, "x", false)
-    vim.api.nvim_feedkeys("g@l" .. del_char, "x", false)
+    vim.cmd("normal ds" .. del_char)
 end
 
 local change_surround = function(del_char, ins_char)
-    vim.api.nvim_feedkeys("cs" .. esc, "x", false)
-    vim.api.nvim_feedkeys("g@l" .. del_char .. ins_char, "x", false)
+    vim.cmd("normal cs" .. del_char .. ins_char)
 end
 
 local set_lines = function(lines)
@@ -103,7 +99,7 @@ describe("nvim-surround", function()
     it("can dot-repeat deletions", function()
         set_lines({ "(((test)))" })
         delete_surround("b")
-        vim.cmd("normal! .")
+        vim.cmd("normal! ..")
         check_lines({ "(test)" })
         vim.cmd("normal! .")
         check_lines({ "test" })
@@ -185,6 +181,34 @@ describe("nvim-surround", function()
             "},",
             "})",
             "```",
+        })
+    end)
+
+    it("can insert user-inputted delimiters", function()
+        set_lines({ "some text" })
+        cursor({ 1, 3 })
+        vim.cmd("normal! vwl")
+        visual_surround("i" .. "|left|" .. cr .. "|right|" .. cr)
+        check_lines({ "so|left|me te|right|xt" })
+        cursor({ 1, 9 })
+        insert_surround("iw", "f" .. "func_name" .. cr)
+        check_lines({ "so|left|func_name(me) te|right|xt" })
+    end)
+
+    it("can dot-repeat user-inputted delimiters", function()
+        set_lines({ "here", "are", "some", "lines" })
+        insert_surround("iw", "f" .. "func_name" .. cr)
+        cursor({ 2, 3 })
+        vim.cmd("normal! .")
+        cursor({ 3, 4 })
+        vim.cmd("normal! .")
+        cursor({ 4, 2 })
+        vim.cmd("normal! .")
+        check_lines({
+            "func_name(here)",
+            "func_name(are)",
+            "func_name(some)",
+            "func_name(lines)",
         })
     end)
 
