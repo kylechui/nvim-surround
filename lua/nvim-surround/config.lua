@@ -69,20 +69,8 @@ M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
     user_opts = user_opts and vim.tbl_deep_extend("force", M.default_opts, user_opts) or M.default_opts
     M.user_opts = user_opts
-
-    -- Setup keymaps for calling plugin behavior
-    map("n", user_opts.keymaps.insert, require("nvim-surround").insert_surround,
-        { silent = true, expr = true }
-    )
-    map("x", user_opts.keymaps.visual, require("nvim-surround").visual_surround,
-        { silent = true, expr = true }
-    )
-    map("n", user_opts.keymaps.delete, require("nvim-surround").delete_surround,
-        { silent = true, expr = true }
-    )
-    map("n", user_opts.keymaps.change, require("nvim-surround").change_surround,
-        { silent = true, expr = true }
-    )
+    -- Configure user-set defaults for the current buffer in case the plugin is lazy-loaded
+    M.buffer_setup(user_opts)
 
     -- Configure highlight group
     if user_opts.highlight_motion then
@@ -90,6 +78,7 @@ M.setup = function(user_opts)
             highlight default link NvimSurroundHighlightTextObject Visual
         ]])
     end
+
     -- Configure buffer setup autocommand
     local buffer_setup_group = vim.api.nvim_create_augroup("nvimSurroundBufferSetup", {})
     vim.api.nvim_create_autocmd("BufEnter", {
