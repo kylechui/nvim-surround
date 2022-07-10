@@ -262,4 +262,7 @@ Furthermore, for separators (quotes by default): To match behavior for
 forwards-jumping, |nvim-surround| will only reverse-jump to separators on the
 same line as the cursor.
 
+Note: Reverse jumping is only available for changing/deleting surrounds, not
+inserting a new pair.
+
 vim:tw=78:ts=8:ft=help:norl:
