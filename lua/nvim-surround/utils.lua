@@ -213,6 +213,10 @@ M.get_nearest_selections = function(char)
     -- find the pair that is closest to the cursor position (that also still
     -- surrounds the cursor)
     for _, c in ipairs(aliases) do
+        -- If the character is a separator and the next separator is on the same line, jump to it
+        if b.buffer_opts.delimiters.separators[c] and vim.fn.searchpos(c, "cnW")[1] == curpos[1] then
+            vim.fn.cursor(vim.fn.searchpos(c, "cnW"))
+        end
         local cur_selections = M.get_surrounding_selections(c)
         local n_first = nearest_selections and nearest_selections.left.first_pos
         local c_first = cur_selections and cur_selections.left.first_pos
@@ -232,12 +236,14 @@ M.get_nearest_selections = function(char)
                 end
             end
         end
+        -- Reset the cursor position
+        vim.fn.cursor(curpos)
     end
     -- If nothing is found, search backwards for the selections that end the latest
     if not nearest_selections then
         for _, c in ipairs(aliases) do
             -- Jump to the previous instance of this delimiter
-            vim.fn.cursor(vim.fn.searchpos(vim.trim(c), "nbW"))
+            vim.fn.searchpos(vim.trim(c), "bW")
             local cur_selections = M.get_surrounding_selections(c)
             local n_last = nearest_selections and nearest_selections.right.last_pos
             local c_last = cur_selections and cur_selections.right.last_pos
