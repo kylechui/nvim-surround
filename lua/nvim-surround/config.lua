@@ -47,7 +47,8 @@ M.default_opts = {
             ["`"] = { "`", "`" },
         },
         HTML = {
-            ["t"] = true,
+            ["t"] = "type",
+            ["T"] = "whole",
         },
         aliases = {
             ["a"] = ">",

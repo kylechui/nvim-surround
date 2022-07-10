@@ -127,6 +127,15 @@ M.insert_lines = function(pos, lines)
 end
 
 --[[
+Formats a set of lines from the buffer, inclusive and 1-indexed.
+@param start The starting line.
+@param stop The final line.
+]]
+M.format_lines = function(start, stop)
+    vim.cmd(string.format("silent normal! %dG=%dG", start, stop))
+end
+
+--[[
 Gets a selection of text from the buffer.
 @param selection The selection of text to be retrieved.
 @return lines The text from the buffer.
@@ -192,13 +201,8 @@ M.change_selection = function(selection, lines)
     local first_col, last_col = selection.first_pos[2], selection.last_pos[2]
     local first_line = M.get_lines(first_lnum, first_lnum)[1]
     local last_line = M.get_lines(last_lnum, last_lnum)[1]
-    -- Edge case where the selection is only one line
-    if #lines == 1 then
-        lines[1] = first_line:sub(1, first_col - 1) .. lines[1] .. first_line:sub(last_col + 1, #first_line)
-    else
-        lines[#lines] = last_line:sub(last_col + 1) .. lines[#lines]
-        lines[1] = first_line:sub(1, first_col - 1) .. lines[1]
-    end
+    lines[#lines] = lines[#lines] .. last_line:sub(last_col + 1)
+    lines[1] = first_line:sub(1, first_col - 1) .. lines[1]
     M.set_lines(first_lnum, last_lnum, lines)
 end
 

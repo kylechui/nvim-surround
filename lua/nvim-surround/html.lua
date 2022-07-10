@@ -57,11 +57,21 @@ M.get_tag = function(include_brackets)
 end
 
 --[[
-Adjust the selection boundaries to only select the HTML tag type.
-@param The coordinates of the open and closing HTML tags.
-@return The coordinates of the HTML tag.
+Returns the type of HTML selection that the character refers to.
+@param char The input character.
+@return The HTML selection type, or nil if not an HTML character.
 ]]
-M.adjust_selections = function(selections)
+M.get_type = function(char)
+    return vim.b[0].buffer_opts.delimiters.HTML[char]
+end
+
+--[[
+Adjust the selection boundaries to only select the HTML tag type.
+@param selections The coordinates of the open and closing HTML tags.
+@param type The type of selections to be returning.
+@return The coordinates of the adjusted HTML tag.
+]]
+M.adjust_selections = function(selections, type)
     if not selections then
         return nil
     end
@@ -70,7 +80,12 @@ M.adjust_selections = function(selections)
     close.first_pos[2] = close.first_pos[2] + 2
     close.last_pos[2] = close.last_pos[2] - 1
     open.first_pos[2] = open.first_pos[2] + 1
-    open.last_pos[2] = open.first_pos[2] + close.last_pos[2] - close.first_pos[2]
+    if type == "whole" then
+        open.last_pos[2] = open.last_pos[2] - 1
+    else
+        open.last_pos[1] = open.first_pos[1]
+        open.last_pos[2] = open.first_pos[2] + close.last_pos[2] - close.first_pos[2]
+    end
     return {
         left = {
             first_pos = open.first_pos,

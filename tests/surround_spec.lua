@@ -27,6 +27,7 @@ local check_lines = function(lines)
 end
 
 describe("nvim-surround", function()
+    vim.cmd("set filetype=lua")
     before_each(function()
         -- Setup default keybinds (can be overwritten with subsequent calls)
         require("nvim-surround").setup({})
@@ -143,9 +144,9 @@ describe("nvim-surround", function()
             "",
             "```lua",
             "require'nvim-surround'.setup{",
-            "aliases = {",
-            "'b' = { 'q' },",
-            "},",
+            "   aliases = {",
+            "       'b' = { 'q' },",
+            "   },",
             "}",
             "```",
         })
@@ -176,9 +177,9 @@ describe("nvim-surround", function()
             "",
             "```lua",
             "require(\"nvim-surround\").setup({",
-            "aliases = {",
-            "b = { \"q\" },",
-            "},",
+            "    aliases = {",
+            "        b = { \"q\" },",
+            "    },",
             "})",
             "```",
         })

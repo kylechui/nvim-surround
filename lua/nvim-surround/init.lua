@@ -61,9 +61,7 @@ M.visual_surround = function(ins_char, mode)
         buffer.insert_lines({ first_pos[1], 1 }, { "", "" })
         buffer.insert_lines({ first_pos[1], 1 }, delimiters[1])
         -- Reformat the text
-        vim.cmd(string.format("silent normal! %dG=%dG",
-            first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2]
-        ))
+        buffer.format_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2])
     else -- Regular visual mode case
         buffer.insert_lines({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
         buffer.insert_lines(first_pos, delimiters[1])
@@ -105,14 +103,19 @@ M.change_surround = function(args)
     local selections = utils.get_nearest_selections(args.del_char)
 
     -- Adjust the selections for changing if we are changing a HTML tag
-    if utils.is_HTML(args.del_char) then
-        selections = html.adjust_selections(selections)
+    if html.get_type(args.del_char) then
+        selections = html.adjust_selections(selections, html.get_type(args.del_char))
     end
 
     if selections then
         -- Change the right selection first to ensure selection positions are correct
         buffer.change_selection(selections.right, args.ins_delimiters[2])
         buffer.change_selection(selections.left, args.ins_delimiters[1])
+        -- Reformat the text
+        buffer.format_lines(
+            selections.left.first_pos[1],
+            selections.right.first_pos[1] + #args.ins_delimiters[1] + #args.ins_delimiters[2]
+        )
     end
     cache.set_callback("v:lua.require'nvim-surround'.change_callback")
 end
@@ -194,7 +197,7 @@ M.change_callback = function()
         end
 
         local ins_char
-        if utils.is_HTML(del_char) then
+        if html.get_type(del_char) then
             ins_char = del_char
         else
             ins_char = utils.get_char()
@@ -205,7 +208,7 @@ M.change_callback = function()
 
         -- Get the new surrounding pair
         local delimiters
-        if utils.is_HTML(del_char) then
+        if html.get_type(del_char) then
             delimiters = html.get_tag()
         else
             delimiters = utils.get_delimiters(ins_char)

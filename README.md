@@ -101,7 +101,8 @@ require("nvim-surround").setup({
             ["`"] = { "`", "`" },
         },
         HTML = {
-            ["t"] = true, -- Use "t" for HTML-style mappings
+            ["t"] = "type", -- Change just the tag type
+            ["T"] = "whole", -- Change the whole tag contents
         },
         aliases = {
             ["a"] = ">", -- Single character aliases apply everywhere

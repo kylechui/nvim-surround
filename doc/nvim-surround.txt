@@ -133,11 +133,13 @@ nvim-surround.setup({opts})
 
                                                *nvim-surround.delimiters.HTML*
         HTML:~
-            A table of characters used to trigger HTML-style mappings, each
-            associated to a true value.
+            A table of characters used to trigger HTML-style mappings. The
+            value of each mapping determines whether the character is used to
+            change just the type of the tag, or the whole tag contents.
 
             Default: {
-                ["t"] = true,
+                ["t"] = "type",
+                ["T"] = "whole",
             }
 
                                             *nvim-surround.delimiters.aliases*

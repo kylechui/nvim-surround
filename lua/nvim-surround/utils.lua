@@ -24,15 +24,6 @@ M.is_valid = function(char)
 end
 
 --[[
-Returns if a character is a valid HTML tag alias.
-@param char The character to be checked.
-@return Whether or not it is an alias for HTML tags.
-]]
-M.is_HTML = function(char)
-    return b.buffer_opts.delimiters.HTML[char]
-end
-
---[[
 Gets a character input from the user.
 @return The input character, or nil if a control character is pressed.
 ]]
@@ -81,7 +72,7 @@ M.get_delimiters = function(char, args)
     end
 
     local delimiters
-    if M.is_HTML(char) then
+    if html.get_type(char) then
         delimiters = html.get_tag(true)
     else
         -- If the character is not bound to anything, duplicate it
@@ -139,7 +130,14 @@ M.get_surrounding_selections = function(char)
     local open_first, open_last, close_first, close_last
     local curpos = buffer.get_curpos()
     -- Use the correct quotes to surround the arguments for setting the marks
-    local args = char == "'" and [["'"]] or "'" .. char .. "'"
+    local args
+    if html.get_type(char) then
+        args = "'t'"
+    elseif char == "'" then
+        args = [["'"]]
+    else
+        args = "'" .. char .. "'"
+    end
     vim.cmd("silent call v:lua.require'nvim-surround.buffer'.set_operator_marks(" .. args .. ")")
     open_first = buffer.get_mark("[")
     close_last = buffer.get_mark("]")
@@ -150,7 +148,7 @@ M.get_surrounding_selections = function(char)
         return nil
     end
 
-    if M.is_HTML(char) then
+    if html.get_type(char) then
         -- Find the correct selection boundaries for HTML tags
         vim.fn.cursor(close_last)
         close_first = vim.fn.searchpos("<", "nbW")
