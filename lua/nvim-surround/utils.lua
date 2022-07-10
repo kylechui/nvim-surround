@@ -175,8 +175,17 @@ M.get_surrounding_selections = function(char)
         -- Validate that the pair actually exists at the given selection
         if open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1] or
             close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1] then
-            vim.fn.cursor(curpos)
-            return nil
+            -- If not strictly there, trim the delimiters' whitespace and try again
+            delimiters[1][1] = vim.trim(delimiters[1][1])
+            delimiters[2][1] = vim.trim(delimiters[2][1])
+            open_last = { open_first[1], open_first[2] + #delimiters[1][1] - 1 }
+            close_first = { close_last[1], close_last[2] - #delimiters[2][1] + 1 }
+            -- If still not found, return nil
+            if open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1] or
+                close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1] then
+                vim.fn.cursor(curpos)
+                return nil
+            end
         end
     end
 
@@ -252,7 +261,7 @@ M.get_nearest_selections = function(char)
     if nearest_selections then
         vim.fn.cursor(nearest_selections.left.first_pos)
     end
-    
+
     return nearest_selections
 end
 
