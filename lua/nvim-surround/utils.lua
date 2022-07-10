@@ -252,6 +252,7 @@ M.get_nearest_selections = function(char)
     if nearest_selections then
         vim.fn.cursor(nearest_selections.left.first_pos)
     end
+    
     return nearest_selections
 end
 
