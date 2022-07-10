@@ -196,12 +196,8 @@ end
 
 M.get_nearest_selections = function(char)
     char = M.get_alias(char)
-    -- If there are no tabular aliases, simply return the surrounding selection for that character
-    if not b.buffer_opts.delimiters.aliases[char] then
-        return M.get_surrounding_selections(char)
-    end
 
-    local aliases = b.buffer_opts.delimiters.aliases[char]
+    local aliases = b.buffer_opts.delimiters.aliases[char] and b.buffer_opts.delimiters.aliases[char] or { char }
     local nearest_selections
     local curpos = buffer.get_curpos()
     -- Iterate through all possible selections for each aliased character, and
@@ -228,8 +224,33 @@ M.get_nearest_selections = function(char)
             end
         end
     end
-
-    return nearest_selections
+    -- If nothing is found, search backwards for the right-most selections
+    if not nearest_selections then
+        for _, c in ipairs(aliases) do
+            local prev = vim.fn.searchpos(vim.trim(c), "nbW")
+            if prev then
+                vim.fn.cursor(prev)
+            end
+            local cur_selections = M.get_surrounding_selections(c)
+            local n_first = nearest_selections and nearest_selections.left.first_pos
+            local c_first = cur_selections and cur_selections.left.first_pos
+            if c_first then
+                if not n_first then
+                    nearest_selections = cur_selections
+                else
+                    if buffer.comes_before(n_first, c_first) then
+                        nearest_selections = cur_selections
+                    end
+                end
+            end
+            vim.fn.cursor(curpos)
+        end
+    end
+    -- If a pair of selections is found, jump to the beginning of the left one
+    if nearest_selections then
+        vim.fn.cursor(nearest_selections.left.first_pos)
+        return nearest_selections
+    end
 end
 
 return M
