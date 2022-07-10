@@ -70,8 +70,20 @@ nvim-surround.setup({opts})
             that returns a table of two delimiters. This can be used to query
             the user for input and use the input to create the pair, or to tap
             into any other Lua functions. This function can also optionally
-            take a parameter {text}, which is a table containing the selected
-            text.
+            take a parameter {args}, which is a table containing the following
+            keys:
+
+        Valid keys for {args}
+
+            bufnr:~
+                The buffer number where the surround is called.
+            selection:~
+                A table containing {first_pos} and {last_pos}, which contain
+                the row, column pair for the beginning and end of the
+                selection.
+            text:~
+                A table of strings containing the contents of the selection,
+                with one string per line of the buffer.
 
             In the default configuration, the `i` mapping queries the user for
             both left and right delimiters, while the `f` mapping surrounds

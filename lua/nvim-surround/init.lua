@@ -43,7 +43,12 @@ M.visual_surround = function(ins_char, mode)
     end
 
     local selection = utils.get_selection(true)
-    local delimiters = utils.get_delimiters(ins_char, selection)
+    local args = {
+        bufnr = vim.fn.bufnr(),
+        selection = selection,
+        text = buffer.get_selection(selection),
+    }
+    local delimiters = utils.get_delimiters(ins_char, args)
     if not delimiters or not selection then
         return
     end
@@ -137,8 +142,13 @@ M.insert_callback = function(mode)
     -- Get a character input and the delimiters (if not cached)
     if not cache.insert.delimiters then
         local char = utils.get_char()
+        local args = {
+            bufnr = vim.fn.bufnr(),
+            selection = selection,
+            text = buffer.get_selection(selection),
+        }
         -- Get the delimiter pair based on the insert character
-        cache.insert.delimiters = cache.insert.delimiters or utils.get_delimiters(char, selection)
+        cache.insert.delimiters = cache.insert.delimiters or utils.get_delimiters(char, args)
         if not cache.insert.delimiters then
             buffer.clear_highlights()
             return
