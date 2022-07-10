@@ -229,4 +229,37 @@ nvim-surround.buffer_setup({opts})
         }
     })
 <
+                                                      *nvim-surround.behavior*
+                                                          *nvim-surround.jump*
+
+Under certain circumstances, |nvim-surround| can "jump" to the "nearest"
+delimiter. It decides how to jump based on the position of the cursor relative
+to the pair of delimiters:
+* If there exist pairs surrounding the cursor, jump to the right-most
+  (startwise) pair
+* Else if there exist pairs to the right of the cursor, jump to the left-most
+  (startwise) pair 
+* Else if there exist pairs to the left of the cursor, jump to the right-most
+  (endwise) pair
+
+To make things slightly simpler to understand, |nvim-surround| always jumps to
+the "closest" pair of delimiters, prioritizing
+* pairs that surround the cursor, before
+* pairs that occur after the cursor, before
+* pairs that occur before the cursor
+
+An example of this behavior is as follows:
+>
+    Buffer: local str = "This 'string' contains `some` quotes" -- comment
+    Cursor:       1      2    3   4     5       6    7     8       9
+<
+In the above example, typing `dsq` at locations:
+* 1, 2, 5, 8, 9: Deletes the double quotes `"`
+* 3, 4: Deletes the single quotes `'`
+* 6, 7: Deletes the backticks ```
+
+Furthermore, for separators (quotes by default): To match behavior for
+forwards-jumping, |nvim-surround| will only reverse-jump to separators on the
+same line as the cursor.
+
 vim:tw=78:ts=8:ft=help:norl:
