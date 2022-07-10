@@ -2,12 +2,8 @@
 
 Surround selections, stylishly :sunglasses:
 
-> **Warning**: This plugin is still in early development, so some things might
-> not be fully fleshed out or stable. Feel free to open an issue or pull
-> request!
-
 <div align="center">
-  <video src="https://user-images.githubusercontent.com/48545987/176824692-28c16e7b-5f30-4ba9-8f23-6d4b9c050428.mp4" type="video/mp4" width="800">
+  <video src="https://user-images.githubusercontent.com/48545987/178091618-f477b51d-d366-4de2-84a8-cbf4f72928e3.mp4" type="video/mp4" width="800">
 </div>
 
 ## :sparkles: Features
@@ -176,12 +172,6 @@ require("nvim-surround").buffer_setup({
     }
 })
 ```
-
-## :white\_check\_mark: TODO
-
-* Fix the bajillion bugs that exist
-* Find a better way to use `operatorfunc`
-  * There's probably a better way to avoid the `va"` white space situation
 
 ## Shoutouts
 

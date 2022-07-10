@@ -42,8 +42,13 @@ M.visual_surround = function(ins_char, mode)
         return "g@"
     end
 
-    local delimiters = utils.get_delimiters(ins_char)
     local selection = utils.get_selection(true)
+    local args = {
+        bufnr = vim.fn.bufnr(),
+        selection = selection,
+        text = buffer.get_selection(selection),
+    }
+    local delimiters = utils.get_delimiters(ins_char, args)
     if not delimiters or not selection then
         return
     end
@@ -126,6 +131,8 @@ M.insert_callback = function(mode)
         pos = { pos[1], #buffer.get_lines(pos[1], pos[1])[1] }
         buffer.set_mark("]", pos)
     end
+
+    local selection = utils.get_selection(false)
     -- Highlight the range and set a timer to clear it if necessary
     buffer.highlight_range()
     local highlight_motion = config.user_opts.highlight_motion
@@ -135,8 +142,13 @@ M.insert_callback = function(mode)
     -- Get a character input and the delimiters (if not cached)
     if not cache.insert.delimiters then
         local char = utils.get_char()
+        local args = {
+            bufnr = vim.fn.bufnr(),
+            selection = selection,
+            text = buffer.get_selection(selection),
+        }
         -- Get the delimiter pair based on the insert character
-        cache.insert.delimiters = cache.insert.delimiters or utils.get_delimiters(char)
+        cache.insert.delimiters = cache.insert.delimiters or utils.get_delimiters(char, args)
         if not cache.insert.delimiters then
             buffer.clear_highlights()
             return
@@ -144,8 +156,6 @@ M.insert_callback = function(mode)
     end
     -- Clear the highlights right after the action is no longer pending
     buffer.clear_highlights()
-
-    local selection = utils.get_selection(false)
 
     local args = {
         delimiters = cache.insert.delimiters,

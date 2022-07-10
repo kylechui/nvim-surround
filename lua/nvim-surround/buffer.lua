@@ -122,8 +122,22 @@ M.insert_lines = function(pos, lines)
     -- Make a copy of the lines to avoid modifying delimiters
     local lns = vim.deepcopy(lines)
     lns[1] = line:sub(1, pos[2] - 1) .. lns[1]
-    lns[#lns] = lns[#lns] .. line:sub(pos[2], #line)
+    lns[#lns] = lns[#lns] .. line:sub(pos[2])
     M.set_lines(pos[1], pos[1], lns)
+end
+
+--[[
+Gets a selection of text from the buffer.
+@param selection The selection of text to be retrieved.
+@return lines The text from the buffer.
+]]
+M.get_selection = function(selection)
+    local first_lnum, last_lnum = selection.first_pos[1], selection.last_pos[1]
+    local first_col, last_col = selection.first_pos[2], selection.last_pos[2]
+    local lines = M.get_lines(first_lnum, last_lnum)
+    lines[#lines] = lines[#lines]:sub(1, last_col)
+    lines[1] = lines[1]:sub(first_col)
+    return lines
 end
 
 --[[
@@ -135,7 +149,7 @@ M.delete_selection = function(selection)
     local first_col, last_col = selection.first_pos[2], selection.last_pos[2]
     local first_line = M.get_lines(first_lnum, first_lnum)[1]
     local last_line = M.get_lines(last_lnum, last_lnum)[1]
-    local replacement = first_line:sub(1, first_col - 1) .. last_line:sub(last_col + 1, #last_line)
+    local replacement = first_line:sub(1, first_col - 1) .. last_line:sub(last_col + 1)
     M.set_lines(first_lnum, last_lnum, { replacement })
 end
 
@@ -153,7 +167,7 @@ M.change_selection = function(selection, lines)
     if #lines == 1 then
         lines[1] = first_line:sub(1, first_col - 1) .. lines[1] .. first_line:sub(last_col + 1, #first_line)
     else
-        lines[#lines] = last_line:sub(last_col + 1, #last_line) .. lines[#lines]
+        lines[#lines] = last_line:sub(last_col + 1) .. lines[#lines]
         lines[1] = first_line:sub(1, first_col - 1) .. lines[1]
     end
     M.set_lines(first_lnum, last_lnum, lines)
