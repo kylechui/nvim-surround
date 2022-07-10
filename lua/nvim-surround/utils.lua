@@ -146,14 +146,6 @@ M.get_surrounding_selections = function(char)
 
     -- If the operatorfunc "fails", return no selection found
     if not open_first or not close_last then
-        return nil
-    end
-    -- If the cursor is not contained within the selection, return no selection found
-    local selection = {
-        first_pos = open_first,
-        last_pos = close_last,
-    }
-    if not M.inside_selection(curpos, selection) then
         vim.fn.cursor(curpos)
         return nil
     end
@@ -165,6 +157,7 @@ M.get_surrounding_selections = function(char)
         vim.fn.cursor(open_first)
         open_last = vim.fn.searchpos(">", "nW")
         if close_first == { 0, 0 } or open_last == { 0, 0 } then
+            vim.fn.cursor(curpos)
             return nil
         end
     else
@@ -210,42 +203,33 @@ M.get_nearest_selections = function(char)
 
     local aliases = b.buffer_opts.delimiters.aliases[char]
     local nearest_selections
+    local curpos = buffer.get_curpos()
     -- Iterate through all possible selections for each aliased character, and
     -- find the pair that is closest to the cursor position (that also still
     -- surrounds the cursor)
     for _, c in ipairs(aliases) do
         local cur_selections = M.get_surrounding_selections(c)
-        local near_pos = nearest_selections and nearest_selections.left.first_pos
-        local cur_pos = cur_selections and cur_selections.left.first_pos
-        if cur_pos then
-            if not near_pos then
+        local n_first = nearest_selections and nearest_selections.left.first_pos
+        local c_first = cur_selections and cur_selections.left.first_pos
+        if c_first then
+            if not n_first then
                 nearest_selections = cur_selections
             else
-                if near_pos[1] < cur_pos[1] or
-                    (near_pos[1] == cur_pos[1] and near_pos[2] < cur_pos[2]) then
-                    nearest_selections = cur_selections
+                -- If the cursor is inside in the "nearest" selections, use the right-most selections
+                if buffer.comes_before(n_first, curpos) then
+                    if buffer.comes_before(c_first, curpos) and buffer.comes_before(n_first, c_first) then
+                        nearest_selections = cur_selections
+                    end
+                else -- If the cursor precedes the "nearest" selections, use the left-most selections
+                    if buffer.comes_before(c_first, curpos) and buffer.comes_before(n_first, c_first) then
+                        nearest_selections = cur_selections
+                    end
                 end
             end
         end
     end
 
     return nearest_selections
-end
-
---[[
-Returns whether a given position is contained within a given selection.
-@param pos The position to be considered.
-@param selection The selection to potentially contain the position.
-@return A boolean indicating whether the position is contained in the selection.
-]]
-M.inside_selection = function(pos, selection)
-    local first_pos, last_pos = selection.first_pos, selection.last_pos
-    if pos[1] == first_pos[1] and pos[2] < first_pos[2] then
-        return false
-    elseif pos[1] == last_pos[1] and pos[2] > last_pos[2] then
-        return false
-    end
-    return pos[1] >= first_pos[1] and pos[1] <= last_pos[1]
 end
 
 return M
