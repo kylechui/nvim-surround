@@ -265,6 +265,33 @@ describe("nvim-surround", function()
         check_lines({ "local str = this has 'nested' strings -- Some comment" })
     end)
 
+    it("can handle quotes smartly", function()
+        set_lines({ "'quote 1', 'quote 2', 'quote 3'" })
+        cursor({ 1, 9 })
+        delete_surround("'")
+        check_lines({ "quote 1, 'quote 2', 'quote 3'" })
+
+        set_lines({ "'quote 1', 'quote 2', 'quote 3'" })
+        cursor({ 1, 10 })
+        delete_surround("'")
+        check_lines({ "'quote 1', quote 2, 'quote 3'" })
+
+        set_lines({ "'quote 1', 'quote 2', 'quote 3'" })
+        cursor({ 1, 21 })
+        delete_surround("'")
+        check_lines({ "'quote 1', 'quote 2', quote 3" })
+
+        set_lines({ [["'quote 1', 'quote 2', 'quote 3'"]] })
+        cursor({ 1, 10 })
+        delete_surround("q")
+        check_lines({ [["quote 1, 'quote 2', 'quote 3'"]] })
+
+        set_lines({ [["'quote 1', 'quote 2', 'quote 3'"]] })
+        cursor({ 1, 11 })
+        delete_surround("q")
+        check_lines({ [['quote 1', 'quote 2', 'quote 3']] })
+    end)
+
     it("can disable default delimiters", function()
         require("nvim-surround").setup({
             delimiters = {

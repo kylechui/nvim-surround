@@ -4,15 +4,16 @@
 |nvim-surround| is a plugin for modifying "surroundings" in Neovim, allowing you
 to efficiently:
 * Add/change/delete surrounding delimiter pairs
+  * Add complex pairs depending on user-input and other functions
 * Dot-repeat previous surround actions
 * Configure buffer-local mappings and customizations
 * Manipulate HTML-style tags
-* Alias delimiter types to other characters
+* Alias characters to represent other delimiter types
 
                                                        *nvim-surround.setup()*
 nvim-surround.setup({opts})
-    Setup function to be run by the user, which configures the default
-    keymaps and delimiter types.
+    Setup function to be run by the user, which configures default keymaps and
+    delimiter types across all buffers.
 
     Note: Calling the setup function with no arguments or an empty table uses
     the defaults.
@@ -141,31 +142,30 @@ nvim-surround.setup({opts})
 
                                             *nvim-surround.delimiters.aliases*
         aliases:~
-            A table that aliases characters {alias} to output characters. If
-            the associated value is a character {char}, then you may use {alias}
-            to stand in for {char} while changing/deleting surrounding
-            delimiter pairs.
+            A table that aliases some characters to other values:
+            * If the value is a single character, then the characters are
+              interchangeable.
+            * If the value is a table, then the alias may stand in for any of
+              the characters in the table when changing/deleting.
 
-            Note: Only Neovim builtin text-objects may be inserted in this
-            manner.
-
-            For example, `ysibB` has the same effect as typing `ysi)},` but
-            `ysarb` is invalid. However, `csar` behaves the same as `cs>]`.
-
-            If the associated value to {alias} is a table {chars}, then when
-            changing/deleting surrounding delimiter pairs, {alias} will
-            instead find the nearest surrounding pair of all text-objects in
-            {chars}, and modify that pair.
-
-            Note: These kinds of aliases cannot be used for inserting
-            surrounding pairs.
-
-            For example: `dsq` at position 1 will delete the double quotes,
-            while `dsq` at position 2 will delete the single quotes instead.
+            For example, `dsq` deletes the "closest" pair between `ds'`,
+            `ds"`, and `ds``. When typed at position 1, the double quotes `"`
+            get deleted, and when typed at position 2, the single quotes `'`
+            get deleted.
 >
             Cursor:                      2             1
             Buffer: vim.fn.execute("echo 'Hello world!'")
 <
+            For more information on what constitutes as "closest", see
+            |nvim-surround.jump|.
+
+            Note: Only builtin text-objects may be insert surrounded.
+
+            For example, `ysibB` is valid since `ib` is a builtin text-object,
+            but `ysarb` is not since `ar` is not a valid text-object. This
+            does not apply to changes/deletions, e.g. `csar` behaves the same
+            as `cs>]`.
+
             Default: {
                 ["a"] = ">",
                 ["b"] = ")",
@@ -193,7 +193,7 @@ nvim-surround.setup({opts})
                                                 *nvim-surround.buffer_setup()*
 nvim-surround.buffer_setup({opts})
     Sets up user configuration options for the current buffer. It allows users
-    to have different mappings per buffer (importantly, file type).
+    to have different mappings per buffer (notably, file type).
 
     One example is to set up different `f` mappings for Python and Lua file
     types via:
@@ -229,4 +229,43 @@ nvim-surround.buffer_setup({opts})
         }
     })
 <
+                                                      *nvim-surround.behavior*
+                                                          *nvim-surround.jump*
+
+Under certain circumstances, |nvim-surround| can "jump" to the "nearest"
+delimiter. It always prefers
+* pairs that surround the cursor, before
+* pairs that occur after the cursor, before
+* pairs that occur before the cursor
+
+Note: Reverse jumping is only available for changing/deleting surrounds, not
+inserting a new pair.
+
+An example of this behavior is as follows:
+>
+    local nil_value = function()
+        vim.ui.input({
+            prompt = "Enter some text: ",
+        }, function(input)
+        end)
+    end
+<
+When the cursor is put on top of the `v` in `vim`, and `ds(..` is typed:
+* The parentheses for the `vim.ui.input` call get deleted first
+* The parentheses around the word `input` get deleted next
+* The parentheses on the first line get deleted last
+
+Note: |nvim-surround| only jumps to separators (quotes by default) on the same
+line as the cursor
+
+Here's another example for quotes:
+>
+    Buffer: local str = "This 'string' contains `some` quotes" -- comment
+    Cursor:       1      2    3   4     5       6    7     8       9
+<
+In the above example, typing `dsq` at locations:
+* 1, 2, 5, 8, 9: Deletes the double quotes `"`
+* 3, 4: Deletes the single quotes `'`
+* 6, 7: Deletes the backticks ```
+
 vim:tw=78:ts=8:ft=help:norl:
