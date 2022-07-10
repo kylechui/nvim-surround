@@ -212,6 +212,59 @@ describe("nvim-surround", function()
         })
     end)
 
+    it("can jump to the deletion properly", function()
+        set_lines({
+            "local str = 'some text'",
+            "-- Some comment string",
+            "local tab = { 'a', 'table' }",
+        })
+        cursor({ 2, 1 })
+        delete_surround("'")
+        check_lines({
+            "local str = 'some text'",
+            "-- Some comment string",
+            "local tab = { 'a', 'table' }",
+        })
+        cursor({ 3, 5 })
+        delete_surround("'")
+        check_lines({
+            "local str = 'some text'",
+            "-- Some comment string",
+            "local tab = { a, 'table' }",
+        })
+        cursor({ 3, 26 })
+        delete_surround("'")
+        check_lines({
+            "local str = 'some text'",
+            "-- Some comment string",
+            "local tab = { a, table }",
+        })
+        set_lines({ [[local str = "this has 'nested' strings"]] })
+        cursor({ 1, 12 })
+        delete_surround("q")
+        check_lines({ "local str = this has 'nested' strings" })
+
+        set_lines({ [[local str = "this has 'nested' strings"]] })
+        cursor({ 1, 22 })
+        delete_surround("q")
+        check_lines({ "local str = this has 'nested' strings" })
+
+        set_lines({ [[local str = "this has 'nested' strings"]] })
+        cursor({ 1, 23 })
+        delete_surround("q")
+        check_lines({ [[local str = "this has nested strings"]] })
+
+        set_lines({ [[local str = "this has 'nested' strings"]] })
+        cursor({ 1, 31 })
+        delete_surround("q")
+        check_lines({ "local str = this has 'nested' strings" })
+
+        set_lines({ [[local str = "this has 'nested' strings" -- Some comment]] })
+        cursor({ 1, 44 })
+        delete_surround("q")
+        check_lines({ "local str = this has 'nested' strings -- Some comment" })
+    end)
+
     it("can disable default delimiters", function()
         require("nvim-surround").setup({
             delimiters = {
