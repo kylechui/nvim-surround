@@ -1,12 +1,17 @@
 local buffer = require("nvim-surround.buffer")
 local html = require("nvim-surround.html")
 
-local b = vim.b[0]
-
 local M = {}
 
 -- Do nothing.
 M.NOOP = function() end
+
+--[[
+Returns the buffer-local options for the plugin.
+]]
+M.get_opts = function()
+    return vim.b.buffer_opts
+end
 
 -- Custom feedkeys wrapper
 M.feedkeys = function(string, flags)
@@ -19,7 +24,7 @@ Returns if a character is a valid key into the aliases table.
 @return Whether or not it is in the aliases table.
 ]]
 M.is_valid = function(char)
-    local delim = b.buffer_opts.delimiters
+    local delim = M.get_opts().delimiters
     return delim.pairs[char] or delim.separators[char] or delim.HTML[char] or delim.aliases[char]
 end
 
@@ -54,8 +59,8 @@ Returns the value that the input is aliased to, or the character if no alias exi
 @return The aliased character if it exists, or the original if none exists.
 ]]
 M.get_alias = function(char)
-    if type(b.buffer_opts.delimiters.aliases[char]) == "string" and #b.buffer_opts.delimiters.aliases[char] == 1 then
-        return b.buffer_opts.delimiters.aliases[char]
+    if type(M.get_opts().delimiters.aliases[char]) == "string" and #M.get_opts().delimiters.aliases[char] == 1 then
+        return M.get_opts().delimiters.aliases[char]
     end
     return char
 end
@@ -76,7 +81,7 @@ M.get_delimiters = function(char, args)
         delimiters = html.get_tag(true)
     else
         -- If the character is not bound to anything, duplicate it
-        delimiters = b.buffer_opts.delimiters.pairs[char] or b.buffer_opts.delimiters.separators[char] or { char, char }
+        delimiters = M.get_opts().delimiters.pairs[char] or M.get_opts().delimiters.separators[char] or { char, char }
     end
 
     -- Evaluate the function if necessary
@@ -119,7 +124,7 @@ end
 
 --[[
 Gets two selections for the left and right surrounding pair.
-@param A character representing what kind of surrounding pair is to be selected
+@param A character representing what kind of surrounding pair is to be selected.
 @return A table containing the start and end positions of the delimiters.
 ]]
 M.get_surrounding_selections = function(char)
@@ -197,10 +202,15 @@ M.get_surrounding_selections = function(char)
     return selections
 end
 
+--[[
+Gets the nearest two selections for the left and right surrounding pair.
+@param A character representing what kind of surrounding pair is to be selected.
+@return A table containing the start and end positions of the delimiters.
+]]
 M.get_nearest_selections = function(char)
     char = M.get_alias(char)
 
-    local aliases = b.buffer_opts.delimiters.aliases[char] and b.buffer_opts.delimiters.aliases[char] or { char }
+    local aliases = M.get_opts().delimiters.aliases[char] and M.get_opts().delimiters.aliases[char] or { char }
     local nearest_selections
     local curpos = buffer.get_curpos()
     -- Iterate through all possible selections for each aliased character, and
@@ -208,7 +218,7 @@ M.get_nearest_selections = function(char)
     -- surrounds the cursor)
     for _, c in ipairs(aliases) do
         -- If the character is a separator and the next separator is on the same line, jump to it
-        if b.buffer_opts.delimiters.separators[c] and vim.fn.searchpos(c, "cnW")[1] == curpos[1] then
+        if M.get_opts().delimiters.separators[c] and vim.fn.searchpos(c, "cnW")[1] == curpos[1] then
             vim.fn.cursor(vim.fn.searchpos(c, "cnW"))
         end
         local cur_selections = M.get_surrounding_selections(c)
@@ -243,7 +253,7 @@ M.get_nearest_selections = function(char)
             local c_last = cur_selections and cur_selections.right.last_pos
             if c_last then
                 -- If the current selections is for a separator and not on the same line, ignore it
-                if not (b.buffer_opts.delimiters.separators[c] and c_last[1] ~= curpos[1]) then
+                if not (M.get_opts().delimiters.separators[c] and c_last[1] ~= curpos[1]) then
                     if not n_last then
                         nearest_selections = cur_selections
                     else
