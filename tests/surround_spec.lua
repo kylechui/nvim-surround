@@ -228,6 +228,20 @@ describe("nvim-surround", function()
         })
     end)
 
+    it("can deal with different whitespace characters", function()
+        set_lines({
+            "local str1 = 	'some text'",
+            "local str2 = 		    	`some text`",
+        })
+        change_surround("q", "b")
+        cursor({ 2, 1 })
+        change_surround("q", "B")
+        check_lines({
+            "local str1 = 	(some text)",
+            "local str2 = 		    	{some text}",
+        })
+    end)
+
     it("can insert user-inputted delimiters", function()
         set_lines({ "some text" })
         cursor({ 1, 3 })
