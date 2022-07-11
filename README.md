@@ -114,7 +114,7 @@ require("nvim-surround").setup({
             ["s"] = { ")", "]", "}", ">", "'", '"', "`" }, -- Any surrounding delimiter
         },
     },
-    highlight_motion = { -- Highlight text-objects before surrounding them
+    highlight_motion = { -- Highlight before inserting/changing surrounds
         duration = 0,
     }
 })

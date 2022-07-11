@@ -98,7 +98,6 @@ M.change_surround = function(args)
     end
 
     local selections = utils.get_nearest_selections(args.del_char)
-
     -- Adjust the selections for changing if we are changing a HTML tag
     if html.get_type(args.del_char) then
         selections = html.adjust_selections(selections, html.get_type(args.del_char))
@@ -129,8 +128,8 @@ M.insert_callback = function(mode)
 
     local selection = utils.get_selection(false)
     -- Highlight the range and set a timer to clear it if necessary
-    buffer.highlight_range()
-    local highlight_motion = config.user_opts.highlight_motion
+    buffer.highlight_selection(selection)
+    local highlight_motion = utils.get_opts().highlight_motion
     if highlight_motion and highlight_motion.duration > 0 then
         vim.defer_fn(buffer.clear_highlights, highlight_motion.duration)
     end
@@ -172,7 +171,24 @@ end
 M.change_callback = function()
     -- Get character inputs if not cached
     if not cache.change.del_char or not cache.change.ins_delimiters then
+        -- Get the surrounding selections to delete
         local del_char = utils.get_char()
+        local selections = utils.get_nearest_selections(del_char)
+        -- Adjust the selections for changing if we are changing a HTML tag
+        if html.get_type(del_char) then
+            selections = html.adjust_selections(selections, html.get_type(del_char))
+        end
+        if not selections then
+            return
+        end
+
+        -- Highlight the range and set a timer to clear it if necessary
+        buffer.highlight_selection(selections.left)
+        buffer.highlight_selection(selections.right)
+        local highlight_motion = utils.get_opts().highlight_motion
+        if highlight_motion and highlight_motion.duration > 0 then
+            vim.defer_fn(buffer.clear_highlights, highlight_motion.duration)
+        end
         -- Get the new surrounding pair
         local ins_char, delimiters
         if html.get_type(del_char) then
@@ -181,6 +197,7 @@ M.change_callback = function()
             ins_char = utils.get_char()
             delimiters = utils.get_delimiters(ins_char)
         end
+        buffer.clear_highlights()
 
         if not delimiters then
             return
