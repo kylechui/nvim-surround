@@ -29,6 +29,7 @@ end
 describe("nvim-surround", function()
     vim.cmd("set filetype=lua")
     before_each(function()
+        cursor({ 1, 1 })
         -- Setup default keybinds (can be overwritten with subsequent calls)
         require("nvim-surround").setup({})
     end)
@@ -182,6 +183,48 @@ describe("nvim-surround", function()
             "    },",
             "})",
             "```",
+        })
+    end)
+
+    it("can visual-line surround", function()
+        set_lines({
+            "'hello',",
+            "'hello',",
+            "'hello',",
+        })
+        vim.cmd("normal! V")
+        visual_surround("B")
+        check_lines({
+            "{",
+            "    'hello',",
+            "}",
+            "'hello',",
+            "'hello',",
+        })
+        cursor({ 5, 1 })
+        vim.cmd("normal! V")
+        visual_surround("B")
+        check_lines({
+            "{",
+            "    'hello',",
+            "}",
+            "'hello',",
+            "{",
+            "    'hello',",
+            "}",
+        })
+        vim.cmd("normal! ggVG")
+        visual_surround("b")
+        check_lines({
+            "(",
+            "{",
+            "    'hello',",
+            "}",
+            "'hello',",
+            "{",
+            "    'hello',",
+            "}",
+            ")",
         })
     end)
 
