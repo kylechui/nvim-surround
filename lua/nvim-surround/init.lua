@@ -128,10 +128,12 @@ M.insert_callback = function(mode)
 
     local selection = utils.get_selection(false)
     -- Highlight the range and set a timer to clear it if necessary
-    buffer.highlight_selection(selection)
     local highlight_motion = utils.get_opts().highlight_motion
-    if highlight_motion and highlight_motion.duration > 0 then
-        vim.defer_fn(buffer.clear_highlights, highlight_motion.duration)
+    if highlight_motion.duration then
+        buffer.highlight_selection(selection)
+        if highlight_motion.duration > 0 then
+            vim.defer_fn(buffer.clear_highlights, highlight_motion.duration)
+        end
     end
     -- Get a character input and the delimiters (if not cached)
     if not cache.insert.delimiters then
@@ -183,11 +185,13 @@ M.change_callback = function()
         end
 
         -- Highlight the range and set a timer to clear it if necessary
-        buffer.highlight_selection(selections.left)
-        buffer.highlight_selection(selections.right)
         local highlight_motion = utils.get_opts().highlight_motion
-        if highlight_motion and highlight_motion.duration > 0 then
-            vim.defer_fn(buffer.clear_highlights, highlight_motion.duration)
+        if highlight_motion.duration then
+            buffer.highlight_selection(selections.left)
+            buffer.highlight_selection(selections.right)
+            if highlight_motion.duration > 0 then
+                vim.defer_fn(buffer.clear_highlights, highlight_motion.duration)
+            end
         end
         -- Get the new surrounding pair
         local ins_char, delimiters
