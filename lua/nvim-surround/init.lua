@@ -56,9 +56,9 @@ M.visual_surround = function(ins_char, mode)
 
     -- Insert the right delimiter first to ensure correct indexing
     if mode == "line" then -- Visual line mode case (need to create new lines)
-        buffer.insert_lines({ last_pos[1] + 1, 1 }, { "", "" })
-        buffer.insert_lines({ last_pos[1] + 1, 1 }, delimiters[2])
-        buffer.insert_lines({ first_pos[1], 1 }, { "", "" })
+        table.insert(delimiters[2], 1, "")
+        table.insert(delimiters[1], #delimiters[1] + 1, "")
+        buffer.insert_lines({ last_pos[1], #buffer.get_lines(last_pos[1], last_pos[1])[1] + 1 }, delimiters[2])
         buffer.insert_lines({ first_pos[1], 1 }, delimiters[1])
         -- Reformat the text
         buffer.format_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2])

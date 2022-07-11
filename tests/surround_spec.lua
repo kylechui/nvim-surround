@@ -144,9 +144,9 @@ describe("nvim-surround", function()
             "",
             "```lua",
             "require'nvim-surround'.setup{",
-            "   aliases = {",
-            "       'b' = { 'q' },",
-            "   },",
+            "    aliases = {",
+            "        'b' = { 'q' },",
+            "    },",
             "}",
             "```",
         })
