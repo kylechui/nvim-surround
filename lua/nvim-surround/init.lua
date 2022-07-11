@@ -192,25 +192,12 @@ M.change_callback = function()
     -- Get character inputs if not cached
     if not cache.change.del_char or not cache.change.ins_delimiters then
         local del_char = utils.get_char()
-        if not del_char then
-            return
-        end
-
-        local ins_char
-        if html.get_type(del_char) then
-            ins_char = del_char
-        else
-            ins_char = utils.get_char()
-        end
-        if not ins_char then
-            return
-        end
-
         -- Get the new surrounding pair
-        local delimiters
+        local ins_char, delimiters
         if html.get_type(del_char) then
             delimiters = html.get_tag()
         else
+            ins_char = utils.get_char()
             delimiters = utils.get_delimiters(ins_char)
         end
 

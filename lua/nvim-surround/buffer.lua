@@ -20,7 +20,7 @@ end
 --[[
 Gets the row and column for a mark, 1-indexed, if it exists, returns nil otherwise.
 @param mark The mark whose position will be returned.
-@return The position of the mark.
+@return position The position of the mark.
 ]]
 M.get_mark = function(mark)
     local position = vim.api.nvim_buf_get_mark(0, mark)
@@ -77,6 +77,7 @@ Sets the operator marks according to a given character.
 @param char The given character.
 ]]
 M.set_operator_marks = function(char)
+    local curpos = M.get_curpos()
     -- Clear the [ and ] marks
     M.del_mark("[")
     M.del_mark("]")
@@ -86,6 +87,7 @@ M.set_operator_marks = function(char)
     -- Adjust the marks to not reside on whitespace
     M.adjust_mark("[")
     M.adjust_mark("]")
+    vim.fn.cursor(curpos)
 end
 
 --[============================================================================[
@@ -150,32 +152,13 @@ M.get_selection = function(selection)
 end
 
 --[[
-Returns whether a given position is contained within a given selection.
-@param pos The position to be considered.
-@param selection The selection to potentially contain the position.
-@return A boolean indicating whether the position is contained in the selection.
-]]
-M.inside_selection = function(pos, selection)
-    local first_pos, last_pos = selection.first_pos, selection.last_pos
-    if pos[1] == first_pos[1] and pos[2] < first_pos[2] then
-        return false
-    elseif pos[1] == last_pos[1] and pos[2] > last_pos[2] then
-        return false
-    end
-    return pos[1] >= first_pos[1] and pos[1] <= last_pos[1]
-end
-
---[[
 Returns whether a position comes before another in a buffer, true if the position.
 @param pos1 The first position.
 @param pos2 The second position.
 @return A boolean indicating whether pos1 comes before pos2.
 ]]
 M.comes_before = function(pos1, pos2)
-    if pos1[1] < pos2[1] then
-        return true
-    end
-    return pos1[1] == pos2[1] and pos1[2] <= pos2[2]
+    return pos1[1] < pos2[1] or pos1[1] == pos2[1] and pos1[2] <= pos2[2]
 end
 
 --[[

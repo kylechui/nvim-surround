@@ -144,7 +144,6 @@ M.get_surrounding_selections = function(char)
 
     -- If the operatorfunc "fails", return no selection found
     if not open_first or not close_last then
-        vim.fn.cursor(curpos)
         return nil
     end
 
@@ -155,14 +154,12 @@ M.get_surrounding_selections = function(char)
         vim.fn.cursor(open_first)
         open_last = vim.fn.searchpos(">", "nW")
         if close_first == { 0, 0 } or open_last == { 0, 0 } then
-            vim.fn.cursor(curpos)
             return nil
         end
     else
         -- Get the corresponding delimiter pair for the character
         local delimiters = M.get_delimiters(char)
         if not delimiters then
-            vim.fn.cursor(curpos)
             return nil
         end
         -- Use the length of the pair to find the proper selection boundaries
@@ -181,7 +178,6 @@ M.get_surrounding_selections = function(char)
             -- If still not found, return nil
             if open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1] or
                 close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1] then
-                vim.fn.cursor(curpos)
                 return nil
             end
         end
