@@ -56,9 +56,9 @@ M.visual_surround = function(ins_char, mode)
 
     -- Insert the right delimiter first to ensure correct indexing
     if mode == "line" then -- Visual line mode case (need to create new lines)
-        buffer.insert_lines({ last_pos[1] + 1, 1 }, { "", "" })
-        buffer.insert_lines({ last_pos[1] + 1, 1 }, delimiters[2])
-        buffer.insert_lines({ first_pos[1], 1 }, { "", "" })
+        table.insert(delimiters[2], 1, "")
+        table.insert(delimiters[1], #delimiters[1] + 1, "")
+        buffer.insert_lines({ last_pos[1], #buffer.get_lines(last_pos[1], last_pos[1])[1] + 1 }, delimiters[2])
         buffer.insert_lines({ first_pos[1], 1 }, delimiters[1])
         -- Reformat the text
         buffer.format_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2])
@@ -111,11 +111,6 @@ M.change_surround = function(args)
         -- Change the right selection first to ensure selection positions are correct
         buffer.change_selection(selections.right, args.ins_delimiters[2])
         buffer.change_selection(selections.left, args.ins_delimiters[1])
-        -- Reformat the text
-        buffer.format_lines(
-            selections.left.first_pos[1],
-            selections.right.first_pos[1] + #args.ins_delimiters[1] + #args.ins_delimiters[2]
-        )
     end
     cache.set_callback("v:lua.require'nvim-surround'.change_callback")
 end

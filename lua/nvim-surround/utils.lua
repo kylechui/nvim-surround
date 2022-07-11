@@ -86,7 +86,7 @@ M.get_delimiters = function(char, args)
     -- Wrap the delimiters in a table if necessary
     delimiters[1] = type(delimiters[1]) == "string" and { delimiters[1] } or delimiters[1]
     delimiters[2] = type(delimiters[2]) == "string" and { delimiters[2] } or delimiters[2]
-    return { delimiters[1], delimiters[2] }
+    return vim.deepcopy(delimiters)
 end
 
 --[[

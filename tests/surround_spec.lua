@@ -29,6 +29,7 @@ end
 describe("nvim-surround", function()
     vim.cmd("set filetype=lua")
     before_each(function()
+        cursor({ 1, 1 })
         -- Setup default keybinds (can be overwritten with subsequent calls)
         require("nvim-surround").setup({})
     end)
@@ -144,9 +145,9 @@ describe("nvim-surround", function()
             "",
             "```lua",
             "require'nvim-surround'.setup{",
-            "   aliases = {",
-            "       'b' = { 'q' },",
-            "   },",
+            "    aliases = {",
+            "        'b' = { 'q' },",
+            "    },",
             "}",
             "```",
         })
@@ -182,6 +183,62 @@ describe("nvim-surround", function()
             "    },",
             "})",
             "```",
+        })
+    end)
+
+    it("can visual-line surround", function()
+        set_lines({
+            "'hello',",
+            "'hello',",
+            "'hello',",
+        })
+        vim.cmd("normal! V")
+        visual_surround("B")
+        check_lines({
+            "{",
+            "    'hello',",
+            "}",
+            "'hello',",
+            "'hello',",
+        })
+        cursor({ 5, 1 })
+        vim.cmd("normal! V")
+        visual_surround("B")
+        check_lines({
+            "{",
+            "    'hello',",
+            "}",
+            "'hello',",
+            "{",
+            "    'hello',",
+            "}",
+        })
+        vim.cmd("normal! ggVG")
+        visual_surround("b")
+        check_lines({
+            "(",
+            "{",
+            "    'hello',",
+            "}",
+            "'hello',",
+            "{",
+            "    'hello',",
+            "}",
+            ")",
+        })
+    end)
+
+    it("can deal with different whitespace characters", function()
+        set_lines({
+            "local str1 = 	'some text'",
+            "local str2 = 		    	`some text`",
+        })
+        change_surround("q", "b")
+        cursor({ 2, 1 })
+        change_surround("q", "B")
+        check_lines({
+            "local str1 = 	(some text)",
+            "local str2 = 		    	{some text}",
         })
     end)
 
