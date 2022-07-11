@@ -194,24 +194,18 @@ end
 --]============================================================================]
 
 --[[
-Highlights the text selected by an operator-mode text-object.
+Highlights a given selection.
+@param selection The selection to be highlighted.
 ]]
-M.highlight_range = function()
-    M.adjust_mark("[")
-    M.adjust_mark("]")
+M.highlight_selection = function(selection)
     local namespace = vim.api.nvim_create_namespace("NvimSurround")
-    local first_pos, last_pos = M.get_mark("["), M.get_mark("]")
-    if not first_pos or not last_pos then
-        return
-    end
-    first_pos = { first_pos[1] - 1, first_pos[2] - 1 }
-    last_pos = { last_pos[1] - 1, last_pos[2] - 1 }
+    local first_pos, last_pos = selection.first_pos, selection.last_pos
     vim.highlight.range(
         0,
         namespace,
         "NvimSurroundHighlightTextObject",
-        first_pos,
-        last_pos,
+        { first_pos[1] - 1, first_pos[2] - 1 },
+        { last_pos[1] - 1, last_pos[2] - 1 },
         { inclusive = true }
     )
     -- Force the screen to highlight the text immediately

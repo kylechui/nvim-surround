@@ -129,7 +129,7 @@ M.insert_callback = function(mode)
 
     local selection = utils.get_selection(false)
     -- Highlight the range and set a timer to clear it if necessary
-    buffer.highlight_range()
+    buffer.highlight_selection(selection)
     local highlight_motion = config.user_opts.highlight_motion
     if highlight_motion and highlight_motion.duration > 0 then
         vim.defer_fn(buffer.clear_highlights, highlight_motion.duration)
