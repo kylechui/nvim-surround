@@ -179,14 +179,19 @@ nvim-surround.setup({opts})
             }
 
                                               *nvim-surround.highlight_motion*
-    When inserting a surrounding pair around a text-object selection, one may
-    optionally highlight the selection. The highlighting is done using the
-    group "NvimSurroundHighlightTextObject", which can be configured
-    separately.
+    When inserting/changing a surrounding pair, one may optionally highlight
+    the selection(s) of interest. During insertion, the selection around which
+    the pair will be added is highlighted. During changing, the surrounding
+    pair to be replaced is highlighted.
+
+    The relevant highlight group is "NvimSurroundHighlightTextObject", which
+    can be configured separately.
+
+    Default: `highlight default link NvimSurroundHighlightTextObject Visual`
 
     duration:~
-        A positive value that represents how long to highlight the given
-        text-object selection (in milliseconds).
+        A positive value that represents how long to highlight the
+        selection(s) before clearing (in milliseconds).
 
         Note: A value of 0 means that the highlight has no timeout, persisting
         until either the action is canceled or completed.
