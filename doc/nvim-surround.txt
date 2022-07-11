@@ -161,13 +161,14 @@ nvim-surround.setup({opts})
             For more information on what constitutes as "closest", see
             |nvim-surround.jump|.
 
-            Note: Only builtin text-objects may be insert surrounded.
-
-            For example, `ysibB` is valid since `ib` is a builtin text-object,
-            but `ysarb` is not since `ar` is not a valid text-object. This
-            does not apply to changes/deletions, e.g. `csar` behaves the same
-            as `cs>]`.
-
+            Note: Only builtin text-objects may be insert surrounded, but this
+            can be circumvented by defining the following operator-mode maps:
+>
+            vim.keymap.set("o", "ir", "i[")
+            vim.keymap.set("o", "ar", "a[")
+            vim.keymap.set("o", "ia", "i<")
+            vim.keymap.set("o", "aa", "a<")
+<
             Default: {
                 ["a"] = ">",
                 ["b"] = ")",
