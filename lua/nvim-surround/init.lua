@@ -35,14 +35,11 @@ M.insert_surround = function(args)
 end
 
 -- API: Insert delimiters around a visual selection
-M.visual_surround = function(ins_char, mode)
-    -- Call the operatorfunc if it has not been called yet
-    if not ins_char then
-        vim.go.operatorfunc = "v:lua.require'nvim-surround'.visual_callback"
-        return "g@"
-    end
-
+M.visual_surround = function(mode)
+    -- Get a character and selection from the user
+    local ins_char = utils.get_char()
     local selection = utils.get_selection(true)
+
     local args = {
         bufnr = vim.fn.bufnr(),
         selection = selection,
@@ -55,7 +52,7 @@ M.visual_surround = function(ins_char, mode)
     local first_pos, last_pos = selection.first_pos, selection.last_pos
 
     -- Insert the right delimiter first to ensure correct indexing
-    if mode == "line" then -- Visual line mode case (need to create new lines)
+    if mode == "V" then -- Visual line mode case (need to create new lines)
         table.insert(delimiters[2], 1, "")
         table.insert(delimiters[1], #delimiters[1] + 1, "")
         buffer.insert_lines({ last_pos[1], #buffer.get_lines(last_pos[1], last_pos[1])[1] + 1 }, delimiters[2])
@@ -161,17 +158,6 @@ M.insert_callback = function(mode)
     }
     -- Call the main insert function with some arguments
     M.insert_surround(args)
-end
-
-M.visual_callback = function(mode)
-    -- Get a character input and the positions of the selection
-    local char = utils.get_char()
-    if not char then
-        return
-    end
-
-    -- Call the main visual function with some arguments
-    M.visual_surround(char, mode)
 end
 
 M.delete_callback = function()

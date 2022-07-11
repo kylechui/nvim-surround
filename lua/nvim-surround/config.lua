@@ -105,6 +105,10 @@ M.buffer_setup = function(buffer_opts)
     map("x", buffer_opts.keymaps.visual, require("nvim-surround").visual_surround,
         { silent = true, expr = true, buffer = true }
     )
+    map("x", buffer_opts.keymaps.visual, function()
+        local mode = vim.fn.mode()
+        return "<Esc><Cmd>lua require'nvim-surround'.visual_surround('" .. mode .. "')<CR>"
+    end, { silent = true, expr = true, buffer = true })
     map("n", buffer_opts.keymaps.delete, require("nvim-surround").delete_surround,
         { silent = true, expr = true, buffer = true }
     )
