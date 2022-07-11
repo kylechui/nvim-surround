@@ -61,11 +61,11 @@ M.adjust_mark = function(mark)
 
     local line = M.get_lines(pos[1], pos[1])[1]
     if mark == "[" then
-        while line:sub(pos[2], pos[2]) == " " do
+        while line:sub(pos[2], pos[2]):match("%s") do
             pos[2] = pos[2] + 1
         end
     elseif mark == "]" then
-        while line:sub(pos[2], pos[2]) == " " do
+        while line:sub(pos[2], pos[2]):match("%s") do
             pos[2] = pos[2] - 1
         end
     end
