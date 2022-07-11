@@ -111,11 +111,6 @@ M.change_surround = function(args)
         -- Change the right selection first to ensure selection positions are correct
         buffer.change_selection(selections.right, args.ins_delimiters[2])
         buffer.change_selection(selections.left, args.ins_delimiters[1])
-        -- Reformat the text
-        buffer.format_lines(
-            selections.left.first_pos[1],
-            selections.right.first_pos[1] + #args.ins_delimiters[1] + #args.ins_delimiters[2]
-        )
     end
     cache.set_callback("v:lua.require'nvim-surround'.change_callback")
 end
