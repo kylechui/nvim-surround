@@ -76,17 +76,19 @@ end
 Sets the operator marks according to a given character.
 @param char The given character.
 ]]
-M.set_operator_marks = function(char)
+M.set_operator_marks = function(object)
     local curpos = M.get_curpos()
     -- Clear the [ and ] marks
     M.del_mark("[")
     M.del_mark("]")
     -- Set the [ and ] marks by calling an operatorfunc
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
-    vim.cmd("normal! g@a" .. char)
+    vim.cmd("normal g@" .. object)
     -- Adjust the marks to not reside on whitespace
-    M.adjust_mark("[")
-    M.adjust_mark("]")
+    if object:sub(1, 1) == "a" then
+        M.adjust_mark("[")
+        M.adjust_mark("]")
+    end
     vim.fn.cursor(curpos)
 end
 
