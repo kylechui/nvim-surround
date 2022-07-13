@@ -229,12 +229,12 @@ M.get_nearest_selections = function(char)
                 nearest_selections = cur_selections
             else
                 -- If the cursor is inside in the "nearest" selections, use the right-most selections
-                if buffer.comes_before(n_first, curpos) then
-                    if buffer.comes_before(c_first, curpos) and buffer.comes_before(n_first, c_first) then
+                if buffer.comes_before(c_first, curpos) then
+                    if buffer.comes_before(curpos, n_first) or buffer.comes_before(n_first, c_first) then
                         nearest_selections = cur_selections
                     end
                 else -- If the cursor precedes the "nearest" selections, use the left-most selections
-                    if buffer.comes_before(c_first, curpos) and buffer.comes_before(n_first, c_first) then
+                    if buffer.comes_before(curpos, n_first) and buffer.comes_before(c_first, n_first) then
                         nearest_selections = cur_selections
                     end
                 end

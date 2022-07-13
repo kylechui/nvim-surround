@@ -323,6 +323,29 @@ describe("nvim-surround", function()
         check_lines({ "local str = this has 'nested' strings -- Some comment" })
     end)
 
+    it("can dot-repeat jumps properly", function()
+        set_lines({
+            [[And jump "forwards" and `backwards` to 'the' "nearest" surround.]],
+        })
+        cursor({ 1, 27 })
+        delete_surround("q")
+        check_lines({
+            [[And jump "forwards" and backwards to 'the' "nearest" surround.]],
+        })
+        vim.cmd("normal! .")
+        check_lines({
+            [[And jump "forwards" and backwards to the "nearest" surround.]],
+        })
+        vim.cmd("normal! .")
+        check_lines({
+            [[And jump "forwards" and backwards to the nearest surround.]],
+        })
+        vim.cmd("normal! .")
+        check_lines({
+            [[And jump forwards and backwards to the nearest surround.]],
+        })
+    end)
+
     it("can handle quotes smartly", function()
         set_lines({ "'quote 1', 'quote 2', 'quote 3'" })
         cursor({ 1, 9 })
