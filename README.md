@@ -39,7 +39,157 @@ use({
 })
 ```
 
+## :rocket: Usage
+
+### The Basics
+
+This plugin serves to help you accomplish three common actions quickly and
+efficiently:
+
+* Surrounding some selection with a left and right delimiter
+* Deleting the surrounding delimiter pair (around the cursor)
+* Changing the surrounding delimiter pair (around the cursor) to another pair
+
+The following examples are all run from Normal mode, unless otherwise specified.
+
+#### Adding New Surrounds
+
+By default, adding new surrounds is done by the keymap prefix `ys`, which can be
+thought of as meaning "you surround". It is used via `ys[object][char]`, where
+`object` denotes the
+[text-object](https://vimhelp.org/motion.txt.html#object-select) that you are
+surrounding with a delimiter pair defined by `char`. Consider the example
+buffer:
+
+```lua
+local str = "This is a sentence"
+```
+
+If the cursor is on the `T` and you press `ysiw'`, then "you surround inner word
+with single quotes", yielding:
+
+```lua
+local str = "'This' is a sentence"
+```
+
+From here, typing `ysa")` means "you surround around double quotes with
+parentheses", yielding:
+
+```lua
+local str = ("'This' is a sentence")
+```
+
+Surrounds can also be added by first selecting the text *in Visual mode*, then
+pressing `S[char]`, e.g. `VS]`.
+
+<!-- TODO: Figure out if this should be default behavior or not
+> **Note**: By default, if a `char` is not associated with any
+delimiter pair,
+> then it will simply get duplicated on the left and right of the selection,
+> e.g. `ysiw*` will surround the current word with asterisks. -->
+
+#### Deleting Surrounds
+
+By default, deleting surrounding pairs is done by the keymap prefix `ds`, which
+can be thought of as meaning "delete surround". It is used via `ds[char]`, where
+`char` refers to the pair to be deleted. Consider the example buffer:
+
+```lua
+require("nvim-surround").setup()
+```
+
+If the cursor is on the `-` and you press `ds"`, then you "delete surrounding
+double quotes", yielding:
+
+```lua
+require(nvim-surround).setup()
+```
+
+From here, typing `ds(` means "delete surrounding parentheses", yielding:
+
+```lua
+requirenvim-surround.setup()
+```
+
+#### Changing Surrounds
+
+By default, changing surrounding pairs is done by the keymap prefix `cs`, which
+can be thought of as meaning "change surround". It is used via
+`cs[char1][char2]`, where `char1` refers to the pair to be deleted, and `char2`
+represents the pair to replace it. Consider the example buffer:
+
+```lua
+local tab = { 'Just', (some), "strings" }
+```
+
+If the cursor is on the `J` and you press `cs'"`, then you "change surrounding
+single quotes to double quotes", yielding:
+
+```lua
+local tab = { "Just", (some), "strings" }
+```
+
+From here, typing `cs("` means "change surrounding parentheses to double
+quotes", yielding:
+
+```lua
+local tab = { "Just", "some", "strings" }
+```
+
+> **Note**: If there are no pairs that are immediately surrounding the cursor, it
+> can *jump* to the "nearest pair" (forwards or backwards). See `:h
+> nvim-surround.jump` for more details.
+
 ## :gear: Configuration
+
+### The Basics
+
+All delimiter keys should be one character *exactly*, and *unique*. In the
+`delimiters` table, each value is either a pair of strings, representing the
+left and right surrounding pair, or a function returning a pair of strings.
+
+> **Note**: Multi-line strings are represented by tables of strings, with each
+> string representing a new line.
+
+### Modifying Defaults
+
+To change a preset, give the corresponding key a new value. To disable any
+functionality, simply set the corresponding key's value to `false`. For example,
+
+```lua
+require("nvim-surround").setup({
+    delimiters = {
+        pairs = { -- Remaps "a" and "b"
+            ["a"] = {
+                { "this", "has", "several", "lines" },
+                "single line",
+            },
+            ["b"] = function()
+                return {
+                    "hello",
+                    "world",
+                }
+            end,
+        },
+        HTML = { -- Disables HTML-style mappings
+            ["t"] = false,
+            ["T"] = false,
+        },
+    },
+    highlight_motion = { -- Disables highlights
+        duration = false,
+    },
+})
+```
+
+For buffer-local configurations, just call
+`require("nvim-surround").buffer_setup` for any buffer that you would like to
+configure. This can be especially useful for setting filetype-specific surrounds
+by calling `buffer_setup` inside `ftplugin/[filetype].lua`.
+
+For more information, see [`:h
+nvim-surround`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt),
+or the default configuration below.
 
 <details>
 <summary><b>Default Configuration</b></summary>
@@ -109,54 +259,6 @@ require("nvim-surround").setup({
 ```
 
 </details>
-
-### The Basics
-
-All delimiter keys should be one character *exactly*, and *unique*. In the
-`delimiters` table, each value is either a pair of strings, representing the
-left and right surrounding pair, or a function returning a pair of strings.
-
-> **Note**: Multi-line strings are represented by tables of strings, with each
-> string representing a new line.
-
-### Modifying Defaults
-
-To change a preset, give the corresponding key a new value. To disable any
-functionality, simply set the corresponding key's value to `false`. For example,
-
-```lua
-require("nvim-surround").setup({
-    delimiters = {
-        pairs = { -- Remaps "a" and "b"
-            ["a"] = {
-                { "this", "has", "several", "lines" },
-                "single line",
-            },
-            ["b"] = function()
-                return {
-                    "hello",
-                    "world",
-                }
-            end,
-        },
-        HTML = { -- Disables HTML-style mappings
-            ["t"] = false,
-            ["T"] = false,
-        },
-    },
-    highlight_motion = { -- Disables highlights
-        duration = false,
-    },
-})
-```
-
-For buffer-local configurations, just call
-`require("nvim-surround").buffer_setup` for any buffer that you would like to
-configure. This can be especially useful for setting filetype-specific surrounds
-by calling `buffer_setup` inside `ftplugin/[filetype].lua`.
-
-For more information, see [`:h
-nvim-surround`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt).
 
 ## Contributing
 
