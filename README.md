@@ -54,7 +54,8 @@ EOF
 
 ## :gear: Configuration
 
-The default configuration is as follows:
+<details>
+<summary><b>Default Configuration</b></summary>
 
 ```lua
 require("nvim-surround").setup({
@@ -120,59 +121,54 @@ require("nvim-surround").setup({
 })
 ```
 
-All keys should be one character *exactly*. To overwrite any functionality, you
-only need to specify the keys that you wish to modify. To disable any
+</details>
+
+### The Basics
+
+All delimiter keys should be one character *exactly*, and *unique*. In the
+`delimiters` table, each value is either a pair of strings, representing the
+left and right surrounding pair, or a function returning a pair of strings.
+
+> **Note**: Multi-line strings are represented by tables of strings, with each
+> string representing a new line.
+
+### Modifying Defaults
+
+To change a preset, give the corresponding key a new value. To disable any
 functionality, simply set the corresponding key's value to `false`. For example,
 
 ```lua
 require("nvim-surround").setup({
     delimiters = {
-        pairs = {
-            ["b"] = { "{", "}" },
+        pairs = { -- Remaps "a" and "b"
+            ["a"] = {
+                { "this", "has", "several", "lines" },
+                "single line",
+            },
+            ["b"] = function()
+                return {
+                    "hello",
+                    "world",
+                }
+            end,
         },
         HTML = { -- Disables HTML-style mappings
             ["t"] = false,
+            ["T"] = false,
         },
+    },
+    highlight_motion = { -- Disables highlights
+        duration = false,
     },
 })
 ```
 
 For buffer-local configurations, just call
 `require("nvim-surround").buffer_setup` for any buffer that you would like to
-configure, e.g.
+configure. This can be especially useful for setting filetype-specific surrounds
+by calling `buffer_setup` inside `ftplugin/[filetype].lua`.
 
-```lua
--- ftplugin/python.lua
-require("nvim-surround").buffer_setup({
-    delimiters = {
-        pairs = {
-            ["f"] = function()
-                return {
-                    "def " .. require("nvim-surround.utils").get_input(
-                        "Enter the function name: "
-                    ) .. "(",
-                    "):"
-                }
-            end,
-        }
-    }
-})
--- ftplugin/lua.lua
-require("nvim-surround").buffer_setup({
-    delimiters = {
-        pairs = {
-            ["f"] = function()
-                return {
-                    "function " .. require("nvim-surround.utils").get_input(
-                        "Enter the function name: "
-                    ) .. "(",
-                    ")"
-                }
-            end,
-        }
-    }
-})
-```
+For more information see [`:h nvim-surround`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt).
 
 ## Shoutouts
 

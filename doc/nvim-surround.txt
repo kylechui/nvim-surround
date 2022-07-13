@@ -10,6 +10,14 @@ to efficiently:
 * Manipulate HTML-style tags
 * Alias characters to represent other delimiter types
 
+First, some noteworthy things about the `delimiters` table:
+* All keys should be exactly one character, and unique
+* Each value is either a pair of strings, representing the left and right
+  surrounding pair, or a function returning a pair of strings
+
+Note: Multi-line strings are represented by a table of strings, with each
+string representing a new line.
+
                                                        *nvim-surround.setup()*
 nvim-surround.setup({opts})
     Setup function to be run by the user, which configures default keymaps and
@@ -244,7 +252,7 @@ Under certain circumstances, |nvim-surround| can "jump" to the "nearest"
 delimiter. It always prefers
 * pairs that surround the cursor, before
 * pairs that occur after the cursor, before
-* pairs that occur before the cursor
+* pairs that occur before the cursor.
 
 Note: Reverse jumping is only available for changing/deleting surrounds, not
 inserting a new pair.
