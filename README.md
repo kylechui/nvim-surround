@@ -23,8 +23,6 @@ For more information, see `:h nvim-surround`
 
 ## :package: Installation
 
-Install this plugin with your favorite package manager:
-
 ### [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
@@ -37,19 +35,6 @@ use({
         })
     end
 })
-```
-
-### [vim-plug](https://github.com/junegunn/vim-plug)
-
-```vim
-" Vim Script
-Plug "kylechui/nvim-surround"
-
-lua << EOF
-    require("nvim-surround").setup({
-        -- Configuration here, or leave empty to use defaults
-    })
-EOF
 ```
 
 ## :gear: Configuration
@@ -168,7 +153,16 @@ For buffer-local configurations, just call
 configure. This can be especially useful for setting filetype-specific surrounds
 by calling `buffer_setup` inside `ftplugin/[filetype].lua`.
 
-For more information see [`:h nvim-surround`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt).
+For more information see [`:h
+nvim-surround`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt).
+
+## Contributing
+
+All contributions are welcome :smile: If you have a bug/feature request, you can
+open [a new issue](https://github.com/kylechui/nvim-surround/issues/new/choose).
+General discussion/questions can be put in the [discussions
+page](https://github.com/kylechui/nvim-surround/discussions). Thanks for the
+help!
 
 ## Shoutouts
 
