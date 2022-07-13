@@ -3,7 +3,7 @@
 Surround selections, stylishly :sunglasses:
 
 <div align="center">
-  <video src="https://user-images.githubusercontent.com/48545987/178091618-f477b51d-d366-4de2-84a8-cbf4f72928e3.mp4" type="video/mp4" width="800">
+  <video src="https://user-images.githubusercontent.com/48545987/178679494-c7d58bdd-d8ca-4802-a01c-a9444b8b882f.mp4" type="video/mp4"></video>
 </div>
 
 ## :sparkles: Features
