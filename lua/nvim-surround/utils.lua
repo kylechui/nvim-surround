@@ -83,6 +83,9 @@ M.get_delimiters = function(char, args)
         -- If the character is not bound to anything, duplicate it
         delimiters = M.get_opts().delimiters.pairs[char] or M.get_opts().delimiters.separators[char] or { char, char }
     end
+    if not delimiters then
+        return nil
+    end
 
     -- Evaluate the function if necessary
     if type(delimiters) == "function" then
