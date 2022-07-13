@@ -14,12 +14,14 @@ Surround selections, stylishly :sunglasses:
 * Dot-repeat previous actions
 * Set buffer-local mappings and surrounds
 * Surround using powerful pairs that depend on user input
+* Jump to the *nearest* surrounding pair for modification
 * Use a single character as an alias for several text-objects
   * E.g. `q` is aliased to <code>\`,',"</code>, so <code>csqb</code> replaces
     the *nearest* set of quotes with parentheses
 * Highlight the section that you are about to surround, as a visual indicator
 
-For more information, see `:h nvim-surround`
+For more information, see [`:h
+nvim-surround`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt).
 
 ## :package: Installation
 
@@ -153,7 +155,7 @@ For buffer-local configurations, just call
 configure. This can be especially useful for setting filetype-specific surrounds
 by calling `buffer_setup` inside `ftplugin/[filetype].lua`.
 
-For more information see [`:h
+For more information, see [`:h
 nvim-surround`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt).
 
 ## Contributing
