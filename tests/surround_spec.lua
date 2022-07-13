@@ -102,8 +102,6 @@ describe("nvim-surround", function()
         set_lines({ "(((test)))" })
         delete_surround("b")
         vim.cmd("normal! ..")
-        check_lines({ "(test)" })
-        vim.cmd("normal! .")
         check_lines({ "test" })
     end)
 
