@@ -1,5 +1,3 @@
-local utils = require("nvim-surround.utils")
-
 local M = {}
 
 M.default_opts = {
@@ -22,20 +20,14 @@ M.default_opts = {
             ["]"] = { "[", "]" },
             ["i"] = function()
                 return {
-                    utils.get_input(
-                        "Enter the left delimiter: "
-                    ),
-                    utils.get_input(
-                        "Enter the right delimiter: "
-                    )
+                    vim.fn.input({ prompt = "Enter the left delimiter: " }),
+                    vim.fn.input({ prompt = "Enter the right delimiter: " }),
                 }
             end,
             ["f"] = function()
                 return {
-                    utils.get_input(
-                        "Enter the function name: "
-                    ) .. "(",
-                    ")"
+                    vim.fn.input({ "Enter the function name: " }) .. "(",
+                    ")",
                 }
             end,
         },
@@ -64,6 +56,22 @@ M.default_opts = {
 
 M.user_opts = nil
 
+-- Returns the buffer-local options for the plugin.
+---@return options The buffer-local options.
+M.get_opts = function()
+    return vim.b[0].nvim_surround_buffer_opts
+end
+
+-- Updates the buffer-local options for the plugin based on the input.
+---@param opts options? The options to be passed in.
+M.merge_opts = function(opts)
+    -- Grab the current buffer-local options, or the global user options otherwise
+    local cur_opts = M.get_opts() and M.get_opts() or M.user_opts
+    -- Overwrite the current options with buffer-local options, if they exist
+    opts = opts and vim.tbl_deep_extend("force", cur_opts, opts) or cur_opts
+    vim.b[0].nvim_surround_buffer_opts = opts
+end
+
 -- Check if a keymap should be added before setting it.
 ---@param args table The arguments to set the keymap.
 M.add_keymap = function(args)
@@ -74,7 +82,7 @@ M.add_keymap = function(args)
 end
 
 -- Setup the global user options for all files.
----@param user_opts table|nil The user-defined options to be merged with default_opts.
+---@param user_opts options? The user-defined options to be merged with default_opts.
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
     user_opts = user_opts and vim.tbl_deep_extend("force", M.default_opts, user_opts) or M.default_opts
@@ -98,35 +106,29 @@ M.setup = function(user_opts)
 end
 
 -- Setup the user options for the current buffer.
----@param buffer_opts table|nil The buffer-local options to be merged with the global user_opts.
+---@param buffer_opts table? The buffer-local options to be merged with the global user_opts.
 M.buffer_setup = function(buffer_opts)
-    -- Grab the current buffer-local options, or the global user options otherwise
-    local user_opts = vim.b[0].nvim_surround_buffer_opts and vim.b[0].nvim_surround_buffer_opts or M.user_opts
-    -- Overwrite the current options with buffer-local options, if they exist
-    buffer_opts = buffer_opts and vim.tbl_deep_extend("force", user_opts, buffer_opts) or user_opts
-    if not buffer_opts then
-        return
-    end
-    utils.set_opts(buffer_opts)
+    -- Merge the given table into the buffer-local options table
+    M.merge_opts(buffer_opts)
 
     -- Setup buffer-local keymaps for calling plugin behavior
     M.add_keymap({
         mode = "n",
-        lhs = buffer_opts.keymaps.insert,
+        lhs = M.get_opts().keymaps.insert,
         rhs = require("nvim-surround").insert_surround,
         opts = { silent = true, expr = true, buffer = true },
     })
     M.add_keymap({
         mode = "n",
-        lhs = buffer_opts.keymaps.insert_line,
+        lhs = M.get_opts().keymaps.insert_line,
         rhs = function()
-            return "^" .. tostring(vim.v.count1) .. buffer_opts.keymaps.insert .. "g_"
+            return "^" .. tostring(vim.v.count1) .. M.get_opts().keymaps.insert .. "g_"
         end,
         opts = { silent = true, expr = true, buffer = true, remap = true },
     })
     M.add_keymap({
         mode = "x",
-        lhs = buffer_opts.keymaps.visual,
+        lhs = M.get_opts().keymaps.visual,
         rhs = function()
             local mode = vim.fn.mode()
             return "<Esc><Cmd>lua require'nvim-surround'.visual_surround('" .. mode .. "')<CR>"
@@ -135,13 +137,13 @@ M.buffer_setup = function(buffer_opts)
     })
     M.add_keymap({
         mode = "n",
-        lhs = buffer_opts.keymaps.delete,
+        lhs = M.get_opts().keymaps.delete,
         rhs = require("nvim-surround").delete_surround,
         opts = { silent = true, expr = true, buffer = true },
     })
     M.add_keymap({
         mode = "n",
-        lhs = buffer_opts.keymaps.change,
+        lhs = M.get_opts().keymaps.change,
         rhs = require("nvim-surround").change_surround,
         opts = { silent = true, expr = true, buffer = true },
     })

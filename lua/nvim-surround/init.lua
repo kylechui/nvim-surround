@@ -1,3 +1,6 @@
+---@alias config_delimiters boolean|string[]|string[][]|function
+---@alias delimiters string[]|string[][]
+
 ---@class selection
 ---@field first_pos integer[]
 ---@field last_pos integer[]
@@ -5,6 +8,11 @@
 ---@class selections
 ---@field left selection
 ---@field right selection
+
+---@class options
+---@field keymaps table<string, string>
+---@field delimiters table<string, config_delimiters>
+---@field highlight_motion { duration: boolean|integer }
 
 local buffer = require("nvim-surround.buffer")
 local cache = require("nvim-surround.cache")
@@ -14,17 +22,21 @@ local utils = require("nvim-surround.utils")
 
 local M = {}
 
--- Setup the plugin with user-defined options
+-- Setup the plugin with user-defined options.
+---@param user_opts options? The user options.
 M.setup = function(user_opts)
     config.setup(user_opts)
 end
 
--- Configure the plugin on a per-buffer basis
+-- Configure the plugin on a per-buffer basis.
+---@param buffer_opts options? The buffer-local options.
 M.buffer_setup = function(buffer_opts)
     config.buffer_setup(buffer_opts)
 end
 
--- API: Insert delimiters around a text object
+-- Insert delimiters around a text object.
+---@param args { selection: selection, delimiters: string[][] }
+---@return string?
 M.insert_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args then
@@ -42,7 +54,8 @@ M.insert_surround = function(args)
     buffer.insert_lines(first_pos, args.delimiters[1])
 end
 
--- API: Insert delimiters around a visual selection
+-- Insert delimiters around a visual selection.
+---@param mode string
 M.visual_surround = function(mode)
     -- Get a character and selection from the user
     local ins_char = utils.get_char()
@@ -51,7 +64,7 @@ M.visual_surround = function(mode)
     local args = {
         bufnr = vim.fn.bufnr(),
         selection = selection,
-        text = buffer.get_selection(selection),
+        text = buffer.get_text(selection),
     }
     local delimiters = utils.get_delimiters(ins_char, args)
     if not delimiters or not selection then
@@ -73,7 +86,9 @@ M.visual_surround = function(mode)
     end
 end
 
--- API: Delete a surrounding delimiter pair, if it exists
+-- Delete a surrounding delimiter pair, if it exists.
+---@param del_char string
+---@return string?
 M.delete_surround = function(del_char)
     -- Call the operatorfunc if it has not been called yet
     if not del_char then
@@ -94,7 +109,8 @@ M.delete_surround = function(del_char)
     cache.set_callback("v:lua.require'nvim-surround'.delete_callback")
 end
 
--- API: Change a surrounding delimiter pair, if it exists
+-- Change a surrounding delimiter pair, if it exists.
+---@param args? { del_char: string, selections: selections, ins_delimiters: string[][] }
 M.change_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args then
@@ -123,6 +139,7 @@ end
                                Callback Functions
 --]============================================================================]
 
+---@param mode string
 M.insert_callback = function(mode)
     -- Adjust the ] mark if the operator was in line-mode
     if mode == "line" then
@@ -136,7 +153,7 @@ M.insert_callback = function(mode)
 
     local selection = utils.get_selection(false)
     -- Highlight the range and set a timer to clear it if necessary
-    local highlight_motion = utils.get_opts().highlight_motion
+    local highlight_motion = config.get_opts().highlight_motion
     if highlight_motion.duration then
         buffer.highlight_selection(selection)
         if highlight_motion.duration > 0 then
@@ -149,7 +166,7 @@ M.insert_callback = function(mode)
         local args = {
             bufnr = vim.fn.bufnr(),
             selection = selection,
-            text = buffer.get_selection(selection),
+            text = buffer.get_text(selection),
         }
         -- Get the delimiter pair based on the insert character
         cache.insert.delimiters = cache.insert.delimiters or utils.get_delimiters(char, args)
@@ -193,7 +210,7 @@ M.change_callback = function()
         end
 
         -- Highlight the range and set a timer to clear it if necessary
-        local highlight_motion = utils.get_opts().highlight_motion
+        local highlight_motion = config.get_opts().highlight_motion
         if highlight_motion.duration then
             buffer.highlight_selection(selections.left)
             buffer.highlight_selection(selections.right)

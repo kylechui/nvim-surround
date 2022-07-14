@@ -123,9 +123,12 @@ M.format_lines = function(start, stop)
 end
 
 -- Gets a selection of text from the buffer.
----@param selection selection The selection of text to be retrieved.
----@return string[] @The text from the buffer.
-M.get_selection = function(selection)
+---@param selection? selection The selection of text to be retrieved.
+---@return string[]? @The text from the buffer.
+M.get_text = function(selection)
+    if not selection then
+        return nil
+    end
     local first_lnum, last_lnum = selection.first_pos[1], selection.last_pos[1]
     local first_col, last_col = selection.first_pos[2], selection.last_pos[2]
     local lines = M.get_lines(first_lnum, last_lnum)
@@ -171,8 +174,11 @@ end
 --]============================================================================]
 
 -- Highlights a given selection.
----@param selection selection The selection to be highlighted.
+---@param selection selection? The selection to be highlighted.
 M.highlight_selection = function(selection)
+    if not selection then
+        return
+    end
     local namespace = vim.api.nvim_create_namespace("NvimSurround")
     local first_pos, last_pos = selection.first_pos, selection.last_pos
     vim.highlight.range(
