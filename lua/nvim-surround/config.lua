@@ -57,7 +57,7 @@ M.default_opts = {
 M.user_opts = nil
 
 -- Returns the buffer-local options for the plugin.
----@return options The buffer-local options.
+---@return options @The buffer-local options.
 M.get_opts = function()
     return vim.b[0].nvim_surround_buffer_opts
 end

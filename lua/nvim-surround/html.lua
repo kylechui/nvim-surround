@@ -38,7 +38,7 @@ end
 -- Adjust the selection boundaries to only select the HTML tag type.
 ---@param selections? selections The coordinates of the open and closing HTML tags.
 ---@param type string? The type of selections to be returning.
----@return integer[]? The coordinates of the adjusted HTML tag.
+---@return integer[]? @The coordinates of the adjusted HTML tag.
 M.adjust_selections = function(selections, type)
     if not selections then
         return nil
