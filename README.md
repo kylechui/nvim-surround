@@ -28,7 +28,6 @@ nvim-surround`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-sur
 ### [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
--- Lua
 use({
     "kylechui/nvim-surround",
     config = function()
@@ -147,9 +146,13 @@ local tab = { "Just", "some", "strings" }
 All delimiter keys should be one character *exactly*, and *unique*. In the
 `delimiters` table, each value is either a pair of strings, representing the
 left and right surrounding pair, or a function returning a pair of strings.
+Multi-line strings are represented by tables of strings, with each string
+representing a new line.
 
-> **Note**: Multi-line strings are represented by tables of strings, with each
-> string representing a new line.
+> Looking for inspiration/examples? Want to share some cool surrounds that
+> you've made? You can visit the [surrounds
+> showcase](https://github.com/kylechui/nvim-surround/discussions/53) to see a
+> community-made list of custom surrounds!
 
 ### Modifying Defaults
 
