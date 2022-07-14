@@ -88,7 +88,7 @@ end
 
 M.buffer_setup = function(buffer_opts)
     -- Grab the current buffer-local options, or the global user options otherwise
-    local cur_opts = vim.b[0].buffer_opts and vim.b[0].buffer_opts or M.user_opts
+    local cur_opts = vim.b[0].nvim_surround_buffer_opts and vim.b[0].nvim_surround_buffer_opts or M.user_opts
     -- Overwrite the current options with buffer-local options, if they exist
     buffer_opts = buffer_opts and vim.tbl_deep_extend("force", cur_opts, buffer_opts) or cur_opts
     utils.set_opts(buffer_opts)
