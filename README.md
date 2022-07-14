@@ -81,12 +81,6 @@ local str = ("'This' is a sentence")
 Surrounds can also be added by first selecting the text *in Visual mode*, then
 pressing `S[char]`, e.g. `VS]`.
 
-<!-- TODO: Figure out if this should be default behavior or not
-> **Note**: By default, if a `char` is not associated with any
-delimiter pair,
-> then it will simply get duplicated on the left and right of the selection,
-> e.g. `ysiw*` will surround the current word with asterisks. -->
-
 #### Deleting Surrounds
 
 By default, deleting surrounding pairs is done by the keymap prefix `ds`, which
