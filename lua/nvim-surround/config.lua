@@ -96,25 +96,32 @@ M.buffer_setup = function(buffer_opts)
     vim.b[0].buffer_opts = buffer_opts
 
     -- Setup buffer-local keymaps for calling plugin behavior
-    map("n", buffer_opts.keymaps.insert, require("nvim-surround").insert_surround,
-        { silent = true, expr = true, buffer = true }
-    )
-    map("n", buffer_opts.keymaps.insert_line, function()
-        return "^" .. tostring(vim.v.count1) .. buffer_opts.keymaps.insert .. "g_"
-    end, { silent = true, expr = true, buffer = true, remap = true })
-    map("x", buffer_opts.keymaps.visual, require("nvim-surround").visual_surround,
-        { silent = true, expr = true, buffer = true }
-    )
-    map("x", buffer_opts.keymaps.visual, function()
-        local mode = vim.fn.mode()
-        return "<Esc><Cmd>lua require'nvim-surround'.visual_surround('" .. mode .. "')<CR>"
-    end, { silent = true, expr = true, buffer = true })
-    map("n", buffer_opts.keymaps.delete, require("nvim-surround").delete_surround,
-        { silent = true, expr = true, buffer = true }
-    )
-    map("n", buffer_opts.keymaps.change, require("nvim-surround").change_surround,
-        { silent = true, expr = true, buffer = true }
-    )
+    if buffer_opts.keymaps.insert then
+        map("n", buffer_opts.keymaps.insert, require("nvim-surround").insert_surround,
+            { silent = true, expr = true, buffer = true }
+        )
+    end
+    if buffer_opts.keymaps.insert_line then
+        map("n", buffer_opts.keymaps.insert_line, function()
+            return "^" .. tostring(vim.v.count1) .. buffer_opts.keymaps.insert .. "g_"
+        end, { silent = true, expr = true, buffer = true, remap = true })
+    end
+    if buffer_opts.keymaps.visual then
+        map("x", buffer_opts.keymaps.visual, function()
+            local mode = vim.fn.mode()
+            return "<Esc><Cmd>lua require'nvim-surround'.visual_surround('" .. mode .. "')<CR>"
+        end, { silent = true, expr = true, buffer = true })
+    end
+    if buffer_opts.keymaps.delete then
+        map("n", buffer_opts.keymaps.delete, require("nvim-surround").delete_surround,
+            { silent = true, expr = true, buffer = true }
+        )
+    end
+    if buffer_opts.keymaps.change then
+        map("n", buffer_opts.keymaps.change, require("nvim-surround").change_surround,
+            { silent = true, expr = true, buffer = true }
+        )
+    end
 end
 
 return M
