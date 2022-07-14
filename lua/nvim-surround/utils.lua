@@ -112,6 +112,7 @@ M.get_surrounding_selections = function(char)
     if html.get_type(char) then
         args = "'t'"
     elseif char == "'" then
+        args = [["'"]]
     else
         args = "'" .. char .. "'"
     end
@@ -181,13 +182,13 @@ M.get_nearest_selections = function(char)
     char = M.get_alias(char)
 
     local delimiters = config.get_opts().delimiters
-    local aliases = delimiters.aliases[char] and delimiters.aliases[char] or { char }
+    local chars = delimiters.aliases[char] and delimiters.aliases[char] or { char }
     local nearest_selections
     local curpos = buffer.get_curpos()
     -- Iterate through all possible selections for each aliased character, and
     -- find the pair that is closest to the cursor position (that also still
     -- surrounds the cursor)
-    for _, c in ipairs(aliases) do
+    for _, c in ipairs(chars) do
         -- If the character is a separator and the next separator is on the same line, jump to it
         if config.get_opts().delimiters.separators[c] and vim.fn.searchpos(c, "cnW")[1] == curpos[1] then
             vim.fn.searchpos(c, "cW")
@@ -216,7 +217,7 @@ M.get_nearest_selections = function(char)
     end
     -- If nothing is found, search backwards for the selections that end the latest
     if not nearest_selections then
-        for _, c in ipairs(aliases) do
+        for _, c in ipairs(chars) do
             -- Jump to the previous instance of this delimiter
             vim.fn.searchpos(vim.trim(c), "bW")
             local cur_selections = M.get_surrounding_selections(c)

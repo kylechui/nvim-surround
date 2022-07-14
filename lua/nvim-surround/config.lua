@@ -26,7 +26,7 @@ M.default_opts = {
             end,
             ["f"] = function()
                 return {
-                    vim.fn.input({ "Enter the function name: " }) .. "(",
+                    vim.fn.input({ prompt = "Enter the function name: " }) .. "(",
                     ")",
                 }
             end,

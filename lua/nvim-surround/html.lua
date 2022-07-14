@@ -1,10 +1,12 @@
+local config = require("nvim-surround.config")
+
 local M = {}
 
 -- Returns the type of HTML selection that the character refers to.
 ---@param char string? The input character.
 ---@return string? @The HTML selection type, or nil if not an HTML character.
 M.get_type = function(char)
-    return vim.b[0].nvim_surround_buffer_opts.delimiters.HTML[char]
+    return config.get_opts().delimiters.HTML[char]
 end
 
 -- Returns a HTML open/closing pair.

@@ -156,7 +156,7 @@ describe("nvim-surround", function()
         change_surround("q", "`")
         cursor({ 3, 6 })
         vim.cmd("normal! ve")
-        visual_surround("*")
+        visual_surround("'")
         cursor({ 10, 9 })
         insert_surround("a'", "b")
         cursor({ 10, 11 })
@@ -170,7 +170,7 @@ describe("nvim-surround", function()
         check_lines({
             "# This is a demonstration for `nvim-surround`",
             "",
-            "Some *cool* things you can do with this plugin:",
+            "Some 'cool' things you can do with this plugin:",
             "",
             "<ul id=\"This is an ordered list\">",
             "<div>This is an item in the list</div>",
