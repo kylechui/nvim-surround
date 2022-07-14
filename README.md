@@ -201,6 +201,7 @@ require("nvim-surround").setup({
         change = "cs",
     },
     delimiters = {
+        invalid_key_behavior = "error",
         pairs = {
             ["("] = { "( ", " )" },
             [")"] = { "(", ")" },
