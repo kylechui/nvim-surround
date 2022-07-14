@@ -13,8 +13,8 @@ M.get_tag = function(include_brackets)
     if not input then
         return nil
     end
-    local element = input:match("^[%w-]+")
-    local attributes = input:match(" +(.+)$")
+    local element = input:match("^<?([%w-]+)")
+    local attributes = input:match(" +(.+)>?$")
     if not element then
         return nil
     end
