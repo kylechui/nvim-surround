@@ -7,14 +7,6 @@ local M = {}
 -- Do nothing.
 M.NOOP = function() end
 
--- Returns if a character is a valid key into the aliases table.
----@param char string? The character to be checked.
----@return delimiters? @Whether or not it is in the aliases table.
-M.is_valid = function(char)
-    local delimiters = config.get_opts().delimiters
-    return delimiters.pairs[char] or delimiters.separators[char] or delimiters.HTML[char] or delimiters.aliases[char]
-end
-
 -- Gets a character input from the user.
 ---@return string? @The input character, or nil if a control character is pressed.
 M.get_char = function()
@@ -53,11 +45,19 @@ M.get_delimiters = function(char, args)
     if html.get_type(char) then
         delimiters = html.get_tag(true)
     else
-        -- If the character is not bound to anything, duplicate it
         delimiters = config.get_opts().delimiters.pairs[char] or config.get_opts().delimiters.separators[char]
     end
+    -- Handle an invalid key into the delimiter table
     if not delimiters then
-        return nil
+        local behavior = config.get_opts().delimiters.invalid_key_behavior
+        if behavior == "error" then -- Throw an error
+            error("Invalid char given. This error can be disabled in setup.", 0)
+            return nil
+        elseif behavior == "given" then -- Duplicate the given character to use as the surround
+            delimiters = { char, char }
+        else -- Ignore the given input
+            return nil
+        end
     end
 
     -- Evaluate the function if necessary

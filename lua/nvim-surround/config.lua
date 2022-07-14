@@ -9,6 +9,7 @@ M.default_opts = {
         change = "cs",
     },
     delimiters = {
+        invalid_key_behavior = "error",
         pairs = {
             ["("] = { "( ", " )" },
             [")"] = { "(", ")" },
