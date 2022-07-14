@@ -13,11 +13,6 @@ M.get_opts = function()
     return vim.b.buffer_opts
 end
 
--- Custom feedkeys wrapper
-M.feedkeys = function(string, flags)
-    vim.api.nvim_feedkeys(string, flags, false)
-end
-
 --[[
 Returns if a character is a valid key into the aliases table.
 @param char The character to be checked.
@@ -157,9 +152,9 @@ M.get_surrounding_selections = function(char)
 
     if html.get_type(char) then
         -- Find the correct selection boundaries for HTML tags
-        vim.fn.cursor(close_last)
+        buffer.set_curpos(close_last)
         close_first = vim.fn.searchpos("<", "nbW")
-        vim.fn.cursor(open_first)
+        buffer.set_curpos(open_first)
         open_last = vim.fn.searchpos(">", "nW")
         if close_first == { 0, 0 } or open_last == { 0, 0 } then
             return nil
@@ -201,7 +196,7 @@ M.get_surrounding_selections = function(char)
             last_pos = close_last,
         },
     }
-    vim.fn.cursor(curpos)
+    buffer.set_curpos(curpos)
     return selections
 end
 
@@ -222,7 +217,7 @@ M.get_nearest_selections = function(char)
     for _, c in ipairs(aliases) do
         -- If the character is a separator and the next separator is on the same line, jump to it
         if M.get_opts().delimiters.separators[c] and vim.fn.searchpos(c, "cnW")[1] == curpos[1] then
-            vim.fn.cursor(vim.fn.searchpos(c, "cnW"))
+            vim.fn.searchpos(c, "cW")
         end
         local cur_selections = M.get_surrounding_selections(c)
         local n_first = nearest_selections and nearest_selections.left.first_pos
@@ -244,7 +239,7 @@ M.get_nearest_selections = function(char)
             end
         end
         -- Reset the cursor position
-        vim.fn.cursor(curpos)
+        buffer.set_curpos(curpos)
     end
     -- If nothing is found, search backwards for the selections that end the latest
     if not nearest_selections then
@@ -267,12 +262,12 @@ M.get_nearest_selections = function(char)
                 end
             end
             -- Reset the cursor position
-            vim.fn.cursor(curpos)
+            buffer.set_curpos(curpos)
         end
     end
     -- If a pair of selections is found, jump to the beginning of the left one
     if nearest_selections then
-        vim.fn.cursor(nearest_selections.left.first_pos)
+        buffer.set_curpos(nearest_selections.left.first_pos)
     end
 
     return nearest_selections

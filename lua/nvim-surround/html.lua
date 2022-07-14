@@ -6,10 +6,7 @@ Returns a HTML open/closing pair.
 @return The HTML tag pair.
 ]]
 M.get_tag = function(include_brackets)
-    local input = vim.fn.input({
-        prompt = "Enter an HTML tag: ",
-        cancelreturn = nil,
-    })
+    local input = vim.fn.input({ prompt = "Enter an HTML tag: " })
     if not input then
         return nil
     end

@@ -1,5 +1,3 @@
-local utils = require("nvim-surround.utils")
-
 local M = {}
 
 -- These variables hold cache values for dot-repeating the three actions
@@ -17,7 +15,7 @@ Sets the callback function for dot-repeating.
 ]]
 M.set_callback = function(func_name)
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
-    utils.feedkeys("g@l", "x")
+    vim.cmd("normal! g@l")
     vim.go.operatorfunc = func_name
 end
 
