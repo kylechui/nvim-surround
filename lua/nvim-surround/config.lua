@@ -64,6 +64,21 @@ M.default_opts = {
 
 M.user_opts = nil
 
+--[[
+Check if a keymap should be added before setting it.
+@param args The arguments to set the keymap.
+]]
+M.add_keymap = function(args)
+    -- Only set the mapping if it hasn't been disabled
+    if args.lhs then
+        vim.keymap.set(args.mode, args.lhs, args.rhs, args.opts)
+    end
+end
+
+--[[
+Setup the "global" user options for all files.
+@param user_opts The user-defined options to be merged with default_opts.
+]]
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
     user_opts = user_opts and vim.tbl_deep_extend("force", M.default_opts, user_opts) or M.default_opts
@@ -72,13 +87,13 @@ M.setup = function(user_opts)
     M.buffer_setup(user_opts)
 
     -- Configure highlight group
-    if user_opts.highlight_motion then
+    if user_opts.highlight_motion.duration then
         vim.cmd([[
             highlight default link NvimSurroundHighlightTextObject Visual
         ]])
     end
 
-    -- Configure buffer setup autocommand
+    -- Create autocommand to setup all subsequent buffers
     local buffer_setup_group = vim.api.nvim_create_augroup("nvimSurroundBufferSetup", {})
     vim.api.nvim_create_autocmd("BufEnter", {
         callback = M.buffer_setup,
@@ -86,6 +101,10 @@ M.setup = function(user_opts)
     })
 end
 
+--[[
+Setup the user options for the current buffer.
+@param buffer_opts The buffer-local options to be merged with the "global" user_opts.
+]]
 M.buffer_setup = function(buffer_opts)
     -- Grab the current buffer-local options, or the global user options otherwise
     local cur_opts = vim.b[0].nvim_surround_buffer_opts and vim.b[0].nvim_surround_buffer_opts or M.user_opts
@@ -129,14 +148,6 @@ M.buffer_setup = function(buffer_opts)
         rhs = require("nvim-surround").change_surround,
         opts = { silent = true, expr = true, buffer = true },
     })
-end
-
-M.add_keymap = function(args)
-    -- If the mapping has been disabled, don't set it
-    if not args.lhs then
-        return
-    end
-    vim.keymap.set(args.mode, args.lhs, args.rhs, args.opts)
 end
 
 return M
