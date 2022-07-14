@@ -64,10 +64,8 @@ M.default_opts = {
 
 M.user_opts = nil
 
---[[
-Check if a keymap should be added before setting it.
-@param args The arguments to set the keymap.
-]]
+-- Check if a keymap should be added before setting it.
+---@param args table The arguments to set the keymap.
 M.add_keymap = function(args)
     -- Only set the mapping if it hasn't been disabled
     if args.lhs then
@@ -75,10 +73,8 @@ M.add_keymap = function(args)
     end
 end
 
---[[
-Setup the "global" user options for all files.
-@param user_opts The user-defined options to be merged with default_opts.
-]]
+-- Setup the global user options for all files.
+---@param user_opts table|nil The user-defined options to be merged with default_opts.
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
     user_opts = user_opts and vim.tbl_deep_extend("force", M.default_opts, user_opts) or M.default_opts
@@ -101,15 +97,16 @@ M.setup = function(user_opts)
     })
 end
 
---[[
-Setup the user options for the current buffer.
-@param buffer_opts The buffer-local options to be merged with the "global" user_opts.
-]]
+-- Setup the user options for the current buffer.
+---@param buffer_opts table|nil The buffer-local options to be merged with the global user_opts.
 M.buffer_setup = function(buffer_opts)
     -- Grab the current buffer-local options, or the global user options otherwise
-    local cur_opts = vim.b[0].nvim_surround_buffer_opts and vim.b[0].nvim_surround_buffer_opts or M.user_opts
+    local user_opts = vim.b[0].nvim_surround_buffer_opts and vim.b[0].nvim_surround_buffer_opts or M.user_opts
     -- Overwrite the current options with buffer-local options, if they exist
-    buffer_opts = buffer_opts and vim.tbl_deep_extend("force", cur_opts, buffer_opts) or cur_opts
+    buffer_opts = buffer_opts and vim.tbl_deep_extend("force", user_opts, buffer_opts) or user_opts
+    if not buffer_opts then
+        return
+    end
     utils.set_opts(buffer_opts)
 
     -- Setup buffer-local keymaps for calling plugin behavior
