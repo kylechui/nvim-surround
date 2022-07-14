@@ -26,31 +26,6 @@ M.get_tag = function(include_brackets)
     local tag = { { open }, { close } }
 
     return tag
-    --[[ TODO: Figure out how to make vim.ui.input blocking
-    vim.ui.input({
-        prompt = "Enter an HTML tag: ",
-    }, function(input)
-        if not input then
-            return
-        end
-        -- Pattern match the element and attributes
-        local element = input:match("^[%w-]+")
-        local attributes = input:match(" +(.+)$")
-        if not element then
-            return nil
-        end
-
-        -- Only include attributes if they exist
-        local open = attributes and element .. " " .. attributes or element
-        local close = element
-
-        -- Optionally include the angle brackets around the tag
-        if include_brackets then
-            open = "<" .. open .. ">"
-            close = "</" .. close .. ">"
-        end
-        tag = { open, close }
-    end) ]]
 end
 
 --[[
@@ -59,7 +34,7 @@ Returns the type of HTML selection that the character refers to.
 @return The HTML selection type, or nil if not an HTML character.
 ]]
 M.get_type = function(char)
-    return vim.b[0].buffer_opts.delimiters.HTML[char]
+    return vim.b[0].nvim_surround_buffer_opts.delimiters.HTML[char]
 end
 
 --[[

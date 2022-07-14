@@ -8,9 +8,18 @@ M.NOOP = function() end
 
 --[[
 Returns the buffer-local options for the plugin.
+@return The buffer-local options.
 ]]
 M.get_opts = function()
-    return vim.b.buffer_opts
+    return vim.b[0].nvim_surround_buffer_opts
+end
+
+--[[
+Sets the buffer-local options for the plugin.
+@param opts The options to be passed in.
+]]
+M.set_opts = function(opts)
+    vim.b[0].nvim_surround_buffer_opts = opts
 end
 
 --[[
