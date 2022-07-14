@@ -1,10 +1,15 @@
 local M = {}
 
---[[
-Returns a HTML open/closing pair.
-@param Whether or not to include the angle brackets.
-@return The HTML tag pair.
-]]
+-- Returns the type of HTML selection that the character refers to.
+---@param char string The input character.
+---@return string? The HTML selection type, or nil if not an HTML character.
+M.get_type = function(char)
+    return vim.b[0].nvim_surround_buffer_opts.delimiters.HTML[char]
+end
+
+-- Returns a HTML open/closing pair.
+---@param include_brackets boolean Whether or not to include the angle brackets.
+---@return string[][]? @The HTML tag pair.
 M.get_tag = function(include_brackets)
     local input = vim.fn.input({ prompt = "Enter an HTML tag: " })
     if not input then
@@ -28,21 +33,10 @@ M.get_tag = function(include_brackets)
     return tag
 end
 
---[[
-Returns the type of HTML selection that the character refers to.
-@param char The input character.
-@return The HTML selection type, or nil if not an HTML character.
-]]
-M.get_type = function(char)
-    return vim.b[0].nvim_surround_buffer_opts.delimiters.HTML[char]
-end
-
---[[
-Adjust the selection boundaries to only select the HTML tag type.
-@param selections The coordinates of the open and closing HTML tags.
-@param type The type of selections to be returning.
-@return The coordinates of the adjusted HTML tag.
-]]
+-- Adjust the selection boundaries to only select the HTML tag type.
+---@param selections selections The coordinates of the open and closing HTML tags.
+---@param type string The type of selections to be returning.
+---@return integer[]? The coordinates of the adjusted HTML tag.
 M.adjust_selections = function(selections, type)
     if not selections then
         return nil

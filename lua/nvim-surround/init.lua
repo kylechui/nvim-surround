@@ -1,3 +1,11 @@
+---@class selection
+---@field first_pos integer[]
+---@field last_pos integer[]
+
+---@class selections
+---@field left selection
+---@field right selection
+
 local buffer = require("nvim-surround.buffer")
 local cache = require("nvim-surround.cache")
 local config = require("nvim-surround.config")

@@ -9,10 +9,8 @@ M.delete = {}
 -- Change caches both the character to be deleted and also the delimiters to be inserted
 M.change = {}
 
---[[
-Sets the callback function for dot-repeating.
-@param func A string representing the function name.
-]]
+-- Sets the callback function for dot-repeating.
+---@param func_name string A string representing the callback function's name.
 M.set_callback = function(func_name)
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
     vim.cmd("normal! g@l")

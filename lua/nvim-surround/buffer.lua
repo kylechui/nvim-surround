@@ -1,7 +1,3 @@
----@class selection
----@field first_pos integer[]
----@field last_pos integer[]
-
 local M = {}
 
 --[============================================================================[
