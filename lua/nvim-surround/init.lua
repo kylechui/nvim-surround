@@ -1,4 +1,3 @@
----@alias config_delimiters boolean|string[]|string[][]|function
 ---@alias delimiters string[]|string[][]
 
 ---@class selection
@@ -11,7 +10,7 @@
 
 ---@class options
 ---@field keymaps table<string, string>
----@field delimiters table<string, config_delimiters>
+---@field delimiters table<string, table|function>
 ---@field highlight_motion { duration: boolean|integer }
 
 local buffer = require("nvim-surround.buffer")

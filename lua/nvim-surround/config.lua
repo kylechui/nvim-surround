@@ -9,6 +9,12 @@ M.default_opts = {
         change = "cs",
     },
     delimiters = {
+        invalid_key_behavior = function()
+            vim.api.nvim_err_writeln(
+                "Error: Invalid character! Configure this message in " ..
+                'require("nvim-surround").setup()'
+            )
+        end,
         pairs = {
             ["("] = { "( ", " )" },
             [")"] = { "(", ")" },
