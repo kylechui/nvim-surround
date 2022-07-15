@@ -373,6 +373,18 @@ describe("nvim-surround", function()
         check_lines({ [['quote 1', 'quote 2', 'quote 3']] })
     end)
 
+    it("can delete close/empty pairs", function()
+        set_lines({ "{}''()" })
+        delete_surround("s")
+        vim.cmd("normal! ..")
+        check_lines({ "" })
+
+        set_lines({ "({", "})" })
+        delete_surround("B")
+        delete_surround("b")
+        check_lines({ "", "" })
+    end)
+
     it("can disable default delimiters", function()
         require("nvim-surround").setup({
             delimiters = {
