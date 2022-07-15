@@ -1,3 +1,5 @@
+local config = require("nvim-surround.config")
+
 local M = {}
 
 --[============================================================================[
@@ -12,9 +14,17 @@ M.get_curpos = function()
 end
 
 -- Sets the position of the cursor, 1-indexed.
----@param pos integer[] The input position.
+---@param pos integer[] The given position.
 M.set_curpos = function(pos)
     vim.api.nvim_win_set_cursor(0, { pos[1], pos[2] - 1 })
+end
+
+-- Move the cursor back to its original location post-action, if desired.
+---@param pos integer[] The original position of the cursor.
+M.reset_curpos = function(pos)
+    if not config.get_opts().move_cursor then
+        M.set_curpos(pos)
+    end
 end
 
 --[============================================================================[
