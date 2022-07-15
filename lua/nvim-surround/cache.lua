@@ -1,5 +1,3 @@
-local utils = require("nvim-surround.utils")
-
 local M = {}
 
 -- These variables hold cache values for dot-repeating the three actions
@@ -11,13 +9,11 @@ M.delete = {}
 -- Change caches both the character to be deleted and also the delimiters to be inserted
 M.change = {}
 
---[[
-Sets the callback function for dot-repeating.
-@param func A string representing the function name.
-]]
+-- Sets the callback function for dot-repeating.
+---@param func_name string A string representing the callback function's name.
 M.set_callback = function(func_name)
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
-    utils.feedkeys("g@l", "x")
+    vim.cmd("normal! g@l")
     vim.go.operatorfunc = func_name
 end
 

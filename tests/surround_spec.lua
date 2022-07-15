@@ -101,7 +101,7 @@ describe("nvim-surround", function()
     it("can dot-repeat deletions", function()
         set_lines({ "(((test)))" })
         delete_surround("b")
-        vim.cmd("normal! ..")
+        vim.cmd("normal! .")
         check_lines({ "(test)" })
         vim.cmd("normal! .")
         check_lines({ "test" })
@@ -156,7 +156,7 @@ describe("nvim-surround", function()
         change_surround("q", "`")
         cursor({ 3, 6 })
         vim.cmd("normal! ve")
-        visual_surround("*")
+        visual_surround("'")
         cursor({ 10, 9 })
         insert_surround("a'", "b")
         cursor({ 10, 11 })
@@ -170,7 +170,7 @@ describe("nvim-surround", function()
         check_lines({
             "# This is a demonstration for `nvim-surround`",
             "",
-            "Some *cool* things you can do with this plugin:",
+            "Some 'cool' things you can do with this plugin:",
             "",
             "<ul id=\"This is an ordered list\">",
             "<div>This is an item in the list</div>",
@@ -371,6 +371,18 @@ describe("nvim-surround", function()
         cursor({ 1, 11 })
         delete_surround("q")
         check_lines({ [['quote 1', 'quote 2', 'quote 3']] })
+    end)
+
+    it("can delete close/empty pairs", function()
+        set_lines({ "{}''()" })
+        delete_surround("s")
+        vim.cmd("normal! ..")
+        check_lines({ "" })
+
+        set_lines({ "({", "})" })
+        delete_surround("B")
+        delete_surround("b")
+        check_lines({ "", "" })
     end)
 
     it("can disable default delimiters", function()

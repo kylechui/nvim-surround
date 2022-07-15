@@ -1,4 +1,5 @@
 local buffer = require("nvim-surround.buffer")
+local config = require("nvim-surround.config")
 local html = require("nvim-surround.html")
 
 local M = {}
@@ -6,32 +7,8 @@ local M = {}
 -- Do nothing.
 M.NOOP = function() end
 
---[[
-Returns the buffer-local options for the plugin.
-]]
-M.get_opts = function()
-    return vim.b.buffer_opts
-end
-
--- Custom feedkeys wrapper
-M.feedkeys = function(string, flags)
-    vim.api.nvim_feedkeys(string, flags, false)
-end
-
---[[
-Returns if a character is a valid key into the aliases table.
-@param char The character to be checked.
-@return Whether or not it is in the aliases table.
-]]
-M.is_valid = function(char)
-    local delim = M.get_opts().delimiters
-    return delim.pairs[char] or delim.separators[char] or delim.HTML[char] or delim.aliases[char]
-end
-
---[[
-Gets a character input from the user.
-@return The input character, or nil if a control character is pressed.
-]]
+-- Gets a character input from the user.
+---@return string? @The input character, or nil if a control character is pressed.
 M.get_char = function()
     local ret_val, char_num = pcall(vim.fn.getchar)
     -- Return nil if error (e.g. <C-c>) or for control characters
@@ -42,33 +19,21 @@ M.get_char = function()
     return char
 end
 
---[[
-Gets a string input from the user.
-@return The input string, or nil if the operation is cancelled.
-]]
-M.get_input = function(prompt)
-    return string.format("%s", vim.fn.input({
-        prompt = prompt,
-        cancelreturn = nil,
-    }))
-end
-
---[[
-Returns the value that the input is aliased to, or the character if no alias exists.
-@param char The input character.
-@return The aliased character if it exists, or the original if none exists.
-]]
+-- Returns the value that the input is aliased to, or the character if no alias exists.
+---@param char string? The input character.
+---@return string? @The aliased character if it exists, or the original if none exists.
 M.get_alias = function(char)
-    if type(M.get_opts().delimiters.aliases[char]) == "string" and #M.get_opts().delimiters.aliases[char] == 1 then
-        return M.get_opts().delimiters.aliases[char]
+    local delimiters = config.get_opts().delimiters
+    if type(delimiters.aliases[char]) == "string" and #delimiters.aliases[char] == 1 then
+        return delimiters.aliases[char]
     end
     return char
 end
 
---[[
-Gets a delimiter pair for a user-inputted character.
-@return A pair of delimiters for the given input, or nil if not applicable.
-]]
+-- Gets a delimiter pair for a user-inputted character.
+---@param char string? The user-given character.
+---@param args? { bufnr: integer, selection: selection, text: string[] }
+---@return delimiters @A pair of delimiters for the given input, or nil if not applicable.
 M.get_delimiters = function(char, args)
     char = M.get_alias(char)
     -- Return nil if the user cancels the command
@@ -80,8 +45,8 @@ M.get_delimiters = function(char, args)
     if html.get_type(char) then
         delimiters = html.get_tag(true)
     else
-        -- If the character is not bound to anything, duplicate it
-        delimiters = M.get_opts().delimiters.pairs[char] or M.get_opts().delimiters.separators[char] or { char, char }
+        delimiters = config.get_opts().delimiters.pairs[char] or config.get_opts().delimiters.separators[char] or
+            config.get_opts().delimiters.invalid_key_behavior(char)
     end
     if not delimiters then
         return nil
@@ -97,10 +62,8 @@ M.get_delimiters = function(char, args)
     return vim.deepcopy(delimiters)
 end
 
---[[
-Gets the coordinates of the start and end of a given selection.
-@return A table containing the start and end of the selection.
-]]
+-- Gets the coordinates of the start and end of a given selection.
+---@return selection? @A table containing the start and end of the selection.
 M.get_selection = function(is_visual)
     -- Determine whether to use visual marks or operator marks
     local mark1, mark2
@@ -118,6 +81,7 @@ M.get_selection = function(is_visual)
     if not first_position or not last_position then
         return nil
     end
+
     local selection = {
         first_pos = first_position,
         last_pos = last_position,
@@ -125,11 +89,9 @@ M.get_selection = function(is_visual)
     return selection
 end
 
---[[
-Gets two selections for the left and right surrounding pair.
-@param A character representing what kind of surrounding pair is to be selected.
-@return A table containing the start and end positions of the delimiters.
-]]
+-- Gets two selections for the left and right surrounding pair.
+---@param char string? A character representing what kind of surrounding pair is to be selected.
+---@return selections? @A table containing the start and end positions of the delimiters.
 M.get_surrounding_selections = function(char)
     char = M.get_alias(char)
     if not char then
@@ -157,9 +119,9 @@ M.get_surrounding_selections = function(char)
 
     if html.get_type(char) then
         -- Find the correct selection boundaries for HTML tags
-        vim.fn.cursor(close_last)
+        buffer.set_curpos(close_last)
         close_first = vim.fn.searchpos("<", "nbW")
-        vim.fn.cursor(open_first)
+        buffer.set_curpos(open_first)
         open_last = vim.fn.searchpos(">", "nW")
         if close_first == { 0, 0 } or open_last == { 0, 0 } then
             return nil
@@ -201,28 +163,27 @@ M.get_surrounding_selections = function(char)
             last_pos = close_last,
         },
     }
-    vim.fn.cursor(curpos)
+    buffer.set_curpos(curpos)
     return selections
 end
 
---[[
-Gets the nearest two selections for the left and right surrounding pair.
-@param A character representing what kind of surrounding pair is to be selected.
-@return A table containing the start and end positions of the delimiters.
-]]
+-- Gets the nearest two selections for the left and right surrounding pair.
+---@param char string? A character representing what kind of surrounding pair is to be selected.
+---@return selections? @A table containing the start and end positions of the delimiters.
 M.get_nearest_selections = function(char)
     char = M.get_alias(char)
 
-    local aliases = M.get_opts().delimiters.aliases[char] and M.get_opts().delimiters.aliases[char] or { char }
+    local delimiters = config.get_opts().delimiters
+    local chars = delimiters.aliases[char] and delimiters.aliases[char] or { char }
     local nearest_selections
     local curpos = buffer.get_curpos()
     -- Iterate through all possible selections for each aliased character, and
     -- find the pair that is closest to the cursor position (that also still
     -- surrounds the cursor)
-    for _, c in ipairs(aliases) do
+    for _, c in ipairs(chars) do
         -- If the character is a separator and the next separator is on the same line, jump to it
-        if M.get_opts().delimiters.separators[c] and vim.fn.searchpos(c, "cnW")[1] == curpos[1] then
-            vim.fn.cursor(vim.fn.searchpos(c, "cnW"))
+        if config.get_opts().delimiters.separators[c] and vim.fn.searchpos(c, "cnW")[1] == curpos[1] then
+            vim.fn.searchpos(c, "cW")
         end
         local cur_selections = M.get_surrounding_selections(c)
         local n_first = nearest_selections and nearest_selections.left.first_pos
@@ -244,11 +205,11 @@ M.get_nearest_selections = function(char)
             end
         end
         -- Reset the cursor position
-        vim.fn.cursor(curpos)
+        buffer.set_curpos(curpos)
     end
     -- If nothing is found, search backwards for the selections that end the latest
     if not nearest_selections then
-        for _, c in ipairs(aliases) do
+        for _, c in ipairs(chars) do
             -- Jump to the previous instance of this delimiter
             vim.fn.searchpos(vim.trim(c), "bW")
             local cur_selections = M.get_surrounding_selections(c)
@@ -256,7 +217,7 @@ M.get_nearest_selections = function(char)
             local c_last = cur_selections and cur_selections.right.last_pos
             if c_last then
                 -- If the current selections is for a separator and not on the same line, ignore it
-                if not (M.get_opts().delimiters.separators[c] and c_last[1] ~= curpos[1]) then
+                if not (config.get_opts().delimiters.separators[c] and c_last[1] ~= curpos[1]) then
                     if not n_last then
                         nearest_selections = cur_selections
                     else
@@ -267,12 +228,12 @@ M.get_nearest_selections = function(char)
                 end
             end
             -- Reset the cursor position
-            vim.fn.cursor(curpos)
+            buffer.set_curpos(curpos)
         end
     end
     -- If a pair of selections is found, jump to the beginning of the left one
     if nearest_selections then
-        vim.fn.cursor(nearest_selections.left.first_pos)
+        buffer.set_curpos(nearest_selections.left.first_pos)
     end
 
     return nearest_selections
