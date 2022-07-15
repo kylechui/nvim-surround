@@ -62,23 +62,26 @@ nvim-surround.setup({opts})
         either a pair of strings, representing the left and right surrounding
         pair, or a function returning a pair of strings.
 
-        Note: Multi-line strings are represented by a table of strings, with each
-        string representing a new line.
+        Note: Multi-line strings are represented by a table of strings, with
+        each string representing a new line.
 
         Valid keys for {opts.delimiters}
 
                                *nvim-surround.delimiters.invalid_key_behavior*
         invalid_key_behavior:~
-            A string that describes how to handle cases when an invalid
-            character is used to retrieve a delimiter pair. It can take the
-            following values:
+            A function with parameter {char} that describes how to handle
+            cases when an invalid character is used to retrieve a delimiter
+            pair. It optionally returns the delimiter pair to be used.
 
-            "error": Throws an error message, warning about the invalid key.
-            "given": Use the given character as the left and right delimiter.
-             "noop": Ignore the invalid key.
-
-            Default: "error"
-
+            Default:
+>
+            function()
+                vim.api.nvim_err_writeln(
+                    'Error: Invalid character! Configure this message in ' ..
+                    'require("nvim-surround").setup()'
+                )
+            end
+<
                                               *nvim-surround.delimiters.pairs*
         pairs:~
             A table that associates characters with a pair of distinct

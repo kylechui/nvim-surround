@@ -45,19 +45,11 @@ M.get_delimiters = function(char, args)
     if html.get_type(char) then
         delimiters = html.get_tag(true)
     else
-        delimiters = config.get_opts().delimiters.pairs[char] or config.get_opts().delimiters.separators[char]
+        delimiters = config.get_opts().delimiters.pairs[char] or config.get_opts().delimiters.separators[char] or
+            config.get_opts().delimiters.invalid_key_behavior(char)
     end
-    -- Handle an invalid key into the delimiter table
     if not delimiters then
-        local behavior = config.get_opts().delimiters.invalid_key_behavior
-        if behavior == "error" then -- Throw an error
-            error("Invalid char given. This error can be disabled in setup.", 0)
-            return nil
-        elseif behavior == "given" then -- Duplicate the given character to use as the surround
-            delimiters = { char, char }
-        else -- Ignore the given input
-            return nil
-        end
+        return nil
     end
 
     -- Evaluate the function if necessary
