@@ -30,6 +30,7 @@ describe("nvim-surround", function()
     vim.cmd("set filetype=lua")
     before_each(function()
         cursor({ 1, 1 })
+        vim.o.shiftwidth = 4
         -- Setup default keybinds (can be overwritten with subsequent calls)
         require("nvim-surround").setup({})
     end)
