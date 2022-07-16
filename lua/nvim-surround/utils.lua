@@ -45,8 +45,9 @@ M.get_delimiters = function(char, args)
     if html.get_type(char) then
         delimiters = html.get_tag(true)
     else
-        delimiters = config.get_opts().delimiters.pairs[char] or config.get_opts().delimiters.separators[char] or
-            config.get_opts().delimiters.invalid_key_behavior(char)
+        delimiters = config.get_opts().delimiters.pairs[char]
+            or config.get_opts().delimiters.separators[char]
+            or config.get_opts().delimiters.invalid_key_behavior(char)
     end
     if not delimiters then
         return nil
@@ -138,16 +139,20 @@ M.get_surrounding_selections = function(char)
         open_last = { open_first[1], open_first[2] + #delimiters[1][1] - 1 }
         close_first = { close_last[1], close_last[2] - #delimiters[2][1] + 1 }
         -- Validate that the pair actually exists at the given selection
-        if open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1] or
-            close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1] then
+        if
+            open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1]
+            or close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1]
+        then
             -- If not strictly there, trim the delimiters' whitespace and try again
             delimiters[1][1] = vim.trim(delimiters[1][1])
             delimiters[2][1] = vim.trim(delimiters[2][1])
             open_last = { open_first[1], open_first[2] + #delimiters[1][1] - 1 }
             close_first = { close_last[1], close_last[2] - #delimiters[2][1] + 1 }
             -- If still not found, return nil
-            if open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1] or
-                close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1] then
+            if
+                open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1]
+                or close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1]
+            then
                 return nil
             end
         end
