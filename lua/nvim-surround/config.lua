@@ -11,8 +11,7 @@ M.default_opts = {
     delimiters = {
         invalid_key_behavior = function()
             vim.api.nvim_err_writeln(
-                "Error: Invalid character! Configure this message in " ..
-                'require("nvim-surround").setup()'
+                "Error: Invalid character! Configure this message in " .. 'require("nvim-surround").setup()'
             )
         end,
         pairs = {
@@ -57,7 +56,7 @@ M.default_opts = {
     },
     highlight_motion = {
         duration = 0,
-    }
+    },
 }
 
 M.user_opts = nil

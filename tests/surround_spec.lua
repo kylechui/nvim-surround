@@ -41,18 +41,18 @@ describe("nvim-surround", function()
     it("can surround text-objects", function()
         set_lines({ "local str = test" })
         cursor({ 1, 13 })
-        insert_surround("iw", "\"")
-        check_lines({ "local str = \"test\"" })
-        insert_surround("a\"", "b")
-        check_lines({ "local str = (\"test\")" })
+        insert_surround("iw", '"')
+        check_lines({ 'local str = "test"' })
+        insert_surround('a"', "b")
+        check_lines({ 'local str = ("test")' })
     end)
 
     it("can delete surrounding quotes/parens", function()
-        set_lines({ "local str = (\"test\")" })
+        set_lines({ 'local str = ("test")' })
         cursor({ 1, 13 })
         delete_surround("b")
-        check_lines({ "local str = \"test\"" })
-        delete_surround("\"")
+        check_lines({ 'local str = "test"' })
+        delete_surround('"')
         check_lines({ "local str = test" })
     end)
 
@@ -70,14 +70,14 @@ describe("nvim-surround", function()
         change_surround("b", "B")
         insert_surround("aB", "b")
         check_lines({
-            "require(\"nvim-surround\").setup({",
+            'require("nvim-surround").setup({',
             "",
             "})",
         })
     end)
 
     it("can delete quotes using aliases", function()
-        set_lines({ "local str = \"test\"" })
+        set_lines({ 'local str = "test"' })
         cursor({ 1, 13 })
         delete_surround("q")
 
@@ -139,7 +139,7 @@ describe("nvim-surround", function()
             "",
             "Some cool things you can do with this plugin:",
             "",
-            "<ul id=\"This is an ordered list\">",
+            '<ul id="This is an ordered list">',
             "<div>This is an item in the list</div>",
             "</ul>",
             "",
@@ -160,26 +160,26 @@ describe("nvim-surround", function()
         cursor({ 10, 9 })
         insert_surround("a'", "b")
         cursor({ 10, 11 })
-        change_surround("'", "\"")
+        change_surround("'", '"')
         cursor({ 11, 1 })
         insert_surround("aB", "b")
         cursor({ 12, 2 })
         delete_surround("'")
         cursor({ 12, 7 })
-        change_surround("'", "\"")
+        change_surround("'", '"')
         check_lines({
             "# This is a demonstration for `nvim-surround`",
             "",
             "Some 'cool' things you can do with this plugin:",
             "",
-            "<ul id=\"This is an ordered list\">",
+            '<ul id="This is an ordered list">',
             "<div>This is an item in the list</div>",
             "</ul>",
             "",
             "```lua",
-            "require(\"nvim-surround\").setup({",
+            'require("nvim-surround").setup({',
             "    aliases = {",
-            "        b = { \"q\" },",
+            '        b = { "q" },',
             "    },",
             "})",
             "```",
@@ -409,13 +409,10 @@ describe("nvim-surround", function()
                 HTML = {
                     ["t"] = false,
                 },
-            }
+            },
         })
 
-        assert.are.same(
-            false,
-            config.user_opts.delimiters.HTML.t
-        )
+        assert.are.same(false, config.user_opts.delimiters.HTML.t)
     end)
 
     it("can modify aliases", function()
@@ -425,18 +422,12 @@ describe("nvim-surround", function()
                     ["b"] = false,
                 },
                 aliases = {
-                    ["b"] = { ")", "}" }
-                }
-            }
+                    ["b"] = { ")", "}" },
+                },
+            },
         })
 
-        assert.are.same(
-            false,
-            config.user_opts.delimiters.pairs.b
-        )
-        assert.are.same(
-            { ")", "}" },
-            config.user_opts.delimiters.aliases.b
-        )
+        assert.are.same(false, config.user_opts.delimiters.pairs.b)
+        assert.are.same({ ")", "}" }, config.user_opts.delimiters.aliases.b)
     end)
 end)
