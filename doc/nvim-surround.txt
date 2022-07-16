@@ -33,6 +33,7 @@ nvim-surround.setup({opts})
         highlight_motion = {
             -- Customize highlight properties here
         },
+        -- Other options here...
     })
 <
 
@@ -219,6 +220,26 @@ nvim-surround.setup({opts})
         until either the action is canceled or completed.
 
         Default: 0
+
+                                                   *nvim-surround.move_cursor*
+    When adding/changing/deleting surrounds, one may choose to move the cursor
+    to the beginning of the surround, or keep it stationary. A value of
+    `false` means that the cursor will not move, while a value of "begin"
+    means that the cursor will "jump" to the beginning of the surround.
+
+    For example, consider:
+>
+    Buffer: This statement "should not" have quotes.
+    Cursor:      1         2               3
+<
+    If `move_cursor` is set to "begin", then typing `dsq` from either position
+    1 or 3 will result in the cursor "jumping" to location 2.
+
+    If `move_cursor` is set to `false` then typing `dsq` from either position
+    1 or 3 will not move the cursor. Note that position 3 now refers to the
+    "q" in "quotes", since two characters before the cursor have been removed.
+
+    Default: "begin"
 
                                                 *nvim-surround.buffer_setup()*
 nvim-surround.buffer_setup({opts})
