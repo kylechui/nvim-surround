@@ -57,6 +57,7 @@ M.default_opts = {
     highlight_motion = {
         duration = 0,
     },
+    move_cursor = "begin",
 }
 
 M.user_opts = nil
@@ -134,11 +135,8 @@ M.buffer_setup = function(buffer_opts)
     M.add_keymap({
         mode = "x",
         lhs = M.get_opts().keymaps.visual,
-        rhs = function()
-            local mode = vim.fn.mode()
-            return "<Esc><Cmd>lua require'nvim-surround'.visual_surround('" .. mode .. "')<CR>"
-        end,
-        opts = { silent = true, expr = true, buffer = true },
+        rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround()<CR>",
+        opts = { silent = true, buffer = true },
     })
     M.add_keymap({
         mode = "n",
