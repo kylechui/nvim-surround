@@ -18,7 +18,7 @@ M.get_tag = function(include_brackets)
         return nil
     end
     local element = input:match("^<?([%w-]+)")
-    local attributes = input:match(" +(.+)>?$")
+    local attributes = input:match(" +([^>]+)>?$")
     if not element then
         return nil
     end

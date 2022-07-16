@@ -40,98 +40,8 @@ use({
 
 ## :rocket: Usage
 
-### The Basics
-
-This plugin serves to help you accomplish three common actions quickly and
-efficiently:
-
-* Surrounding some selection with a left and right delimiter
-* Deleting the surrounding delimiter pair (around the cursor)
-* Changing the surrounding delimiter pair (around the cursor) to another pair
-
-The following examples are all run from Normal mode, unless otherwise specified.
-
-#### Adding New Surrounds
-
-By default, adding new surrounds is done by the keymap prefix `ys`, which can be
-thought of as meaning "you surround". It is used via `ys[object][char]`, where
-`object` denotes the
-[text-object](https://vimhelp.org/motion.txt.html#object-select) that you are
-surrounding with a delimiter pair defined by `char`. Consider the example
-buffer:
-
-```lua
-local str = "This is a sentence"
-```
-
-If the cursor is on the `T` and you press `ysiw'`, then "you surround inner word
-with single quotes", yielding:
-
-```lua
-local str = "'This' is a sentence"
-```
-
-From here, typing `ysa")` means "you surround around double quotes with
-parentheses", yielding:
-
-```lua
-local str = ("'This' is a sentence")
-```
-
-Surrounds can also be added by first selecting the text *in Visual mode*, then
-pressing `S[char]`, e.g. `VS]`.
-
-#### Deleting Surrounds
-
-By default, deleting surrounding pairs is done by the keymap prefix `ds`, which
-can be thought of as meaning "delete surround". It is used via `ds[char]`, where
-`char` refers to the pair to be deleted. Consider the example buffer:
-
-```lua
-require("nvim-surround").setup()
-```
-
-If the cursor is on the `-` and you press `ds"`, then you "delete surrounding
-double quotes", yielding:
-
-```lua
-require(nvim-surround).setup()
-```
-
-From here, typing `ds(` means "delete surrounding parentheses", yielding:
-
-```lua
-requirenvim-surround.setup()
-```
-
-#### Changing Surrounds
-
-By default, changing surrounding pairs is done by the keymap prefix `cs`, which
-can be thought of as meaning "change surround". It is used via
-`cs[char1][char2]`, where `char1` refers to the pair to be deleted, and `char2`
-represents the pair to replace it. Consider the example buffer:
-
-```lua
-local tab = { 'Just', (some), "strings" }
-```
-
-If the cursor is on the `J` and you press `cs'"`, then you "change surrounding
-single quotes to double quotes", yielding:
-
-```lua
-local tab = { "Just", (some), "strings" }
-```
-
-From here, typing `cs("` means "change surrounding parentheses to double
-quotes", yielding:
-
-```lua
-local tab = { "Just", "some", "strings" }
-```
-
-> **Note**: If there are no pairs that are immediately surrounding the cursor, it
-> can *jump* to the "nearest pair" (forwards or backwards). See `:h
-> nvim-surround.jump` for more details.
+Information on how to use this plugin can be found in [the
+wiki](https://github.com/kylechui/nvim-surround/wiki).
 
 ## :gear: Configuration
 
@@ -265,11 +175,8 @@ require("nvim-surround").setup({
 
 ## Contributing
 
-All contributions are welcome :smile: If you have a bug/feature request, you can
-open [a new issue](https://github.com/kylechui/nvim-surround/issues/new/choose).
-General discussion/questions can be put in the [discussions
-page](https://github.com/kylechui/nvim-surround/discussions). Thanks for the
-help!
+See [the contributing
+file](https://github.com/kylechui/nvim-surround/blob/main/CONTRIBUTING.md).
 
 ## Shoutouts
 

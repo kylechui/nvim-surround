@@ -7,8 +7,11 @@ assignees: ''
 
 ---
 
+If this is a general question about the plugin or a point of confusion on a feature, please check [the wiki](https://github.com/kylechui/nvim-surround/wiki) before [opening a new discussion post](https://github.com/kylechui/nvim-surround/discussions/new).
+
 **Checklist**
 - [ ] Have you updated the plugin to the latest version on `main` branch?
+- [ ] Have you checked the [Breaking Changes issue](https://github.com/kylechui/nvim-surround/issues/77)?
 - [ ] Have you read through `:h nvim-surround` to see if there might be any relevant information there?
 
 **Describe the bug**
