@@ -253,6 +253,24 @@ describe("nvim-surround", function()
         check_lines({ "so|left|func_name(me) te|right|xt" })
     end)
 
+    for _, tag in ipairs({ "div", "<div>", "<div" }) do
+        it("can surround with an HTML tag " .. tag, function()
+            set_lines({ "some text" })
+            cursor({ 1, 3 })
+            insert_surround("s", "t" .. tag .. cr)
+            check_lines({ "<div>some text</div>" })
+        end)
+    end
+
+    for _, tag in ipairs({ 'div class="test"', '<div class="test"', '<div class="test">' }) do
+        it("can surround with an HTML tag with attributes " .. tag, function()
+            set_lines({ "some text" })
+            cursor({ 1, 3 })
+            insert_surround("s", "t" .. tag .. cr)
+            check_lines({ '<div class="test">some text</div>' })
+        end)
+    end
+
     it("can dot-repeat user-inputted delimiters", function()
         set_lines({ "here", "are", "some", "lines" })
         insert_surround("iw", "f" .. "func_name" .. cr)
