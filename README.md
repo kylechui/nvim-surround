@@ -96,8 +96,8 @@ by calling `buffer_setup` inside `ftplugin/[filetype].lua`.
 
 For more information, see [`:h
 nvim-surround`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt),
-or the [default configuration]
-(https://github.com/kylechui/nvim-surround/blob/main/lua/nvim-surround/config.lua).
+or the [default
+configuration](https://github.com/kylechui/nvim-surround/blob/main/lua/nvim-surround/config.lua).
 
 ## Contributing
 
