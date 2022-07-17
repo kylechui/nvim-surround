@@ -1,5 +1,7 @@
 local M = {}
 
+-- Since `vim.fn.input()` does not handle keyboard interrupts, we use a protected call to check whether the user has
+-- used `<C-c>` to cancel the input. This is not needed if `<Esc>` is used to cancel the input.
 local get_input = function(prompt)
     local ok, result = pcall(vim.fn.input, { prompt = prompt })
     if not ok then
@@ -71,6 +73,7 @@ M.default_opts = {
     move_cursor = "begin",
 }
 
+-- Stores the global user-set options for the plugin.
 M.user_opts = nil
 
 -- Returns the buffer-local options for the plugin.
