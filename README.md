@@ -96,83 +96,8 @@ by calling `buffer_setup` inside `ftplugin/[filetype].lua`.
 
 For more information, see [`:h
 nvim-surround`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt),
-or the default configuration below.
-
-<details>
-<summary><b>Default Configuration</b></summary>
-
-```lua
-require("nvim-surround").setup({
-    keymaps = { -- vim-surround style keymaps
-        insert = "ys",
-        insert_line = "yss",
-        visual = "S",
-        delete = "ds",
-        change = "cs",
-    },
-    delimiters = {
-        invalid_key_behavior = function()
-            vim.api.nvim_err_writeln(
-                "Error: Invalid character! Configure this message in " ..
-                'require("nvim-surround").setup()'
-            )
-        end,
-        pairs = {
-            ["("] = { "( ", " )" },
-            [")"] = { "(", ")" },
-            ["{"] = { "{ ", " }" },
-            ["}"] = { "{", "}" },
-            ["<"] = { "< ", " >" },
-            [">"] = { "<", ">" },
-            ["["] = { "[ ", " ]" },
-            ["]"] = { "[", "]" },
-            -- Define pairs based on function evaluations!
-            ["i"] = function()
-                return {
-                    require("nvim-surround.utils").get_input(
-                        "Enter the left delimiter: "
-                    ),
-                    require("nvim-surround.utils").get_input(
-                        "Enter the right delimiter: "
-                    )
-                }
-            end,
-            ["f"] = function()
-                return {
-                    require("nvim-surround.utils").get_input(
-                        "Enter the function name: "
-                    ) .. "(",
-                    ")"
-                }
-            end,
-        },
-        separators = {
-            ["'"] = { "'", "'" },
-            ['"'] = { '"', '"' },
-            ["`"] = { "`", "`" },
-        },
-        HTML = {
-            ["t"] = "type", -- Change just the tag type
-            ["T"] = "whole", -- Change the whole tag contents
-        },
-        aliases = {
-            ["a"] = ">", -- Single character aliases apply everywhere
-            ["b"] = ")",
-            ["B"] = "}",
-            ["r"] = "]",
-            -- Table aliases only apply for changes/deletions
-            ["q"] = { '"', "'", "`" }, -- Any quote character
-            ["s"] = { ")", "]", "}", ">", "'", '"', "`" }, -- Any surrounding delimiter
-        },
-    },
-    highlight_motion = { -- Highlight before inserting/changing surrounds
-        duration = 0,
-    },
-    move_cursor = "begin", -- Move the cursor to the beginning of the surround, or keep it stationary
-})
-```
-
-</details>
+or the [default configuration]
+(https://github.com/kylechui/nvim-surround/blob/main/lua/nvim-surround/config.lua).
 
 ## Contributing
 

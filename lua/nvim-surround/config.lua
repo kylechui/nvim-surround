@@ -1,5 +1,13 @@
 local M = {}
 
+local get_input = function(prompt)
+    local ok, result = pcall(vim.fn.input, { prompt = prompt })
+    if not ok then
+        return nil
+    end
+    return result
+end
+
 M.default_opts = {
     keymaps = {
         insert = "ys",
@@ -24,16 +32,19 @@ M.default_opts = {
             ["["] = { "[ ", " ]" },
             ["]"] = { "[", "]" },
             ["i"] = function()
-                return {
-                    vim.fn.input({ prompt = "Enter the left delimiter: " }),
-                    vim.fn.input({ prompt = "Enter the right delimiter: " }),
-                }
+                local left_delimiter = get_input("Enter the left delimiter: ")
+                if left_delimiter then
+                    local right_delimiter = get_input("Enter the right delimiter: ")
+                    if right_delimiter then
+                        return { left_delimiter, right_delimiter }
+                    end
+                end
             end,
             ["f"] = function()
-                return {
-                    vim.fn.input({ prompt = "Enter the function name: " }) .. "(",
-                    ")",
-                }
+                local result = get_input("Enter the function name: ")
+                if result then
+                    return { result .. "(", ")" }
+                end
             end,
         },
         separators = {
