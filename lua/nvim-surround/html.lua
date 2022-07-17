@@ -13,8 +13,9 @@ end
 ---@param include_brackets? boolean Whether or not to include the angle brackets.
 ---@return string[][]? @The HTML tag pair.
 M.get_tag = function(include_brackets)
-    local input = vim.fn.input({ prompt = "Enter an HTML tag: " })
-    if not input then
+    -- Handle cancellation by the user
+    local ok, input = pcall(vim.fn.input, { prompt = "Enter an HTML tag: " })
+    if not ok then
         return nil
     end
     local element = input:match("^<?([%w-]+)")

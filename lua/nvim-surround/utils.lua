@@ -57,6 +57,10 @@ M.get_delimiters = function(char, args)
     if type(delimiters) == "function" then
         delimiters = delimiters(args)
     end
+    if type(delimiters) ~= "table" then
+        return nil
+    end
+
     -- Wrap the delimiters in a table if necessary
     delimiters[1] = type(delimiters[1]) == "string" and { delimiters[1] } or delimiters[1]
     delimiters[2] = type(delimiters[2]) == "string" and { delimiters[2] } or delimiters[2]
