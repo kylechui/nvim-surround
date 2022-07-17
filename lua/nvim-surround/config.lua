@@ -17,6 +17,7 @@ M.default_opts = {
         normal_line = "yS",
         normal_cur_line = "ySS",
         visual = "S",
+        visual_line = "gS",
         delete = "ds",
         change = "cs",
     },
@@ -168,6 +169,12 @@ M.buffer_setup = function(buffer_opts)
         mode = "x",
         lhs = M.get_opts().keymaps.visual,
         rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround()<CR>",
+        opts = { silent = true, buffer = true },
+    })
+    M.add_keymap({
+        mode = "x",
+        lhs = M.get_opts().keymaps.visual_line,
+        rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround(true)<CR>",
         opts = { silent = true, buffer = true },
     })
     M.add_keymap({

@@ -60,7 +60,7 @@ M.normal_surround = function(args, line_mode)
 end
 
 -- Insert delimiters around a visual selection.
-M.visual_surround = function()
+M.visual_surround = function(line_mode)
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
     -- Get a character and selection from the user
@@ -75,6 +75,11 @@ M.visual_surround = function()
     local delimiters = utils.get_delimiters(ins_char, delim_args)
     if not delimiters or not selection then
         return
+    end
+    -- Add new lines if the insert is done line-wise
+    if line_mode then
+        table.insert(delimiters[2], 1, "")
+        table.insert(delimiters[1], #delimiters[1] + 1, "")
     end
     local first_pos, last_pos = selection.first_pos, selection.last_pos
 
