@@ -79,7 +79,7 @@ M.visual_surround = function()
     if vim.fn.visualmode() == "V" then -- Visual line mode case (need to create new lines)
         table.insert(delimiters[2], 1, "")
         table.insert(delimiters[1], #delimiters[1] + 1, "")
-        buffer.insert_lines({ last_pos[1], #buffer.get_lines(last_pos[1], last_pos[1])[1] + 1 }, delimiters[2])
+        buffer.insert_lines({ last_pos[1], #buffer.get_line(last_pos[1]) + 1 }, delimiters[2])
         buffer.insert_lines({ first_pos[1], 1 }, delimiters[1])
         -- Reformat the text
         buffer.format_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2])
@@ -174,7 +174,7 @@ M.insert_callback = function(mode)
         if not pos then
             return
         end
-        pos = { pos[1], #buffer.get_lines(pos[1], pos[1])[1] }
+        pos = { pos[1], #buffer.get_line(pos[1]) }
         buffer.set_mark("]", pos)
     end
 
