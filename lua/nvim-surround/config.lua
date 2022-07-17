@@ -12,8 +12,10 @@ end
 
 M.default_opts = {
     keymaps = {
-        insert = "ys",
-        insert_line = "yss",
+        normal = "ys",
+        normal_cur = "yss",
+        normal_line = "yS",
+        normal_cur_line = "ySS",
         visual = "S",
         delete = "ds",
         change = "cs",
@@ -134,15 +136,31 @@ M.buffer_setup = function(buffer_opts)
     -- Setup buffer-local keymaps for calling plugin behavior
     M.add_keymap({
         mode = "n",
-        lhs = M.get_opts().keymaps.insert,
-        rhs = require("nvim-surround").insert_surround,
+        lhs = M.get_opts().keymaps.normal,
+        rhs = require("nvim-surround").normal_surround,
         opts = { silent = true, expr = true, buffer = true },
     })
     M.add_keymap({
         mode = "n",
-        lhs = M.get_opts().keymaps.insert_line,
+        lhs = M.get_opts().keymaps.normal_cur,
         rhs = function()
-            return "^" .. tostring(vim.v.count1) .. M.get_opts().keymaps.insert .. "g_"
+            return "^" .. tostring(vim.v.count1) .. M.get_opts().keymaps.normal .. "g_"
+        end,
+        opts = { silent = true, expr = true, buffer = true, remap = true },
+    })
+    M.add_keymap({
+        mode = "n",
+        lhs = M.get_opts().keymaps.normal_line,
+        rhs = function()
+            return require("nvim-surround").normal_surround(nil, true)
+        end,
+        opts = { silent = true, expr = true, buffer = true },
+    })
+    M.add_keymap({
+        mode = "n",
+        lhs = M.get_opts().keymaps.normal_cur_line,
+        rhs = function()
+            return "^" .. tostring(vim.v.count1) .. M.get_opts().keymaps.normal_line .. "g_"
         end,
         opts = { silent = true, expr = true, buffer = true, remap = true },
     })

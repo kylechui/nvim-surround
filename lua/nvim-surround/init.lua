@@ -35,18 +35,18 @@ M.buffer_setup = function(buffer_opts)
 end
 
 -- Holds the current position of the cursor, since calling opfunc will erase it.
-M.insert_curpos = nil
+M.normal_curpos = nil
 -- Insert delimiters around a text object.
 ---@param args { selection: selection, delimiters: string[][], curpos: integer[] }
 ---@return string?
-M.insert_surround = function(args)
+M.normal_surround = function(args, line_mode)
     -- Call the operatorfunc if it has not been called yet
     if not args then
         -- Clear the insert cache (since it was user-called)
-        cache.insert = {}
-        M.insert_curpos = buffer.get_curpos()
+        cache.normal = { line_mode = line_mode }
+        M.normal_curpos = buffer.get_curpos()
 
-        vim.go.operatorfunc = "v:lua.require'nvim-surround'.insert_callback"
+        vim.go.operatorfunc = "v:lua.require'nvim-surround'.normal_callback"
         return "g@"
     end
 
@@ -56,7 +56,7 @@ M.insert_surround = function(args)
     buffer.insert_lines(last_pos, args.delimiters[2])
     buffer.insert_lines(first_pos, args.delimiters[1])
 
-    buffer.reset_curpos(M.insert_curpos)
+    buffer.reset_curpos(M.normal_curpos)
 end
 
 -- Insert delimiters around a visual selection.
@@ -151,7 +151,7 @@ end
 --]============================================================================]
 
 ---@param mode string
-M.insert_callback = function(mode)
+M.normal_callback = function(mode)
     -- Adjust the ] mark if the operator was in line-mode, e.g. `ip`
     if mode == "line" then
         local pos = buffer.get_mark("]")
@@ -175,7 +175,7 @@ M.insert_callback = function(mode)
         end
     end
     -- Get a character input and the delimiters (if not cached)
-    if not cache.insert.delimiters then
+    if not cache.normal.delimiters then
         local char = utils.get_char()
         local args = {
             bufnr = vim.fn.bufnr(),
@@ -183,8 +183,13 @@ M.insert_callback = function(mode)
             text = buffer.get_text(selection),
         }
         -- Get the delimiter pair based on the insert character
-        cache.insert.delimiters = cache.insert.delimiters or utils.get_delimiters(char, args)
-        if not cache.insert.delimiters then
+        cache.normal.delimiters = cache.normal.delimiters or utils.get_delimiters(char, args)
+        -- Add new lines if the insert is done line-wise
+        if cache.normal.line_mode then
+            table.insert(cache.normal.delimiters[2], 1, "")
+            table.insert(cache.normal.delimiters[1], #cache.normal.delimiters[1] + 1, "")
+        end
+        if not cache.normal.delimiters then
             buffer.clear_highlights()
             return
         end
@@ -193,8 +198,8 @@ M.insert_callback = function(mode)
     buffer.clear_highlights()
 
     -- Call the main insert function with some arguments
-    M.insert_surround({
-        delimiters = cache.insert.delimiters,
+    M.normal_surround({
+        delimiters = cache.normal.delimiters,
         selection = selection,
     })
 end
