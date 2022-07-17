@@ -168,6 +168,7 @@ require("nvim-surround").setup({
     highlight_motion = { -- Highlight before inserting/changing surrounds
         duration = 0,
     }
+    move_cursor = "begin" -- Move the cursor to the beginning of the surround, or keep it stationary
 })
 ```
 
