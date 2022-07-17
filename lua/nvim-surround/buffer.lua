@@ -140,6 +140,39 @@ M.format_lines = function(start, stop)
     vim.cmd(string.format("silent normal! %dG=%dG", start, stop))
 end
 
+-- Indents a set of lines from the buffer, inclusive and 1-indexed.
+---@param start integer The starting line.
+---@param stop integer The final line.
+M.indent_lines = function(start, stop)
+    local lines = M.get_lines(start, stop)
+    -- Choose to indent with user-preferred tabs or spaces
+    local tab = vim.bo.expandtab and (" "):rep(vim.bo.shiftwidth) or "	"
+    for num, line in ipairs(lines) do
+        lines[num] = tab .. line
+    end
+    M.set_lines(start, stop, lines)
+end
+
+-- Dedents a set of lines from the buffer, inclusive and 1-indexed.
+---@param start integer The starting line.
+---@param stop integer The final line.
+M.dedent_lines = function(start, stop)
+    -- Dedent the inner text
+    local lines = M.get_lines(start, stop)
+    local whitespace = math.huge
+    for _, line in ipairs(lines) do
+        whitespace = math.min(whitespace, #line:match("^%s*"))
+    end
+    -- Trim 1 tab character, or `shiftwidth` spaces; don't try dedenting if you can't
+    local to_trim = math.min(whitespace, vim.bo.expandtab and vim.bo.shiftwidth or 1)
+    for lnum, line in ipairs(lines) do
+        ---@diagnostic disable-next-line: param-type-mismatch
+        lines[lnum] = line:sub(to_trim + 1)
+    end
+    -- Delete the whitespace lines
+    M.set_lines(start, stop, lines)
+end
+
 -- Gets a selection of text from the buffer.
 ---@param selection? selection The selection of text to be retrieved.
 ---@return string[]? @The text from the buffer.
@@ -153,20 +186,6 @@ M.get_text = function(selection)
     lines[#lines] = lines[#lines]:sub(1, last_col)
     lines[1] = lines[1]:sub(first_col)
     return lines
-end
-
--- Returns whether the given line range is all whitespace or not.
----@param start integer The line number of the first line.
----@param stop integer The line number of the last line.
----@return boolean @Whether or not the line range is all whitespace.
-M.is_whitespace = function(start, stop)
-    local lines = M.get_lines(start, stop)
-    for _, line in ipairs(lines) do
-        if not line:match("^%s*$") then
-            return false
-        end
-    end
-    return true
 end
 
 -- Returns whether a position comes before another in a buffer, true if the position.

@@ -80,9 +80,9 @@ M.visual_surround = function()
         table.insert(delimiters[2], 1, "")
         table.insert(delimiters[1], #delimiters[1] + 1, "")
         buffer.insert_lines({ last_pos[1], #buffer.get_line(last_pos[1]) + 1 }, delimiters[2])
-        buffer.insert_lines({ first_pos[1], 1 }, delimiters[1])
+        buffer.insert_lines(first_pos, delimiters[1])
         -- Reformat the text
-        buffer.format_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2])
+        buffer.indent_lines(first_pos[1] + #delimiters[1] - 1, last_pos[1] + #delimiters[1] - 1)
     else -- Regular visual mode case
         buffer.insert_lines({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
         buffer.insert_lines(first_pos, delimiters[1])
@@ -109,22 +109,14 @@ M.delete_surround = function(args)
         -- Delete the right selection first to ensure selection positions are correct
         buffer.delete_selection(selections.right)
         buffer.delete_selection(selections.left)
-        -- Check if the remaining lines are pure whitespace; if so, remove them and dedent the range
+        -- Check if the lines where the delimiters were are now pure whitespace
         local start = selections.left.first_pos[1]
         local stop = selections.right.first_pos[1] + selections.left.first_pos[1] - selections.left.last_pos[1]
-        if buffer.is_whitespace(start, start) and buffer.is_whitespace(stop, stop) then
-            -- Dedent the inner text
-            local lines = buffer.get_lines(start + 1, stop - 1)
-            local whitespace = math.huge
-            for _, line in ipairs(buffer.get_lines(start + 1, stop - 1)) do
-                whitespace = math.min(whitespace, #line:match("^%s*"))
-            end
-            local to_trim = math.min(whitespace, vim.bo.expandtab and vim.bo.shiftwidth or 1)
-            for lnum, line in ipairs(lines) do
-                lines[lnum] = line:sub(to_trim + 1)
-            end
-            -- Delete the whitespace lines
-            buffer.set_lines(start, stop, lines)
+        if start ~= stop and buffer.get_line(start):find("^%s*$") and buffer.get_line(stop):find("^%s*$") then
+            -- Dedent the surrounded text
+            buffer.dedent_lines(start + 1, stop - 1)
+            -- Delete the start and stop lines, as they are only whitespace
+            buffer.set_lines(start, stop, buffer.get_lines(start + 1, stop - 1))
         end
     end
 

@@ -219,13 +219,13 @@ describe("nvim-surround", function()
         visual_surround("b")
         check_lines({
             "(",
-            "{",
+            "    {",
+            "        'hello',",
+            "    }",
             "    'hello',",
-            "}",
-            "'hello',",
-            "{",
-            "    'hello',",
-            "}",
+            "    {",
+            "        'hello',",
+            "    }",
             ")",
         })
     end)
