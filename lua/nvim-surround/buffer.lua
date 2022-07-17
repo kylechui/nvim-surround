@@ -13,9 +13,11 @@ M.get_curpos = function()
     return { curpos[1], curpos[2] + 1 }
 end
 
--- Sets the position of the cursor, 1-indexed.
+-- Sets the position of the cursor if valid, and snaps to nearest location if not, 1-indexed.
 ---@param pos integer[] The given position.
 M.set_curpos = function(pos)
+    -- Cap the cursor line at the number of lines in the file
+    pos[1] = math.min(pos[1], #M.get_lines(1, -1))
     vim.api.nvim_win_set_cursor(0, { pos[1], pos[2] - 1 })
 end
 
@@ -145,6 +147,20 @@ M.get_text = function(selection)
     lines[#lines] = lines[#lines]:sub(1, last_col)
     lines[1] = lines[1]:sub(first_col)
     return lines
+end
+
+-- Returns whether the given line range is all whitespace or not.
+---@param start integer The line number of the first line.
+---@param stop integer The line number of the last line.
+---@return boolean @Whether or not the line range is all whitespace.
+M.is_whitespace = function(start, stop)
+    local lines = M.get_lines(start, stop)
+    for _, line in ipairs(lines) do
+        if not line:match("^%s*$") then
+            return false
+        end
+    end
+    return true
 end
 
 -- Returns whether a position comes before another in a buffer, true if the position.

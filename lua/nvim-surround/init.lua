@@ -109,6 +109,32 @@ M.delete_surround = function(args)
         -- Delete the right selection first to ensure selection positions are correct
         buffer.delete_selection(selections.right)
         buffer.delete_selection(selections.left)
+        -- Check if the remaining lines are pure whitespace; if so, remove them and dedent the range
+        local start = selections.left.first_pos[1]
+        local stop = selections.right.first_pos[1] + selections.left.first_pos[1] - selections.left.last_pos[1]
+        if buffer.is_whitespace(start, start) and buffer.is_whitespace(stop, stop) then
+            -- Dedent the inner text
+            local lines = buffer.get_lines(start + 1, stop - 1)
+            local whitespace = math.huge
+            for _, line in ipairs(buffer.get_lines(start + 1, stop - 1)) do
+                whitespace = math.min(whitespace, #line:match("^%s*"))
+            end
+            local to_trim = math.min(whitespace, vim.bo.expandtab and vim.bo.shiftwidth or 1)
+            for lnum, line in ipairs(lines) do
+                lines[lnum] = line:sub(to_trim + 1)
+            end
+            buffer.set_lines(start + 1, stop - 1, lines)
+            -- Delete the right selection's lines
+            buffer.delete_selection({
+                first_pos = { stop - 1, #buffer.get_lines(stop - 1, stop - 1)[1] },
+                last_pos = { stop, 1 },
+            })
+            -- Delete the left selection's lines
+            buffer.delete_selection({
+                first_pos = { start, 1 },
+                last_pos = { start + 1, 0 },
+            })
+        end
     end
 
     buffer.reset_curpos(args.curpos)
