@@ -2,6 +2,11 @@ local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
 local cursor = vim.fn.cursor
 local config = require("nvim-surround.config")
 
+local get_curpos = function()
+    local curpos = vim.api.nvim_win_get_cursor(0)
+    return { curpos[1], curpos[2] + 1 }
+end
+
 local insert_surround = function(textobj, ins_char)
     vim.cmd("normal ys" .. textobj .. ins_char)
 end
@@ -31,8 +36,8 @@ describe("nvim-surround", function()
     before_each(function()
         cursor({ 1, 1 })
         vim.o.shiftwidth = 4
-        -- Setup default keybinds (can be overwritten with subsequent calls)
-        require("nvim-surround").setup({})
+        -- Setup defaults
+        require("nvim-surround").buffer_setup(require("nvim-surround.config").default_opts)
     end)
 
     it("can be setup without a table", function()
@@ -362,6 +367,38 @@ describe("nvim-surround", function()
         vim.cmd("normal! .")
         check_lines({
             [[And jump forwards and backwards to the nearest surround.]],
+        })
+    end)
+
+    it("can refuse to jump properly", function()
+        require("nvim-surround").buffer_setup({ move_cursor = false })
+        set_lines({
+            [[And jump "forwards" and `backwards` to 'the' "nearest" surround.]],
+        })
+        cursor({ 1, 27 })
+
+        delete_surround("q")
+        assert.are.same(get_curpos(), { 1, 27 })
+        check_lines({
+            [[And jump "forwards" and backwards to 'the' "nearest" surround.]],
+        })
+
+        insert_surround("a'", '"')
+        check_lines({
+            [[And jump "forwards" and backwards to "'the'" "nearest" surround.]],
+        })
+
+        delete_surround("q")
+        vim.cmd("normal! ..")
+        assert.are.same(get_curpos(), { 1, 27 })
+        check_lines({
+            [[And jump "forwards" and backwards to the nearest surround.]],
+        })
+
+        change_surround("q", "b")
+        assert.are.same(get_curpos(), { 1, 27 })
+        check_lines({
+            [[And jump (forwards) and backwards to the nearest surround.]],
         })
     end)
 

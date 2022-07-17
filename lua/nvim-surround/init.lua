@@ -34,6 +34,8 @@ M.buffer_setup = function(buffer_opts)
     config.buffer_setup(buffer_opts)
 end
 
+-- Holds the current position of the cursor, since calling opfunc will erase it.
+M.insert_curpos = nil
 -- Insert delimiters around a text object.
 ---@param args { selection: selection, delimiters: string[][], curpos: integer[] }
 ---@return string?
@@ -42,6 +44,7 @@ M.insert_surround = function(args)
     if not args then
         -- Clear the insert cache (since it was user-called)
         cache.insert = {}
+        M.insert_curpos = buffer.get_curpos()
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.insert_callback"
         return "g@"
@@ -53,7 +56,7 @@ M.insert_surround = function(args)
     buffer.insert_lines(last_pos, args.delimiters[2])
     buffer.insert_lines(first_pos, args.delimiters[1])
 
-    buffer.reset_curpos(args.curpos)
+    buffer.reset_curpos(M.insert_curpos)
 end
 
 -- Insert delimiters around a visual selection.
@@ -149,8 +152,6 @@ end
 
 ---@param mode string
 M.insert_callback = function(mode)
-    -- Save the current position of the cursor
-    local curpos = buffer.get_curpos()
     -- Adjust the ] mark if the operator was in line-mode, e.g. `ip`
     if mode == "line" then
         local pos = buffer.get_mark("]")
@@ -162,6 +163,9 @@ M.insert_callback = function(mode)
     end
 
     local selection = utils.get_selection(false)
+    if not selection then
+        return
+    end
     -- Highlight the range and set a timer to clear it if necessary
     local highlight_motion = config.get_opts().highlight_motion
     if highlight_motion.duration then
@@ -188,13 +192,11 @@ M.insert_callback = function(mode)
     -- Clear the highlights right after the action is no longer pending
     buffer.clear_highlights()
 
-    local args = {
+    -- Call the main insert function with some arguments
+    M.insert_surround({
         delimiters = cache.insert.delimiters,
         selection = selection,
-        curpos = curpos,
-    }
-    -- Call the main insert function with some arguments
-    M.insert_surround(args)
+    })
 end
 
 M.delete_callback = function()
