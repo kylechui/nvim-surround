@@ -107,6 +107,12 @@ M.get_lines = function(start, stop)
     return vim.api.nvim_buf_get_lines(0, start - 1, stop, false)
 end
 
+-- Gets a given line from the buffer, 1-indexed.
+---@param line_num integer The line number.
+M.get_line = function(line_num)
+    return M.get_lines(line_num, line_num)
+end
+
 -- Replaces some lines in the buffer, inclusive and 1-indexed.
 ---@param start integer The starting line.
 ---@param stop integer The final line.

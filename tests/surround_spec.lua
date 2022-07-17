@@ -401,7 +401,7 @@ describe("nvim-surround", function()
         set_lines({ "({", "})" })
         delete_surround("B")
         delete_surround("b")
-        check_lines({ "", "" })
+        check_lines({ "" })
     end)
 
     it("can disable default delimiters", function()

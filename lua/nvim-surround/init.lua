@@ -123,17 +123,8 @@ M.delete_surround = function(args)
             for lnum, line in ipairs(lines) do
                 lines[lnum] = line:sub(to_trim + 1)
             end
-            buffer.set_lines(start + 1, stop - 1, lines)
-            -- Delete the right selection's lines
-            buffer.delete_selection({
-                first_pos = { stop - 1, #buffer.get_lines(stop - 1, stop - 1)[1] },
-                last_pos = { stop, 1 },
-            })
-            -- Delete the left selection's lines
-            buffer.delete_selection({
-                first_pos = { start, 1 },
-                last_pos = { start + 1, 0 },
-            })
+            -- Delete the whitespace lines
+            buffer.set_lines(start, stop, lines)
         end
     end
 
