@@ -30,7 +30,8 @@ describe("nvim-surround", function()
     vim.cmd("set filetype=lua")
     before_each(function()
         cursor({ 1, 1 })
-        vim.o.shiftwidth = 4
+        vim.bo.shiftwidth = 4
+        vim.bo.expandtab = true
         -- Setup default keybinds (can be overwritten with subsequent calls)
         require("nvim-surround").setup({})
     end)
@@ -401,6 +402,35 @@ describe("nvim-surround", function()
         set_lines({ "({", "})" })
         delete_surround("B")
         delete_surround("b")
+        check_lines({ "" })
+    end)
+
+    it("can handle smart indentation after deletions", function()
+        set_lines({
+            '<div class="container">',
+            '   <div class="block"></div>',
+            "</div>",
+        })
+        delete_surround("t")
+        check_lines({ '<div class="block"></div>' })
+        set_lines({
+            '<div class="container"',
+            '     id="some nonsense"',
+            '     type="more stuff">',
+            '    <div class="block"></div>',
+            "</div>",
+        })
+        delete_surround("t")
+        check_lines({ '<div class="block"></div>' })
+        vim.bo.expandtab = false
+        set_lines({
+            '<div class="container">',
+            '	<div class="block"></div>',
+            "</div>",
+        })
+        delete_surround("t")
+        check_lines({ '<div class="block"></div>' })
+        delete_surround("t")
         check_lines({ "" })
     end)
 
