@@ -114,6 +114,18 @@ nvim-surround.setup({opts})
             the selection with parentheses and prepends a user-given function
             name.
 
+            Note: The built-in function `vim.fn.input()` does not handle
+            keyboard interrupts, so a protected call is used by default to
+            allow input cancellation via <C-c>:
+>
+            local get_input = function(prompt)
+                local ok, result = pcall(vim.fn.input, { prompt = prompt })
+                if not ok then
+                    return nil
+                end
+                return result
+            end
+<
             Default: {
                 ["("] = { "( ", " )" },
                 [")"] = { "(", ")" },
@@ -124,22 +136,19 @@ nvim-surround.setup({opts})
                 ["["] = { "[ ", " ]" },
                 ["]"] = { "[", "]" },
                 ["i"] = function()
-                    return {
-                        utils.get_input(
-                            "Enter the left delimiter: "
-                        ),
-                        utils.get_input(
-                            "Enter the right delimiter: "
-                        )
-                    }
+                    local left_delimiter = get_input("Enter the left delimiter: ")
+                    if left_delimiter then
+                        local right_delimiter = get_input("Enter the right delimiter: ")
+                        if right_delimiter then
+                            return { left_delimiter, right_delimiter }
+                        end
+                    end
                 end,
                 ["f"] = function()
-                    return {
-                        utils.get_input(
-                            "Enter the function name: "
-                        ) .. "(",
-                        ")"
-                    }
+                    local result = get_input("Enter the function name: ")
+                    if result then
+                        return { result .. "(", ")" }
+                    end
                 end,
             }
 
