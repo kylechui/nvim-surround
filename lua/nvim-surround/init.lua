@@ -34,7 +34,7 @@ M.buffer_setup = function(buffer_opts)
     config.buffer_setup(buffer_opts)
 end
 
--- Add delimiters around the cursor, and re-enter insert mode.
+-- Add delimiters around the cursor, in insert mode.
 M.insert_surround = function(line_mode)
     local char = utils.get_char()
     local delimiters = utils.get_delimiters(char)
@@ -76,7 +76,7 @@ M.normal_surround = function(args, line_mode)
     buffer.reset_curpos(M.normal_curpos)
 end
 
--- Insert delimiters around a visual selection.
+-- Add delimiters around a visual selection.
 M.visual_surround = function(line_mode)
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
@@ -100,12 +100,12 @@ M.visual_surround = function(line_mode)
     end
     local first_pos, last_pos = selection.first_pos, selection.last_pos
 
-    -- Insert the right delimiter first to ensure correct indexing
+    -- Add the right delimiter first to ensure correct indexing
     if vim.fn.visualmode() == "V" then -- Visual line mode case (need to create new lines)
         table.insert(delimiters[2], 1, "")
         table.insert(delimiters[1], #delimiters[1] + 1, "")
         buffer.insert_lines({ last_pos[1], #buffer.get_lines(last_pos[1], last_pos[1])[1] + 1 }, delimiters[2])
-        buffer.insert_lines({ first_pos[1], 1 }, delimiters[1])
+        buffer.insert_lines(first_pos, delimiters[1])
         -- Reformat the text
         buffer.format_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2])
     elseif vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)

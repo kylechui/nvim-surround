@@ -2,11 +2,11 @@ local M = {}
 
 -- These variables hold cache values for dot-repeating the three actions
 
--- Normal only caches the delimiters to be inserted (table for left/right)
+-- Normal only caches the delimiters to be added (table for left/right)
 M.normal = {}
 -- Delete only caches the character to be deleted
 M.delete = {}
--- Change caches both the character to be deleted and also the delimiters to be inserted
+-- Change caches both the character to be deleted and also the delimiters to be added
 M.change = {}
 
 -- Sets the callback function for dot-repeating.

@@ -42,15 +42,33 @@ nvim-surround.setup({opts})
 
                                                        *nvim-surround.keymaps*
     keymaps:~
-        Defines what keymaps are used to interact with the plugin. The
-        {insert_line} key is used to surround the current line (not including
-        leading nor trailing whitespace), and can be thought of as a special
-        case of {insert}.
+        Defines what keymaps are used to interact with the plugin.
+
+        There are three main types of surround "actions": add, delete, and
+        change.
+
+
+        Keys with the suffix `_cur` are a special case where the mapping
+        applies to the current line, and keys with the suffix `_line` add the
+        delimiters to a new line.
+
+        The type of visual surround also affects behavior:
+        * |charwise-visual|: Adds one pair of delimiters around the whole
+          visual selection.
+        * |linewise-visual|: Adds one pair of delimiters around the whole
+          visual selection, each delimiter on a new line.
+        * |blockwise-visual|: Adds one pair of delimiters per line, for each
+          line in the block.
 
         Default: {
-            insert = "ys",
-            insert_line = "yss",
+            insert = "<C-g>s",
+            insert_line = "<C-g>S",
+            normal = "ys",
+            normal_cur = "yss",
+            normal_line = "yS",
+            normal_cur_line = "ySS",
             visual = "S",
+            visual_line = "gS",
             delete = "ds",
             change = "cs",
         }
@@ -319,4 +337,4 @@ In the above example, typing `dsq` at locations:
 * 3, 4: Deletes the single quotes `'`
 * 6, 7: Deletes the backticks ```
 
-vim:tw=78:ts=8:ft=help:norl:
+vim:tw=78:ts=8:ft=help:norl:conceallevel=0:

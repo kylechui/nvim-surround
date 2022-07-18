@@ -248,7 +248,7 @@ describe("nvim-surround", function()
         })
     end)
 
-    it("can insert user-inputted delimiters", function()
+    it("can add user-inputted delimiters", function()
         set_lines({ "some text" })
         cursor({ 1, 3 })
         vim.cmd("normal! vwl")
