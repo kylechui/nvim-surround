@@ -104,9 +104,9 @@ nvim-surround.setup({opts})
                                               *nvim-surround.delimiters.pairs*
         pairs:~
             A table that associates characters with a pair of distinct
-            delimiters, used for inserting/changing/deleting. Each delimiter
-            can either be a simple string, or a table containing strings,
-            where each element of the table will be put on its own line.
+            delimiters, used for adding/changing/deleting. Each delimiter can
+            either be a simple string, or a table containing strings, where
+            each element of the table will be put on its own line.
 
             More powerful pairs can be created using an anonymous function
             that returns a table of two delimiters. This can be used to query
@@ -164,7 +164,7 @@ nvim-surround.setup({opts})
                                          *nvim-surround.delimiters.separators*
         separators:~
             A table that associates characters with a pair of non-distinct
-            delimiters, used for inserting/changing/deleting.
+            delimiters, used for adding/changing/deleting.
 
             Default: {
                 ["'"] = { "'", "'" },
@@ -220,10 +220,10 @@ nvim-surround.setup({opts})
             }
 
                                               *nvim-surround.highlight_motion*
-    When inserting/changing a surrounding pair, one may optionally highlight
-    the selection(s) of interest. During insertion, the selection around which
-    the pair will be added is highlighted. During changing, the surrounding
-    pair to be replaced is highlighted.
+    When adding/changing a surrounding pair, one may optionally highlight the
+    selection(s) of interest. During insertion, the selection around which the
+    pair will be added is highlighted. During changing, the surrounding pair
+    to be replaced is highlighted.
 
     The relevant highlight group is "NvimSurroundHighlightTextObject", which
     can be configured separately.
@@ -308,7 +308,7 @@ delimiter. It always prefers
 * pairs that occur before the cursor.
 
 Note: Reverse jumping is only available for changing/deleting surrounds, not
-inserting a new pair.
+adding a new pair.
 
 An example of this behavior is as follows:
 >

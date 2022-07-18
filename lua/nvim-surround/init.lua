@@ -59,7 +59,7 @@ M.normal_curpos = nil
 M.normal_surround = function(args, line_mode)
     -- Call the operatorfunc if it has not been called yet
     if not args then
-        -- Clear the insert cache (since it was user-called)
+        -- Clear the normal cache (since it was user-called)
         cache.normal = { line_mode = line_mode }
         M.normal_curpos = buffer.get_curpos()
 
@@ -211,9 +211,9 @@ M.normal_callback = function(mode)
             selection = selection,
             text = buffer.get_text(selection),
         }
-        -- Get the delimiter pair based on the insert character
+        -- Get the delimiter pair based on the input character
         cache.normal.delimiters = cache.normal.delimiters or utils.get_delimiters(char, args)
-        -- Add new lines if the insert is done line-wise
+        -- Add new lines if the addition is done line-wise
         if cache.normal.line_mode then
             table.insert(cache.normal.delimiters[2], 1, "")
             table.insert(cache.normal.delimiters[1], #cache.normal.delimiters[1] + 1, "")
@@ -226,7 +226,7 @@ M.normal_callback = function(mode)
     -- Clear the highlights right after the action is no longer pending
     buffer.clear_highlights()
 
-    -- Call the main insert function with some arguments
+    -- Call the normal surround function with some arguments
     M.normal_surround({
         delimiters = cache.normal.delimiters,
         selection = selection,
