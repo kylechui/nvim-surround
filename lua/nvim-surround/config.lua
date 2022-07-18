@@ -74,7 +74,7 @@ M.default_opts = {
 }
 
 -- Stores the global user-set options for the plugin.
-M.user_opts = nil
+M.user_opts = {}
 
 -- Returns the buffer-local options for the plugin.
 ---@return options @The buffer-local options.
