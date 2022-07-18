@@ -258,13 +258,21 @@ nvim-surround.buffer_setup({opts})
     One example is to set up different `f` mappings for Python and Lua file
     types via:
 >
+    local get_input = function(prompt)
+        local ok, result = pcall(vim.fn.input, { prompt = prompt })
+        if not ok then
+            return nil
+        end
+        return result
+    end
+
     -- ftplugin/python.lua
     require("nvim-surround").buffer_setup({
         delimiters = {
             pairs = {
                 ["f"] = function()
                     return {
-                        "def " .. require("nvim-surround.utils").get_input(
+                        "def " .. get_input(
                             "Enter the function name: "
                         ) .. "(",
                         "):"
@@ -279,7 +287,7 @@ nvim-surround.buffer_setup({opts})
             pairs = {
                 ["f"] = function()
                     return {
-                        "function " .. require("nvim-surround.utils").get_input(
+                        "function " .. get_input(
                             "Enter the function name: "
                         ) .. "(",
                         ")"
