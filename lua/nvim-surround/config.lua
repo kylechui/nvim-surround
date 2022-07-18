@@ -12,6 +12,8 @@ end
 
 M.default_opts = {
     keymaps = {
+        insert = "<C-g>s",
+        insert_line = "<C-g>S",
         normal = "ys",
         normal_cur = "yss",
         normal_line = "yS",
@@ -135,6 +137,20 @@ M.buffer_setup = function(buffer_opts)
     M.merge_opts(buffer_opts)
 
     -- Setup buffer-local keymaps for calling plugin behavior
+    M.add_keymap({
+        mode = "i",
+        lhs = M.get_opts().keymaps.insert,
+        rhs = require("nvim-surround").insert_surround,
+        opts = { silent = true, buffer = true },
+    })
+    M.add_keymap({
+        mode = "i",
+        lhs = M.get_opts().keymaps.insert_line,
+        rhs = function()
+            require("nvim-surround").insert_surround(true)
+        end,
+        opts = { silent = true, buffer = true },
+    })
     M.add_keymap({
         mode = "n",
         lhs = M.get_opts().keymaps.normal,

@@ -34,9 +34,26 @@ M.buffer_setup = function(buffer_opts)
     config.buffer_setup(buffer_opts)
 end
 
+-- Add delimiters around the cursor, and re-enter insert mode.
+M.insert_surround = function(line_mode)
+    local char = utils.get_char()
+    local delimiters = utils.get_delimiters(char)
+    local curpos = buffer.get_curpos()
+
+    -- Add new lines if the addition is done line-wise
+    if line_mode then
+        table.insert(delimiters[2], 1, "")
+        table.insert(delimiters[1], #delimiters[1] + 1, "")
+    end
+
+    buffer.insert_lines({ curpos[1], curpos[2] + 1 }, delimiters[2])
+    buffer.insert_lines({ curpos[1], curpos[2] }, delimiters[1])
+    buffer.set_curpos({ curpos[1] + #delimiters[1] - 1, curpos[2] + #delimiters[1][#delimiters[1]] })
+end
+
 -- Holds the current position of the cursor, since calling opfunc will erase it.
 M.normal_curpos = nil
--- Insert delimiters around a text object.
+-- Add delimiters around a text object.
 ---@param args { selection: selection, delimiters: string[][], curpos: integer[] }
 ---@return string?
 M.normal_surround = function(args, line_mode)
@@ -76,7 +93,7 @@ M.visual_surround = function(line_mode)
     if not delimiters or not selection then
         return
     end
-    -- Add new lines if the insert is done line-wise
+    -- Add new lines if the addition is done line-wise
     if line_mode then
         table.insert(delimiters[2], 1, "")
         table.insert(delimiters[1], #delimiters[1] + 1, "")
