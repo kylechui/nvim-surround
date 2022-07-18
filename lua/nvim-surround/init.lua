@@ -108,6 +108,13 @@ M.visual_surround = function(line_mode)
         buffer.insert_lines({ first_pos[1], 1 }, delimiters[1])
         -- Reformat the text
         buffer.format_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2])
+    elseif vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
+        local mn_lnum, mn_col = math.min(first_pos[1], last_pos[1]), math.min(first_pos[2], last_pos[2])
+        local mx_lnum, mx_col = math.max(first_pos[1], last_pos[1]), math.max(first_pos[2], last_pos[2])
+        for line_num = mn_lnum, mx_lnum do
+            buffer.insert_lines({ line_num, mx_col + 1 }, delimiters[2])
+            buffer.insert_lines({ line_num, mn_col }, delimiters[1])
+        end
     else -- Regular visual mode case
         buffer.insert_lines({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
         buffer.insert_lines(first_pos, delimiters[1])
