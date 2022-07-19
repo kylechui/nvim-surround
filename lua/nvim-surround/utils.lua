@@ -183,7 +183,7 @@ M.get_nearest_selections = function(char)
     char = M.get_alias(char)
 
     local delimiters = config.get_opts().delimiters
-    local chars = delimiters.aliases[char] and delimiters.aliases[char] or { char }
+    local chars = delimiters.aliases[char] or { char }
     local nearest_selections
     local curpos = buffer.get_curpos()
     -- Iterate through all possible selections for each aliased character, and

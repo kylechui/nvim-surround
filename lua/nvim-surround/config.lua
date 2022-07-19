@@ -84,14 +84,14 @@ M.user_opts = nil
 -- Returns the buffer-local options for the plugin, or global options if buffer-local does not exist.
 ---@return options @The buffer-local options.
 M.get_opts = function()
-    return vim.b[0].nvim_surround_buffer_opts and vim.b[0].nvim_surround_buffer_opts or M.user_opts
+    return vim.b[0].nvim_surround_buffer_opts or M.user_opts
 end
 
 -- Updates the buffer-local options for the plugin based on the input.
 ---@param opts options? The options to be passed in.
 M.merge_opts = function(opts)
     -- Grab the current buffer-local options, or the global user options otherwise
-    local cur_opts = M.get_opts() and M.get_opts() or M.user_opts
+    local cur_opts = M.get_opts() or M.user_opts
     -- Overwrite the current options with buffer-local options, if they exist
     opts = opts and vim.tbl_deep_extend("force", cur_opts, opts) or cur_opts
     vim.b[0].nvim_surround_buffer_opts = opts
