@@ -32,10 +32,10 @@ local check_lines = function(lines)
 end
 
 describe("nvim-surround", function()
-    vim.cmd("set filetype=lua")
     before_each(function()
         cursor({ 1, 1 })
-        vim.o.shiftwidth = 4
+        vim.bo.filetype = "lua"
+        vim.bo.shiftwidth = 4
         -- Setup defaults
         require("nvim-surround").buffer_setup(require("nvim-surround.config").default_opts)
     end)
@@ -140,6 +140,8 @@ describe("nvim-surround", function()
     end)
 
     it("can do the demonstration", function()
+        vim.bo.filetype = "markdown"
+        vim.bo.shiftwidth = 4
         set_lines({
             "# This is a demonstration for nvim-surround",
             "",
