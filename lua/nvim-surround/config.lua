@@ -81,17 +81,17 @@ M.default_opts = {
 -- Stores the global user-set options for the plugin.
 M.user_opts = nil
 
--- Returns the buffer-local options for the plugin.
+-- Returns the buffer-local options for the plugin, or global options if buffer-local does not exist.
 ---@return options @The buffer-local options.
 M.get_opts = function()
-    return vim.b[0].nvim_surround_buffer_opts
+    return vim.b[0].nvim_surround_buffer_opts or M.user_opts
 end
 
 -- Updates the buffer-local options for the plugin based on the input.
 ---@param opts options? The options to be passed in.
 M.merge_opts = function(opts)
     -- Grab the current buffer-local options, or the global user options otherwise
-    local cur_opts = M.get_opts() and M.get_opts() or M.user_opts
+    local cur_opts = M.get_opts() or M.user_opts
     -- Overwrite the current options with buffer-local options, if they exist
     opts = opts and vim.tbl_deep_extend("force", cur_opts, opts) or cur_opts
     vim.b[0].nvim_surround_buffer_opts = opts
@@ -115,19 +115,82 @@ M.setup = function(user_opts)
     -- Configure user-set defaults for the current buffer in case the plugin is lazy-loaded
     M.buffer_setup(user_opts)
 
+    -- Setup keymaps for calling plugin behavior
+    M.add_keymap({
+        mode = "i",
+        lhs = M.get_opts().keymaps.insert,
+        rhs = require("nvim-surround").insert_surround,
+        opts = { silent = true },
+    })
+    M.add_keymap({
+        mode = "i",
+        lhs = M.get_opts().keymaps.insert_line,
+        rhs = function()
+            require("nvim-surround").insert_surround(true)
+        end,
+        opts = { silent = true },
+    })
+    M.add_keymap({
+        mode = "n",
+        lhs = M.get_opts().keymaps.normal,
+        rhs = require("nvim-surround").normal_surround,
+        opts = { silent = true, expr = true },
+    })
+    M.add_keymap({
+        mode = "n",
+        lhs = M.get_opts().keymaps.normal_cur,
+        rhs = function()
+            return "^" .. tostring(vim.v.count1) .. M.get_opts().keymaps.normal .. "g_"
+        end,
+        opts = { silent = true, expr = true, remap = true },
+    })
+    M.add_keymap({
+        mode = "n",
+        lhs = M.get_opts().keymaps.normal_line,
+        rhs = function()
+            return require("nvim-surround").normal_surround(nil, true)
+        end,
+        opts = { silent = true, expr = true },
+    })
+    M.add_keymap({
+        mode = "n",
+        lhs = M.get_opts().keymaps.normal_cur_line,
+        rhs = function()
+            return "^" .. tostring(vim.v.count1) .. M.get_opts().keymaps.normal_line .. "g_"
+        end,
+        opts = { silent = true, expr = true, remap = true },
+    })
+    M.add_keymap({
+        mode = "x",
+        lhs = M.get_opts().keymaps.visual,
+        rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround()<CR>",
+        opts = { silent = true },
+    })
+    M.add_keymap({
+        mode = "x",
+        lhs = M.get_opts().keymaps.visual_line,
+        rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround(true)<CR>",
+        opts = { silent = true },
+    })
+    M.add_keymap({
+        mode = "n",
+        lhs = M.get_opts().keymaps.delete,
+        rhs = require("nvim-surround").delete_surround,
+        opts = { silent = true, expr = true },
+    })
+    M.add_keymap({
+        mode = "n",
+        lhs = M.get_opts().keymaps.change,
+        rhs = require("nvim-surround").change_surround,
+        opts = { silent = true, expr = true },
+    })
+
     -- Configure highlight group
     if user_opts.highlight_motion.duration then
         vim.cmd([[
             highlight default link NvimSurroundHighlightTextObject Visual
         ]])
     end
-
-    -- Create autocommand to setup all subsequent buffers
-    local buffer_setup_group = vim.api.nvim_create_augroup("nvimSurroundBufferSetup", {})
-    vim.api.nvim_create_autocmd("BufEnter", {
-        callback = M.buffer_setup,
-        group = buffer_setup_group,
-    })
 end
 
 -- Setup the user options for the current buffer.
