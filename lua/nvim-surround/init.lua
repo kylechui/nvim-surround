@@ -137,12 +137,13 @@ M.delete_surround = function(args)
 
     local selections = utils.get_nearest_selections(args.del_char)
     if selections then
-        if selections.left.last_pos[1] ~= selections.right.first_pos[1] then
-            buffer.format_lines(selections.left.last_pos[1] + 1, selections.right.first_pos[1] - 1)
-        end
         -- Delete the right selection first to ensure selection positions are correct
         buffer.delete_selection(selections.right)
         buffer.delete_selection(selections.left)
+        buffer.format_lines(
+            selections.left.first_pos[1] + 1,
+            selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1] - 1
+        )
     end
 
     buffer.reset_curpos(args.curpos)
