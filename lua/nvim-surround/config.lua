@@ -136,7 +136,7 @@ M.buffer_setup = function(buffer_opts)
         mode = "n",
         lhs = M.get_opts().keymaps.insert,
         rhs = require("nvim-surround").insert_surround,
-        opts = { silent = true, expr = true, buffer = true },
+        opts = { silent = true, expr = true, buffer = true, desc = "Insert surrounding pair" },
     })
     M.add_keymap({
         mode = "n",
@@ -144,25 +144,25 @@ M.buffer_setup = function(buffer_opts)
         rhs = function()
             return "^" .. tostring(vim.v.count1) .. M.get_opts().keymaps.insert .. "g_"
         end,
-        opts = { silent = true, expr = true, buffer = true, remap = true },
+        opts = { silent = true, expr = true, buffer = true, remap = true, desc = "Insert surround pair around line" },
     })
     M.add_keymap({
         mode = "x",
         lhs = M.get_opts().keymaps.visual,
         rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround()<CR>",
-        opts = { silent = true, buffer = true },
+        opts = { silent = true, buffer = true, desc = "Insert surrounding pair around visual selection" },
     })
     M.add_keymap({
         mode = "n",
         lhs = M.get_opts().keymaps.delete,
         rhs = require("nvim-surround").delete_surround,
-        opts = { silent = true, expr = true, buffer = true },
+        opts = { silent = true, expr = true, buffer = true, desc = "Delete surrounding pair" },
     })
     M.add_keymap({
         mode = "n",
         lhs = M.get_opts().keymaps.change,
         rhs = require("nvim-surround").change_surround,
-        opts = { silent = true, expr = true, buffer = true },
+        opts = { silent = true, expr = true, buffer = true, desc = "Change surrounding pair" },
     })
 end
 
