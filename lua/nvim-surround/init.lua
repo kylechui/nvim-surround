@@ -48,7 +48,19 @@ M.insert_surround = function(line_mode)
 
     buffer.insert_lines({ curpos[1], curpos[2] + 1 }, delimiters[2])
     buffer.insert_lines({ curpos[1], curpos[2] }, delimiters[1])
+    buffer.format_lines(curpos[1], curpos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.set_curpos({ curpos[1] + #delimiters[1] - 1, curpos[2] + #delimiters[1][#delimiters[1]] })
+    -- Indent the cursor to the correct level, if added line-wise
+    if line_mode then
+        local lnum = buffer.get_curpos()[1]
+        if vim.bo.expandtab then
+            buffer.insert_lines({ lnum, 1 }, { (" "):rep(vim.fn.indent(lnum + 1) + vim.bo.shiftwidth) })
+        else
+            local num_tabs = vim.fn.indent(lnum + 1) / vim.bo.shiftwidth
+            buffer.insert_lines({ lnum, 1 }, { ("	"):rep(num_tabs + 1) })
+        end
+        buffer.set_curpos({ lnum, #buffer.get_lines(lnum, lnum)[1] + 1 })
+    end
 end
 
 -- Holds the current position of the cursor, since calling opfunc will erase it.
@@ -141,8 +153,8 @@ M.delete_surround = function(args)
         buffer.delete_selection(selections.right)
         buffer.delete_selection(selections.left)
         buffer.format_lines(
-            selections.left.first_pos[1] + 1,
-            selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1] - 1
+            selections.left.first_pos[1],
+            selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
         )
     end
 
