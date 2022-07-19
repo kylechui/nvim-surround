@@ -106,7 +106,6 @@ M.visual_surround = function(line_mode)
         table.insert(delimiters[1], #delimiters[1] + 1, "")
         buffer.insert_lines({ last_pos[1], #buffer.get_lines(last_pos[1], last_pos[1])[1] + 1 }, delimiters[2])
         buffer.insert_lines(first_pos, delimiters[1])
-        -- Reformat the text
         buffer.format_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2])
     elseif vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
         local mn_lnum, mn_col = math.min(first_pos[1], last_pos[1]), math.min(first_pos[2], last_pos[2])
@@ -138,6 +137,9 @@ M.delete_surround = function(args)
 
     local selections = utils.get_nearest_selections(args.del_char)
     if selections then
+        if selections.left.last_pos[1] ~= selections.right.first_pos[1] then
+            buffer.format_lines(selections.left.last_pos[1] + 1, selections.right.first_pos[1] - 1)
+        end
         -- Delete the right selection first to ensure selection positions are correct
         buffer.delete_selection(selections.right)
         buffer.delete_selection(selections.left)

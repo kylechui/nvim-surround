@@ -129,7 +129,10 @@ end
 ---@param start integer The starting line.
 ---@param stop integer The final line.
 M.format_lines = function(start, stop)
-    vim.cmd(string.format("silent normal! %dG=%dG", start, stop))
+    local b = vim.bo
+    if b.equalprg ~= "" or b.indentexpr ~= "" or b.cindent or b.smartindent or b.lisp then
+        vim.cmd(string.format("silent normal! %dG=%dG", start, stop))
+    end
 end
 
 -- Gets a selection of text from the buffer.
