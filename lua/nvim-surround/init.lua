@@ -72,7 +72,6 @@ M.normal_surround = function(args, line_mode)
 
     buffer.insert_lines(last_pos, args.delimiters[2])
     buffer.insert_lines(first_pos, args.delimiters[1])
-
     buffer.reset_curpos(M.normal_curpos)
 end
 
@@ -93,12 +92,13 @@ M.visual_surround = function(line_mode)
     if not delimiters or not selection then
         return
     end
+
+    local first_pos, last_pos = selection.first_pos, selection.last_pos
     -- Add new lines if the addition is done line-wise
     if line_mode then
         table.insert(delimiters[2], 1, "")
         table.insert(delimiters[1], #delimiters[1] + 1, "")
     end
-    local first_pos, last_pos = selection.first_pos, selection.last_pos
 
     -- Add the right delimiter first to ensure correct indexing
     if vim.fn.visualmode() == "V" then -- Visual line mode case (need to create new lines)
@@ -106,7 +106,6 @@ M.visual_surround = function(line_mode)
         table.insert(delimiters[1], #delimiters[1] + 1, "")
         buffer.insert_lines({ last_pos[1], #buffer.get_lines(last_pos[1], last_pos[1])[1] + 1 }, delimiters[2])
         buffer.insert_lines(first_pos, delimiters[1])
-        buffer.format_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2])
     elseif vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
         local mn_lnum, mn_col = math.min(first_pos[1], last_pos[1]), math.min(first_pos[2], last_pos[2])
         local mx_lnum, mx_col = math.max(first_pos[1], last_pos[1]), math.max(first_pos[2], last_pos[2])
@@ -119,6 +118,7 @@ M.visual_surround = function(line_mode)
         buffer.insert_lines(first_pos, delimiters[1])
     end
 
+    buffer.format_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.reset_curpos(curpos)
 end
 

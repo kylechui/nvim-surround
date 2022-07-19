@@ -94,7 +94,7 @@ describe("nvim-surround", function()
         set_lines({ "({", "some text", "})" })
         delete_surround("b")
         change_surround("B", "b")
-        check_lines({ "(", "some text", ")" })
+        check_lines({ "(", "    some text", ")" })
     end)
 
     it("can dot-repeat normal additions", function()
