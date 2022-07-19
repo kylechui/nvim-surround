@@ -138,8 +138,8 @@ M.get_surrounding_selections = function(char)
             return nil
         end
         -- Use the length of the pair to find the proper selection boundaries
-        local open_line = buffer.get_lines(open_first[1], open_first[1])[1]
-        local close_line = buffer.get_lines(close_last[1], close_last[1])[1]
+        local open_line = buffer.get_line(open_first[1])
+        local close_line = buffer.get_line(close_last[1])
         open_last = { open_first[1], open_first[2] + #delimiters[1][1] - 1 }
         close_first = { close_last[1], close_last[2] - #delimiters[2][1] + 1 }
         -- Validate that the pair actually exists at the given selection
@@ -183,7 +183,7 @@ M.get_nearest_selections = function(char)
     char = M.get_alias(char)
 
     local delimiters = config.get_opts().delimiters
-    local chars = delimiters.aliases[char] and delimiters.aliases[char] or { char }
+    local chars = delimiters.aliases[char] or { char }
     local nearest_selections
     local curpos = buffer.get_curpos()
     -- Iterate through all possible selections for each aliased character, and
