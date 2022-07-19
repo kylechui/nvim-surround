@@ -59,7 +59,7 @@ M.insert_surround = function(line_mode)
             local num_tabs = vim.fn.indent(lnum + 1) / vim.bo.shiftwidth
             buffer.insert_lines({ lnum, 1 }, { ("	"):rep(num_tabs + 1) })
         end
-        buffer.set_curpos({ lnum, #buffer.get_lines(lnum, lnum)[1] + 1 })
+        buffer.set_curpos({ lnum, #buffer.get_line(lnum) + 1 })
     end
 end
 
@@ -116,7 +116,7 @@ M.visual_surround = function(line_mode)
     if vim.fn.visualmode() == "V" then -- Visual line mode case (need to create new lines)
         table.insert(delimiters[2], 1, "")
         table.insert(delimiters[1], #delimiters[1] + 1, "")
-        buffer.insert_lines({ last_pos[1], #buffer.get_lines(last_pos[1], last_pos[1])[1] + 1 }, delimiters[2])
+        buffer.insert_lines({ last_pos[1], #buffer.get_line(last_pos[1]) + 1 }, delimiters[2])
         buffer.insert_lines(first_pos, delimiters[1])
     elseif vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
         local mn_lnum, mn_col = math.min(first_pos[1], last_pos[1]), math.min(first_pos[2], last_pos[2])
@@ -202,7 +202,7 @@ M.normal_callback = function(mode)
         if not pos then
             return
         end
-        pos = { pos[1], #buffer.get_lines(pos[1], pos[1])[1] }
+        pos = { pos[1], #buffer.get_line(pos[1]) }
         buffer.set_mark("]", pos)
     end
 

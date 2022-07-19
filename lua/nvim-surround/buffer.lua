@@ -64,7 +64,7 @@ M.adjust_mark = function(mark)
         return
     end
 
-    local line = M.get_lines(pos[1], pos[1])[1]
+    local line = M.get_line(pos[1])
     if mark == "[" then
         while line:sub(pos[2], pos[2]):match("%s") do
             pos[2] = pos[2] + 1
@@ -105,6 +105,13 @@ M.get_lines = function(start, stop)
     return vim.api.nvim_buf_get_lines(0, start - 1, stop, false)
 end
 
+-- Gets a line from the buffer, 1-indexed.
+---@param line_num integer The number of the line to be retrieved.
+---@return string @A string consisting of the line that was retrieved.
+M.get_line = function(line_num)
+    return M.get_lines(line_num, line_num)[1]
+end
+
 -- Replaces some lines in the buffer, inclusive and 1-indexed.
 ---@param start integer The starting line.
 ---@param stop integer The final line.
@@ -117,7 +124,7 @@ end
 ---@param pos integer[] The position to be inserted at.
 ---@param lines string[] The lines to be inserted.
 M.insert_lines = function(pos, lines)
-    local line = pos[1] > #M.get_lines(1, -1) and "" or M.get_lines(pos[1], pos[1])[1]
+    local line = pos[1] > #M.get_lines(1, -1) and "" or M.get_line(pos[1])
     -- Make a copy of the lines to avoid modifying delimiters
     local lns = vim.deepcopy(lines)
     lns[#lns] = lns[#lns] .. line:sub(pos[2])
@@ -164,8 +171,8 @@ end
 M.delete_selection = function(selection)
     local first_lnum, last_lnum = selection.first_pos[1], selection.last_pos[1]
     local first_col, last_col = selection.first_pos[2], selection.last_pos[2]
-    local first_line = M.get_lines(first_lnum, first_lnum)[1]
-    local last_line = M.get_lines(last_lnum, last_lnum)[1]
+    local first_line = M.get_line(first_lnum)
+    local last_line = M.get_line(last_lnum)
     local replacement = first_line:sub(1, first_col - 1) .. last_line:sub(last_col + 1)
     M.set_lines(first_lnum, last_lnum, { replacement })
 end
@@ -176,8 +183,8 @@ end
 M.change_selection = function(selection, lines)
     local first_lnum, last_lnum = selection.first_pos[1], selection.last_pos[1]
     local first_col, last_col = selection.first_pos[2], selection.last_pos[2]
-    local first_line = M.get_lines(first_lnum, first_lnum)[1]
-    local last_line = M.get_lines(last_lnum, last_lnum)[1]
+    local first_line = M.get_line(first_lnum)
+    local last_line = M.get_line(last_lnum)
     lines[#lines] = lines[#lines] .. last_line:sub(last_col + 1)
     lines[1] = first_line:sub(1, first_col - 1) .. lines[1]
     M.set_lines(first_lnum, last_lnum, lines)
