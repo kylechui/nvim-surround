@@ -38,6 +38,9 @@ end
 M.insert_surround = function(line_mode)
     local char = utils.get_char()
     local delimiters = utils.get_delimiters(char)
+    if not delimiters then
+        return
+    end
     local curpos = buffer.get_curpos()
 
     -- Add new lines if the addition is done line-wise
