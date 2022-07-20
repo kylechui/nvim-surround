@@ -67,6 +67,28 @@ M.get_delimiters = function(char, args)
     return vim.deepcopy(delimiters)
 end
 
+
+-- Gets a delimiter pair for a user-inputted character, returns nil for functions.
+---@param char string The input character.
+---@return string[][]? @A pair of simple delimiters for the given input, or nil if not applicable.
+M.get_basic_delimiters = function(char)
+    char = M.get_alias(char)
+    -- Return nil if the user cancels the command
+    if not char then
+        return nil
+    end
+
+    -- If the character is associated with a function, or no pair at all
+    local delimiters = M.get_opts().delimiters.pairs[char] or M.get_opts().delimiters.separators[char]
+    if type(delimiters) ~= "table" then
+        return nil
+    end
+    -- Wrap the delimiters in a table if necessary
+    delimiters[1] = type(delimiters[1]) == "string" and { delimiters[1] } or delimiters[1]
+    delimiters[2] = type(delimiters[2]) == "string" and { delimiters[2] } or delimiters[2]
+    return vim.deepcopy(delimiters)
+end
+
 -- Gets the coordinates of the start and end of a given selection.
 ---@return selection? @A table containing the start and end of the selection.
 M.get_selection = function(is_visual)
@@ -102,51 +124,43 @@ M.get_surrounding_selections = function(char)
     if not char then
         return nil
     end
-    local open_first, open_last, close_first, close_last
-    local curpos = buffer.get_curpos()
-    -- Use the correct quotes to surround the arguments for setting the marks
-    local args
-    if html.get_type(char) then
-        args = "'t'"
-    elseif char == "'" then
-        args = [["'"]]
-    else
-        args = "'" .. char .. "'"
-    end
-    vim.cmd("silent call v:lua.require'nvim-surround.buffer'.set_operator_marks(" .. args .. ")")
-    open_first = buffer.get_mark("[")
-    close_last = buffer.get_mark("]")
 
-    -- If the operatorfunc "fails", return no selection found
-    if not open_first or not close_last then
+    -- Convert the character
+    local ch = char
+    if html.get_type(char) then
+        ch = "t"
+    elseif char == "\"" then
+        ch = [[\"]]
+    end
+
+    vim.cmd([[call v:lua.require'nvim-surround.buffer'.set_operator_marks("i]] .. ch .. [[")]])
+    local open_last = buffer.get_mark("[")
+    local close_first = buffer.get_mark("]")
+    vim.cmd([[call v:lua.require'nvim-surround.buffer'.set_operator_marks("a]] .. ch .. [[")]])
+    local open_first = buffer.get_mark("[")
+    local close_last = buffer.get_mark("]")
+    -- If either operatorfunc "fails", return no selection found
+    if not (open_first and open_last and close_first and close_last) then
         return nil
     end
+    -- Adjust the selections to only contain the surround, endpoint-inclusive
+    open_last = { open_last[1], open_last[2] - 1 }
+    close_first = { close_first[1], close_first[2] + 1 }
+    -- Move selections if they land before/after the line
+    if open_last[2] == 0 then
+        open_last[2] = 1
+    end
+    if close_first[2] > #buffer.get_lines(close_first[1], close_first[1])[1] then
+        close_first = { close_first[1] + 1, 1 }
+    end
 
-    if html.get_type(char) then
-        -- Find the correct selection boundaries for HTML tags
-        buffer.set_curpos(close_last)
-        close_first = vim.fn.searchpos("<", "nbW")
-        buffer.set_curpos(open_first)
-        open_last = vim.fn.searchpos(">", "nW")
-        if close_first == { 0, 0 } or open_last == { 0, 0 } then
-            return nil
-        end
-    else
-        -- Get the corresponding delimiter pair for the character
-        local delimiters = M.get_delimiters(char)
-        if not delimiters then
-            return nil
-        end
-        -- Use the length of the pair to find the proper selection boundaries
-        local open_line = buffer.get_line(open_first[1])
-        local close_line = buffer.get_line(close_last[1])
-        open_last = { open_first[1], open_first[2] + #delimiters[1][1] - 1 }
-        close_first = { close_last[1], close_last[2] - #delimiters[2][1] + 1 }
-        -- Validate that the pair actually exists at the given selection
-        if
-            open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1]
-            or close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1]
-        then
+    local delimiters = M.get_basic_delimiters(char)
+    -- If the surround is fixed-length, validate that the pair actually exists
+    if delimiters then
+        local open_line = buffer.get_lines(open_first[1], open_first[1])[1]
+        local close_line = buffer.get_lines(close_last[1], close_last[1])[1]
+        if open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1] or
+            close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1] then
             -- If not strictly there, trim the delimiters' whitespace and try again
             delimiters[1][1] = vim.trim(delimiters[1][1])
             delimiters[2][1] = vim.trim(delimiters[2][1])

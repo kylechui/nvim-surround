@@ -27,6 +27,14 @@ M.reset_curpos = function(pos)
     end
 end
 
+--[[
+Sets the position of the cursor, 1-indexed.
+@param pos The input position.
+]]
+M.set_curpos = function(pos)
+    vim.api.nvim_win_set_cursor(0, { pos[1], pos[2] - 1 })
+end
+
 --[============================================================================[
                              Mark helper functions
 --]============================================================================]
@@ -86,7 +94,7 @@ M.set_operator_marks = function(char)
     M.del_mark("]")
     -- Set the [ and ] marks by calling an operatorfunc
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
-    vim.cmd("normal! g@a" .. char)
+    vim.cmd("normal g@" .. object)
     -- Adjust the marks to not reside on whitespace
     M.adjust_mark("[")
     M.adjust_mark("]")
