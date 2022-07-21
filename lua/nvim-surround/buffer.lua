@@ -112,26 +112,6 @@ M.get_line = function(line_num)
     return M.get_lines(line_num, line_num)[1]
 end
 
--- Replaces some lines in the buffer, inclusive and 1-indexed.
----@param start integer The starting line.
----@param stop integer The final line.
----@param lines string[] The set of lines to replace the lines in the buffer.
-M.set_lines = function(start, stop, lines)
-    vim.api.nvim_buf_set_lines(0, start - 1, stop, false, lines)
-end
-
--- Inserts a set of lines into the buffer at a given position.
----@param pos integer[] The position to be inserted at.
----@param lines string[] The lines to be inserted.
-M.insert_lines = function(pos, lines)
-    local line = pos[1] > #M.get_lines(1, -1) and "" or M.get_line(pos[1])
-    -- Make a copy of the lines to avoid modifying delimiters
-    local lns = vim.deepcopy(lines)
-    lns[#lns] = lns[#lns] .. line:sub(pos[2])
-    lns[1] = line:sub(1, pos[2] - 1) .. lns[1]
-    M.set_lines(pos[1], pos[1], lns)
-end
-
 -- Formats a set of lines from the buffer, inclusive and 1-indexed.
 ---@param start integer The starting line.
 ---@param stop integer The final line.
@@ -144,18 +124,12 @@ M.format_lines = function(start, stop)
 end
 
 -- Gets a selection of text from the buffer.
----@param selection? selection The selection of text to be retrieved.
+---@param selection selection The selection of text to be retrieved.
 ---@return string[]? @The text from the buffer.
 M.get_text = function(selection)
-    if not selection then
-        return nil
-    end
-    local first_lnum, last_lnum = selection.first_pos[1], selection.last_pos[1]
-    local first_col, last_col = selection.first_pos[2], selection.last_pos[2]
-    local lines = M.get_lines(first_lnum, last_lnum)
-    lines[#lines] = lines[#lines]:sub(1, last_col)
-    lines[1] = lines[1]:sub(first_col)
-    return lines
+    local first_pos, last_pos = selection.first_pos, selection.last_pos
+    last_pos[2] = math.min(last_pos[2], #M.get_line(last_pos[1]))
+    return vim.api.nvim_buf_get_text(0, first_pos[1] - 1, first_pos[2] - 1, last_pos[1] - 1, last_pos[2], {})
 end
 
 -- Returns whether a position comes before another in a buffer, true if the position.
@@ -166,28 +140,26 @@ M.comes_before = function(pos1, pos2)
     return pos1[1] < pos2[1] or pos1[1] == pos2[1] and pos1[2] <= pos2[2]
 end
 
+-- Adds some text into the buffer at a given position.
+---@param pos integer[] The position to be inserted at.
+---@param text string[] The text to be added.
+M.insert_text = function(pos, text)
+    vim.api.nvim_buf_set_text(0, pos[1] - 1, pos[2] - 1, pos[1] - 1, pos[2] - 1, text)
+end
+
 -- Deletes a given selection from the buffer.
 ---@param selection selection The given selection.
 M.delete_selection = function(selection)
-    local first_lnum, last_lnum = selection.first_pos[1], selection.last_pos[1]
-    local first_col, last_col = selection.first_pos[2], selection.last_pos[2]
-    local first_line = M.get_line(first_lnum)
-    local last_line = M.get_line(last_lnum)
-    local replacement = first_line:sub(1, first_col - 1) .. last_line:sub(last_col + 1)
-    M.set_lines(first_lnum, last_lnum, { replacement })
+    local first_pos, last_pos = selection.first_pos, selection.last_pos
+    vim.api.nvim_buf_set_text(0, first_pos[1] - 1, first_pos[2] - 1, last_pos[1] - 1, last_pos[2], {})
 end
 
 -- Replaces a given selection with a set of lines.
 ---@param selection selection The given selection.
----@param lines string[] The given lines to replace the selection.
-M.change_selection = function(selection, lines)
-    local first_lnum, last_lnum = selection.first_pos[1], selection.last_pos[1]
-    local first_col, last_col = selection.first_pos[2], selection.last_pos[2]
-    local first_line = M.get_line(first_lnum)
-    local last_line = M.get_line(last_lnum)
-    lines[#lines] = lines[#lines] .. last_line:sub(last_col + 1)
-    lines[1] = first_line:sub(1, first_col - 1) .. lines[1]
-    M.set_lines(first_lnum, last_lnum, lines)
+---@param text string[] The given text to replace the selection.
+M.change_selection = function(selection, text)
+    local first_pos, last_pos = selection.first_pos, selection.last_pos
+    vim.api.nvim_buf_set_text(0, first_pos[1] - 1, first_pos[2] - 1, last_pos[1] - 1, last_pos[2], text)
 end
 
 --[============================================================================[

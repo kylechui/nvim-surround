@@ -49,8 +49,8 @@ M.insert_surround = function(line_mode)
         table.insert(delimiters[1], #delimiters[1] + 1, "")
     end
 
-    buffer.insert_lines({ curpos[1], curpos[2] + 1 }, delimiters[2])
-    buffer.insert_lines({ curpos[1], curpos[2] }, delimiters[1])
+    buffer.insert_text({ curpos[1], curpos[2] + 1 }, delimiters[2])
+    buffer.insert_text({ curpos[1], curpos[2] }, delimiters[1])
     buffer.format_lines(curpos[1], curpos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.set_curpos({ curpos[1] + #delimiters[1] - 1, curpos[2] + #delimiters[1][#delimiters[1]] })
     -- Indent the cursor to the correct level, if added line-wise
@@ -81,8 +81,8 @@ M.normal_surround = function(args, line_mode)
     local first_pos = args.selection.first_pos
     local last_pos = { args.selection.last_pos[1], args.selection.last_pos[2] + 1 }
 
-    buffer.insert_lines(last_pos, args.delimiters[2])
-    buffer.insert_lines(first_pos, args.delimiters[1])
+    buffer.insert_text(last_pos, args.delimiters[2])
+    buffer.insert_text(first_pos, args.delimiters[1])
     buffer.reset_curpos(M.normal_curpos)
 end
 
@@ -93,6 +93,9 @@ M.visual_surround = function(line_mode)
     -- Get a character and selection from the user
     local ins_char = utils.get_char()
     local selection = utils.get_selection(true)
+    if not selection then
+        return
+    end
 
     local delim_args = {
         bufnr = vim.fn.bufnr(),
@@ -115,18 +118,18 @@ M.visual_surround = function(line_mode)
     if vim.fn.visualmode() == "V" then -- Visual line mode case (need to create new lines)
         table.insert(delimiters[2], 1, "")
         table.insert(delimiters[1], #delimiters[1] + 1, "")
-        buffer.insert_lines({ last_pos[1], #buffer.get_line(last_pos[1]) + 1 }, delimiters[2])
-        buffer.insert_lines(first_pos, delimiters[1])
+        buffer.insert_text({ last_pos[1], #buffer.get_line(last_pos[1]) + 1 }, delimiters[2])
+        buffer.insert_text(first_pos, delimiters[1])
     elseif vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
         local mn_lnum, mn_col = math.min(first_pos[1], last_pos[1]), math.min(first_pos[2], last_pos[2])
         local mx_lnum, mx_col = math.max(first_pos[1], last_pos[1]), math.max(first_pos[2], last_pos[2])
         for line_num = mn_lnum, mx_lnum do
-            buffer.insert_lines({ line_num, mx_col + 1 }, delimiters[2])
-            buffer.insert_lines({ line_num, mn_col }, delimiters[1])
+            buffer.insert_text({ line_num, mx_col + 1 }, delimiters[2])
+            buffer.insert_text({ line_num, mn_col }, delimiters[1])
         end
     else -- Regular visual mode case
-        buffer.insert_lines({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
-        buffer.insert_lines(first_pos, delimiters[1])
+        buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
+        buffer.insert_text(first_pos, delimiters[1])
     end
 
     buffer.format_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
