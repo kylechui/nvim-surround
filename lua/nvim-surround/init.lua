@@ -93,6 +93,9 @@ M.visual_surround = function(line_mode)
     -- Get a character and selection from the user
     local ins_char = utils.get_char()
     local selection = utils.get_selection(true)
+    if not selection then
+        return
+    end
 
     local delim_args = {
         bufnr = vim.fn.bufnr(),

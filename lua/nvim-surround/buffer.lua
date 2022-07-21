@@ -112,14 +112,6 @@ M.get_line = function(line_num)
     return M.get_lines(line_num, line_num)[1]
 end
 
--- Replaces some lines in the buffer, inclusive and 1-indexed.
----@param start integer The starting line.
----@param stop integer The final line.
----@param lines string[] The set of lines to replace the lines in the buffer.
-M.set_lines = function(start, stop, lines)
-    vim.api.nvim_buf_set_text(0, start - 1, 0, stop - 1, #M.get_line(stop), lines)
-end
-
 -- Formats a set of lines from the buffer, inclusive and 1-indexed.
 ---@param start integer The starting line.
 ---@param stop integer The final line.
