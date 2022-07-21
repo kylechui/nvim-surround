@@ -38,6 +38,9 @@ end
 M.insert_surround = function(line_mode)
     local char = utils.get_char()
     local delimiters = utils.get_delimiters(char)
+    if not delimiters then
+        return
+    end
     local curpos = buffer.get_curpos()
 
     -- Add new lines if the addition is done line-wise
@@ -53,12 +56,8 @@ M.insert_surround = function(line_mode)
     -- Indent the cursor to the correct level, if added line-wise
     if line_mode then
         local lnum = buffer.get_curpos()[1]
-        if vim.bo.expandtab then
-            buffer.insert_lines({ lnum, 1 }, { (" "):rep(vim.fn.indent(lnum + 1) + vim.bo.shiftwidth) })
-        else
-            local num_tabs = vim.fn.indent(lnum + 1) / vim.bo.shiftwidth
-            buffer.insert_lines({ lnum, 1 }, { ("	"):rep(num_tabs + 1) })
-        end
+
+        vim.cmd(lnum .. "left " .. vim.fn.indent(lnum + 1) + vim.fn.shiftwidth())
         buffer.set_curpos({ lnum, #buffer.get_line(lnum) + 1 })
     end
 end
