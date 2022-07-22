@@ -49,8 +49,8 @@ M.insert_surround = function(line_mode)
         table.insert(delimiters[1], #delimiters[1] + 1, "")
     end
 
-    buffer.insert_text({ curpos[1], curpos[2] + 1 }, delimiters[2])
-    buffer.insert_text({ curpos[1], curpos[2] }, delimiters[1])
+    buffer.insert_text(curpos, delimiters[2])
+    buffer.insert_text(curpos, delimiters[1])
     buffer.format_lines(curpos[1], curpos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.set_curpos({ curpos[1] + #delimiters[1] - 1, curpos[2] + #delimiters[1][#delimiters[1]] })
     -- Indent the cursor to the correct level, if added line-wise
