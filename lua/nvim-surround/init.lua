@@ -11,13 +11,14 @@
 ---@class options
 ---@field keymaps table<string, string>
 ---@field delimiters table<string, table|function>
----@field highlight_motion { duration: boolean|integer }
----@field move_cursor boolean|string
+---@field aliases table<string, string|string[]>
+---@field highlight_motion { duration: integer }
+---@field move_cursor string
+---@field invalid_key_behavior function
 
 local buffer = require("nvim-surround.buffer")
 local cache = require("nvim-surround.cache")
 local config = require("nvim-surround.config")
-local html = require("nvim-surround.html")
 local utils = require("nvim-surround.utils")
 
 local M = {}
@@ -177,10 +178,6 @@ M.change_surround = function(args)
     end
 
     local selections = utils.get_nearest_selections(args.del_char)
-    -- Adjust the selections for changing if we are changing a HTML tag
-    if html.get_type(args.del_char) then
-        selections = html.adjust_selections(selections, html.get_type(args.del_char))
-    end
 
     if selections then
         -- Change the right selection first to ensure selection positions are correct
@@ -272,10 +269,6 @@ M.change_callback = function()
         -- Get the surrounding selections to delete
         local del_char = utils.get_char()
         local selections = utils.get_nearest_selections(del_char)
-        -- Adjust the selections for changing if we are changing a HTML tag
-        if html.get_type(del_char) then
-            selections = html.adjust_selections(selections, html.get_type(del_char))
-        end
         if not selections then
             return
         end
@@ -291,12 +284,8 @@ M.change_callback = function()
         end
         -- Get the new surrounding pair
         local ins_char, delimiters
-        if html.get_type(del_char) then
-            delimiters = html.get_tag()
-        else
-            ins_char = utils.get_char()
-            delimiters = utils.get_delimiters(ins_char)
-        end
+        ins_char = utils.get_char()
+        delimiters = utils.get_delimiters(ins_char)
         buffer.clear_highlights()
 
         if not delimiters then

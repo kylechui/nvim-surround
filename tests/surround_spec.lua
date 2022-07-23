@@ -458,16 +458,14 @@ describe("nvim-surround", function()
     it("can modify aliases", function()
         require("nvim-surround").setup({
             delimiters = {
-                pairs = {
-                    ["b"] = false,
-                },
-                aliases = {
-                    ["b"] = { ")", "}" },
-                },
+                ["b"] = false,
+            },
+            aliases = {
+                ["b"] = { ")", "}" },
             },
         })
 
-        assert.are.same(false, config.user_opts.delimiters.pairs.b)
-        assert.are.same({ ")", "}" }, config.user_opts.delimiters.aliases.b)
+        assert.are.same(false, config.user_opts.delimiters.b)
+        assert.are.same({ ")", "}" }, config.user_opts.aliases.b)
     end)
 end)

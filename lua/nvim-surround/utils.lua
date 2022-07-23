@@ -1,6 +1,5 @@
 local buffer = require("nvim-surround.buffer")
 local config = require("nvim-surround.config")
-local html = require("nvim-surround.html")
 
 local M = {}
 
@@ -23,9 +22,9 @@ end
 ---@param char string? The input character.
 ---@return string? @The aliased character if it exists, or the original if none exists.
 M.get_alias = function(char)
-    local delimiters = config.get_opts().delimiters
-    if type(delimiters.aliases[char]) == "string" and #delimiters.aliases[char] == 1 then
-        return delimiters.aliases[char]
+    local aliases = config.get_opts().aliases
+    if type(aliases[char]) == "string" then
+        return aliases[char]
     end
     return char
 end
@@ -42,13 +41,7 @@ M.get_delimiters = function(char, args)
     end
 
     local delimiters
-    if html.get_type(char) then
-        delimiters = html.get_tag(true)
-    else
-        delimiters = config.get_opts().delimiters.pairs[char]
-            or config.get_opts().delimiters.separators[char]
-            or config.get_opts().delimiters.invalid_key_behavior(char)
-    end
+    delimiters = config.get_opts().delimiters[char] or config.get_opts().invalid_key_behavior(char)
     if not delimiters then
         return nil
     end
@@ -106,9 +99,7 @@ M.get_surrounding_selections = function(char)
     local curpos = buffer.get_curpos()
     -- Use the correct quotes to surround the arguments for setting the marks
     local args
-    if html.get_type(char) then
-        args = "'t'"
-    elseif char == "'" then
+    if char == "'" then
         args = [["'"]]
     else
         args = "'" .. char .. "'"
@@ -122,43 +113,32 @@ M.get_surrounding_selections = function(char)
         return nil
     end
 
-    if html.get_type(char) then
-        -- Find the correct selection boundaries for HTML tags
-        buffer.set_curpos(close_last)
-        close_first = vim.fn.searchpos("<", "nbW")
-        buffer.set_curpos(open_first)
-        open_last = vim.fn.searchpos(">", "nW")
-        if close_first == { 0, 0 } or open_last == { 0, 0 } then
-            return nil
-        end
-    else
-        -- Get the corresponding delimiter pair for the character
-        local delimiters = M.get_delimiters(char)
-        if not delimiters then
-            return nil
-        end
-        -- Use the length of the pair to find the proper selection boundaries
-        local open_line = buffer.get_line(open_first[1])
-        local close_line = buffer.get_line(close_last[1])
+    -- Get the corresponding delimiter pair for the character
+    local delimiters = M.get_delimiters(char)
+    if not delimiters then
+        return nil
+    end
+    -- Use the length of the pair to find the proper selection boundaries
+    local open_line = buffer.get_line(open_first[1])
+    local close_line = buffer.get_line(close_last[1])
+    open_last = { open_first[1], open_first[2] + #delimiters[1][1] - 1 }
+    close_first = { close_last[1], close_last[2] - #delimiters[2][1] + 1 }
+    -- Validate that the pair actually exists at the given selection
+    if
+        open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1]
+        or close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1]
+    then
+        -- If not strictly there, trim the delimiters' whitespace and try again
+        delimiters[1][1] = vim.trim(delimiters[1][1])
+        delimiters[2][1] = vim.trim(delimiters[2][1])
         open_last = { open_first[1], open_first[2] + #delimiters[1][1] - 1 }
         close_first = { close_last[1], close_last[2] - #delimiters[2][1] + 1 }
-        -- Validate that the pair actually exists at the given selection
+        -- If still not found, return nil
         if
             open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1]
             or close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1]
         then
-            -- If not strictly there, trim the delimiters' whitespace and try again
-            delimiters[1][1] = vim.trim(delimiters[1][1])
-            delimiters[2][1] = vim.trim(delimiters[2][1])
-            open_last = { open_first[1], open_first[2] + #delimiters[1][1] - 1 }
-            close_first = { close_last[1], close_last[2] - #delimiters[2][1] + 1 }
-            -- If still not found, return nil
-            if
-                open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1]
-                or close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1]
-            then
-                return nil
-            end
+            return nil
         end
     end
 
@@ -182,18 +162,14 @@ end
 M.get_nearest_selections = function(char)
     char = M.get_alias(char)
 
-    local delimiters = config.get_opts().delimiters
-    local chars = delimiters.aliases[char] or { char }
+    local opts = config.get_opts()
+    local chars = opts.aliases[char] or { char }
     local nearest_selections
     local curpos = buffer.get_curpos()
     -- Iterate through all possible selections for each aliased character, and
     -- find the pair that is closest to the cursor position (that also still
     -- surrounds the cursor)
     for _, c in ipairs(chars) do
-        -- If the character is a separator and the next separator is on the same line, jump to it
-        if config.get_opts().delimiters.separators[c] and vim.fn.searchpos(c, "cnW")[1] == curpos[1] then
-            vim.fn.searchpos(c, "cW")
-        end
         local cur_selections = M.get_surrounding_selections(c)
         local n_first = nearest_selections and nearest_selections.left.first_pos
         local c_first = cur_selections and cur_selections.left.first_pos

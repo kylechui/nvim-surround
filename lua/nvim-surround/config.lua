@@ -24,58 +24,50 @@ M.default_opts = {
         change = "cs",
     },
     delimiters = {
-        invalid_key_behavior = function()
-            vim.api.nvim_err_writeln(
-                "Error: Invalid character! Configure this message in " .. 'require("nvim-surround").setup()'
-            )
+        ["("] = { "( ", " )" },
+        [")"] = { "(", ")" },
+        ["{"] = { "{ ", " }" },
+        ["}"] = { "{", "}" },
+        ["<"] = { "< ", " >" },
+        [">"] = { "<", ">" },
+        ["["] = { "[ ", " ]" },
+        ["]"] = { "[", "]" },
+        ["i"] = function()
+            local left_delimiter = get_input("Enter the left delimiter: ")
+            if left_delimiter then
+                local right_delimiter = get_input("Enter the right delimiter: ")
+                if right_delimiter then
+                    return { left_delimiter, right_delimiter }
+                end
+            end
         end,
-        pairs = {
-            ["("] = { "( ", " )" },
-            [")"] = { "(", ")" },
-            ["{"] = { "{ ", " }" },
-            ["}"] = { "{", "}" },
-            ["<"] = { "< ", " >" },
-            [">"] = { "<", ">" },
-            ["["] = { "[ ", " ]" },
-            ["]"] = { "[", "]" },
-            ["i"] = function()
-                local left_delimiter = get_input("Enter the left delimiter: ")
-                if left_delimiter then
-                    local right_delimiter = get_input("Enter the right delimiter: ")
-                    if right_delimiter then
-                        return { left_delimiter, right_delimiter }
-                    end
-                end
-            end,
-            ["f"] = function()
-                local result = get_input("Enter the function name: ")
-                if result then
-                    return { result .. "(", ")" }
-                end
-            end,
-        },
-        separators = {
-            ["'"] = { "'", "'" },
-            ['"'] = { '"', '"' },
-            ["`"] = { "`", "`" },
-        },
-        HTML = {
-            ["t"] = "type",
-            ["T"] = "whole",
-        },
-        aliases = {
-            ["a"] = ">",
-            ["b"] = ")",
-            ["B"] = "}",
-            ["r"] = "]",
-            ["q"] = { '"', "'", "`" },
-            ["s"] = { "}", "]", ")", ">", '"', "'", "`" },
-        },
+        ["f"] = function()
+            local result = get_input("Enter the function name: ")
+            if result then
+                return { result .. "(", ")" }
+            end
+        end,
+        ["'"] = { "'", "'" },
+        ['"'] = { '"', '"' },
+        ["`"] = { "`", "`" },
+    },
+    aliases = {
+        ["a"] = ">",
+        ["b"] = ")",
+        ["B"] = "}",
+        ["r"] = "]",
+        ["q"] = { '"', "'", "`" },
+        ["s"] = { "}", "]", ")", ">", '"', "'", "`" },
     },
     highlight_motion = {
         duration = 0,
     },
     move_cursor = "begin",
+    invalid_key_behavior = function()
+        vim.api.nvim_err_writeln(
+            "Error: Invalid character! Configure this message in " .. 'require("nvim-surround").setup()'
+        )
+    end,
 }
 
 -- Stores the global user-set options for the plugin.
