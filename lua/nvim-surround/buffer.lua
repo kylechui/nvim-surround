@@ -123,21 +123,21 @@ M.format_lines = function(start, stop)
     end
 end
 
--- Gets a selection of text from the buffer.
----@param selection selection The selection of text to be retrieved.
----@return string[]? @The text from the buffer.
-M.get_text = function(selection)
-    local first_pos, last_pos = selection.first_pos, selection.last_pos
-    last_pos[2] = math.min(last_pos[2], #M.get_line(last_pos[1]))
-    return vim.api.nvim_buf_get_text(0, first_pos[1] - 1, first_pos[2] - 1, last_pos[1] - 1, last_pos[2], {})
-end
-
 -- Returns whether a position comes before another in a buffer, true if the position.
 ---@param pos1 integer[] The first position.
 ---@param pos2 integer[] The second position.
 ---@return boolean @Whether or not pos1 comes before pos2.
 M.comes_before = function(pos1, pos2)
     return pos1[1] < pos2[1] or pos1[1] == pos2[1] and pos1[2] <= pos2[2]
+end
+
+-- Gets a selection of text from the buffer.
+---@param selection selection The selection of text to be retrieved.
+---@return string[] @The text from the buffer.
+M.get_text = function(selection)
+    local first_pos, last_pos = selection.first_pos, selection.last_pos
+    last_pos[2] = math.min(last_pos[2], #M.get_line(last_pos[1]))
+    return vim.api.nvim_buf_get_text(0, first_pos[1] - 1, first_pos[2] - 1, last_pos[1] - 1, last_pos[2], {})
 end
 
 -- Adds some text into the buffer at a given position.
@@ -169,7 +169,7 @@ end
 -- Highlights a given selection.
 ---@param selection selection? The selection to be highlighted.
 M.highlight_selection = function(selection)
-    if not selection then
+    if not selection or not selection.first_pos or not selection.last_pos then
         return
     end
     local namespace = vim.api.nvim_create_namespace("NvimSurround")

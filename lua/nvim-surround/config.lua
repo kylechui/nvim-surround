@@ -24,32 +24,91 @@ M.default_opts = {
         change = "cs",
     },
     delimiters = {
-        ["("] = { "( ", " )" },
-        [")"] = { "(", ")" },
-        ["{"] = { "{ ", " }" },
-        ["}"] = { "{", "}" },
-        ["<"] = { "< ", " >" },
-        [">"] = { "<", ">" },
-        ["["] = { "[ ", " ]" },
-        ["]"] = { "[", "]" },
-        ["i"] = function()
-            local left_delimiter = get_input("Enter the left delimiter: ")
-            if left_delimiter then
-                local right_delimiter = get_input("Enter the right delimiter: ")
-                if right_delimiter then
-                    return { left_delimiter, right_delimiter }
+        ["("] = {
+            add = function()
+                return { { "( " }, { " )" } }
+            end,
+        },
+        [")"] = {
+            add = function()
+                return { { "(" }, { ")" } }
+            end,
+        },
+        ["{"] = {
+            add = function()
+                return { { "{ " }, { " }" } }
+            end,
+        },
+        ["}"] = {
+            add = function()
+                return { { "{" }, { "}" } }
+            end,
+        },
+        ["<"] = {
+            add = function()
+                return { { "< " }, { " >" } }
+            end,
+        },
+        [">"] = {
+            add = function()
+                return { { "<" }, { ">" } }
+            end,
+        },
+        ["["] = {
+            add = function()
+                return { { "[ " }, { " ]" } }
+            end,
+        },
+        ["]"] = {
+            add = function()
+                return { { "[" }, { "]" } }
+            end,
+        },
+        ["i"] = {
+            add = function()
+                local left_delimiter = get_input("Enter the left delimiter: ")
+                if left_delimiter then
+                    local right_delimiter = get_input("Enter the right delimiter: ")
+                    if right_delimiter then
+                        return { left_delimiter, right_delimiter }
+                    end
                 end
-            end
-        end,
-        ["f"] = function()
-            local result = get_input("Enter the function name: ")
-            if result then
-                return { result .. "(", ")" }
-            end
-        end,
-        ["'"] = { "'", "'" },
-        ['"'] = { '"', '"' },
-        ["`"] = { "`", "`" },
+            end,
+        },
+        ["f"] = {
+            add = function()
+                local result = get_input("Enter the function name: ")
+                if result then
+                    return { result .. "(", ")" }
+                end
+            end,
+            find = "%w+%b()",
+            delete = "^(%w+%().*(%))$",
+            change = {
+                target = "^(%w+).*()$",
+                replacement = function()
+                    local result = get_input("Enter the function name: ")
+                    if result then
+                        return { result, "" }
+                    end
+                end,
+            },
+        },
+        ["'"] = {
+            add = function()
+                return { "'", "'" }
+            end,
+        },
+        ['"'] = {
+            add = function()
+                return { '"', '"' }
+            end,
+        },
+        ["`"] = {
+            add = function()
+                return { "`", "`" }
+            end,
+        },
     },
     aliases = {
         ["a"] = ">",

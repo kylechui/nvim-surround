@@ -1,4 +1,4 @@
----@alias delimiters string[]|string[][]
+---@alias delimiters string[]|string[][]|table<string, string|function>
 
 ---@class selection
 ---@field first_pos integer[]
@@ -166,7 +166,7 @@ M.delete_surround = function(args)
 end
 
 -- Change a surrounding delimiter pair, if it exists.
----@param args? { del_char: string, selections: selections, ins_delimiters: string[][], curpos: integer[] }
+---@param args? table
 M.change_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args then
@@ -177,12 +177,18 @@ M.change_surround = function(args)
         return "g@l"
     end
 
-    local selections = utils.get_nearest_selections(args.del_char)
-
-    if selections then
-        -- Change the right selection first to ensure selection positions are correct
-        buffer.change_selection(selections.right, args.ins_delimiters[2])
-        buffer.change_selection(selections.left, args.ins_delimiters[1])
+    local change = config.get_opts().delimiters[args.del_char].change
+    local selections = utils.get_nearest_selections(args.del_char, change.target)
+    if change then
+        args.del_char = utils.get_alias(args.del_char)
+        local text = args.text:gsub(change.target, args.ins_delimiters)
+        buffer.change_selection(args.selection, utils.split(text))
+    else
+        if selections then
+            -- Change the right selection first to ensure selection positions are correct
+            buffer.change_selection(selections.right, args.ins_delimiters[2])
+            buffer.change_selection(selections.left, args.ins_delimiters[1])
+        end
     end
 
     buffer.reset_curpos(args.curpos)
@@ -262,13 +268,16 @@ M.delete_callback = function()
 end
 
 M.change_callback = function()
+    local args = {}
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
     -- Get character inputs if not cached
     if not cache.change.del_char or not cache.change.ins_delimiters then
         -- Get the surrounding selections to delete
         local del_char = utils.get_char()
-        local selections = utils.get_nearest_selections(del_char)
+        local pattern = config.get_opts().delimiters[del_char].change
+            and config.get_opts().delimiters[del_char].change.target
+        local selections, text = utils.get_nearest_selections(del_char, pattern)
         if not selections then
             return
         end
@@ -282,11 +291,16 @@ M.change_callback = function()
                 vim.defer_fn(buffer.clear_highlights, highlight_motion.duration)
             end
         end
+
         -- Get the new surrounding pair
         local ins_char, delimiters
-        ins_char = utils.get_char()
-        delimiters = utils.get_delimiters(ins_char)
-        buffer.clear_highlights()
+        if pattern then
+            delimiters = config.get_opts().delimiters[del_char].change.replacement
+        else
+            ins_char = utils.get_char()
+            delimiters = utils.get_delimiters(ins_char)
+            buffer.clear_highlights()
+        end
 
         if not delimiters then
             return
@@ -296,9 +310,15 @@ M.change_callback = function()
             del_char = del_char,
             ins_delimiters = delimiters,
         }
+        args.del_char = del_char
+        args.ins_delimiters = vim.deepcopy(delimiters)
+        args.selection = {
+            first_pos = selections.left.first_pos,
+            last_pos = selections.right.last_pos,
+        }
+        args.text = text
     end
 
-    local args = vim.deepcopy(cache.change)
     args.curpos = curpos
     M.change_surround(args)
 end
