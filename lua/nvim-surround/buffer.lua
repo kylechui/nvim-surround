@@ -91,10 +91,8 @@ M.set_operator_marks = function(char)
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
     vim.cmd("normal g@a" .. char)
     -- Adjust the marks to not reside on whitespace
-    if char == "'" or char == '"' or char == "`" then
-        M.adjust_mark("[")
-        M.adjust_mark("]")
-    end
+    M.adjust_mark("[")
+    M.adjust_mark("]")
     M.set_curpos(curpos)
 end
 

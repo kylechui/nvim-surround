@@ -7,6 +7,10 @@ local M = {}
 -- Do nothing.
 M.NOOP = function() end
 
+M.is_quote = function(char)
+    return char == "'" or char == '"' or char == "`"
+end
+
 -- Splits an input string apart by newline characters.
 ---@param input string The input string.
 ---@return string[] @A table that contains the lines, split by the newline character.
@@ -204,14 +208,17 @@ end
 M.get_nearest_selections = function(char, pattern)
     char = M.get_alias(char)
 
-    local opts = config.get_opts()
-    local chars = opts.aliases[char] or { char }
+    local chars = config.get_opts().aliases[char] or { char }
     local nearest_selections
     local curpos = buffer.get_curpos()
     -- Iterate through all possible selections for each aliased character, and
     -- find the pair that is closest to the cursor position (that also still
     -- surrounds the cursor)
     for _, c in ipairs(chars) do
+        -- If the character is a separator and the next separator is on the same line, jump to it
+        if M.is_quote(c) and vim.fn.searchpos(c, "cnW")[1] == curpos[1] then
+            vim.fn.cursor(vim.fn.searchpos(c, "cnW"))
+        end
         local cur_selections = M.get_selections(c, pattern)
         local n_first = nearest_selections and nearest_selections.left.first_pos
         local c_first = cur_selections and cur_selections.left.first_pos
@@ -243,8 +250,8 @@ M.get_nearest_selections = function(char, pattern)
             local n_last = nearest_selections and nearest_selections.right.last_pos
             local c_last = cur_selections and cur_selections.right.last_pos
             if c_last then
-                -- If the current selections is for a separator and not on the same line, ignore it
-                if not (config.get_opts().delimiters.separators[c] and c_last[1] ~= curpos[1]) then
+                -- If the current selections is for a quote character and not on the same line, ignore it
+                if not (M.is_quote(c) and c_last[1] ~= curpos[1]) then
                     if not n_last then
                         nearest_selections = cur_selections
                     else
