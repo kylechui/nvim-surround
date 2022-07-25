@@ -282,7 +282,7 @@ M.change_callback = function()
 
         -- Get the new surrounding pair
         local ins_char, delimiters
-        if pattern then
+        if config.get_opts().delimiters[del_char].change.replacement then
             delimiters = config.get_opts().delimiters[del_char].change.replacement()
         else
             ins_char = utils.get_char()
