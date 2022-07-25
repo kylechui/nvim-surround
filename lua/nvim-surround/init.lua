@@ -5,8 +5,8 @@
 ---@field last_pos integer[]
 
 ---@class selections
----@field left selection
----@field right selection
+---@field left selection?
+---@field right selection?
 
 ---@class options
 ---@field keymaps table<string, string>

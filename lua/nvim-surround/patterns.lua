@@ -7,6 +7,9 @@ local M = {}
 M.index_to_pos = function(index)
     local buffer_text = table.concat(buffer.get_lines(1, -1), "\n")
     local lnum = select(2, buffer_text:sub(1, index - 1):gsub("\n", "\n")) + 1
+    if lnum == 1 then
+        return { 1, index }
+    end
     local col = index - #table.concat(buffer.get_lines(1, lnum - 1), "\n") - 1
     return { lnum, col }
 end
@@ -14,6 +17,9 @@ end
 -- Converts a 2D position in the buffer to the corresponding 1D string index.
 ---@param pos integer[] The position in the buffer.
 M.pos_to_index = function(pos)
+    if pos[1] == 1 then
+        return pos[2]
+    end
     return #table.concat(buffer.get_lines(1, pos[1] - 1), "\n") + pos[2] + 1
 end
 
@@ -31,7 +37,7 @@ M.find = function(pattern, filter)
     -- Find the character positions of the pattern in the file (before/on the cursor)
     local b_first, b_last
     -- Linewise search for the pattern before/on the cursor
-    for lnum = curpos[1] - 1, 0, -1 do
+    for lnum = curpos[1], 1, -1 do
         -- Get the file contents from the first to current line
         local cur_text = table.concat(buffer.get_lines(1, lnum), "\n")
         -- Find the character positions of the pattern in the file (after the cursor)
@@ -90,9 +96,7 @@ end
 ---@param start integer
 M.get_selections = function(start, str, pattern)
     -- Get the surrounding pair itself
-    vim.pretty_print(str:find(pattern))
     local _, _, left_delimiter, first_index, right_delimiter, last_index = str:find(pattern)
-    vim.pretty_print(str:find(pattern))
     local left, right
     if type(left_delimiter) == "string" then
         left = {
