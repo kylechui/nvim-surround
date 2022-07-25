@@ -85,16 +85,80 @@ M.default_opts = {
                 if left_delimiter then
                     local right_delimiter = get_input("Enter the right delimiter: ")
                     if right_delimiter then
-                        return { left_delimiter, right_delimiter }
+                        return { { left_delimiter }, { right_delimiter } }
                     end
                 end
             end,
+        },
+        ["t"] = {
+            add = function()
+                local input = get_input("Enter the HTML tag: ")
+                if input then
+                    local element = input:match("^<?([%w-]+)")
+                    local attributes = input:match(" +([^>]+)>?$")
+                    if not element then
+                        return nil
+                    end
+
+                    local open = attributes and element .. " " .. attributes or element
+                    local close = element
+
+                    return { { "<" .. open .. ">" }, { "</" .. close .. ">" } }
+                end
+            end,
+            delete = "^(%b<>)().-(%b<>)()>$",
+            change = {
+                target = "^<([%w-]*)().-([^/]*)()>$",
+                replacement = function()
+                    local element = get_input("Enter the HTML element: ")
+                    if element then
+                        return { { element }, { element } }
+                    end
+                end,
+            },
+        },
+        -- FIXME: Figure out some way to alias `T` to call the `at` text-object
+        ["T"] = {
+            add = function()
+                local input = get_input("Enter the HTML tag: ")
+                if input then
+                    local element = input:match("^<?([%w-]+)")
+                    local attributes = input:match(" +([^>]+)>?$")
+                    if not element then
+                        return nil
+                    end
+
+                    local open = attributes and element .. " " .. attributes or element
+                    local close = element
+
+                    return { { "<" .. open .. ">" }, { "</" .. close .. ">" } }
+                end
+            end,
+            delete = "^(%b<>)().-(%b<>)()$",
+            change = {
+                target = "^<([^>]*)().-([^%/]*)()>$",
+                replacement = function()
+                    local input = get_input("Enter the HTML tag: ")
+                    if input then
+                        local element = input:match("^<?([%w-]+)")
+                        local attributes = input:match(" +([^>]+)>?$")
+                        if not element then
+                            return nil
+                        end
+
+                        local open = attributes and element .. " " .. attributes or element
+                        local close = element
+
+                        return { { open }, { close } }
+                    end
+                end,
+            },
         },
         ["f"] = {
             add = function()
                 local result = get_input("Enter the function name: ")
                 if result then
-                    return { result .. "(", ")" }
+                    return { { result .. "(" }, { ")" } }
                 end
             end,
             find = "[%w_]+%b()",

@@ -93,7 +93,7 @@ M.visual_surround = function(line_mode)
     local curpos = buffer.get_curpos()
     -- Get a character and selection from the user
     local ins_char = utils.get_char()
-    local selection = utils.get_selection(true)
+    local selection = utils.get_user_selection(true)
     local delimiters = utils.get_delimiters(ins_char)
     if not delimiters or not selection then
         return
@@ -168,7 +168,7 @@ M.change_surround = function(args)
         return "g@l"
     end
 
-    local change = config.get_opts().delimiters[args.del_char].change
+    local change = config.get_opts().delimiters[args.del_char] and config.get_opts().delimiters[args.del_char].change
     local selections = utils.get_nearest_selections(args.del_char, change and change.target)
     if selections then
         local delimiters = args.add_delimiters()
@@ -197,7 +197,7 @@ M.normal_callback = function(mode)
         buffer.set_mark("]", pos)
     end
 
-    local selection = utils.get_selection(false)
+    local selection = utils.get_user_selection(false)
     if not selection then
         return
     end
@@ -256,9 +256,10 @@ M.change_callback = function()
     if not cache.change.del_char or not cache.change.add_delimiters then
         -- Get the surrounding selections to delete
         local del_char = utils.get_alias(utils.get_char())
-        local pattern = config.get_opts().delimiters[del_char].change
+        local pattern = config.get_opts().delimiters[del_char]
+            and config.get_opts().delimiters[del_char].change
             and config.get_opts().delimiters[del_char].change.target
-        local selections, text = utils.get_nearest_selections(del_char, pattern)
+        local selections = utils.get_nearest_selections(del_char, pattern)
         if not selections then
             return
         end
@@ -297,8 +298,6 @@ M.change_callback = function()
         args.add_delimiters = function()
             return delimiters
         end
-
-        args.text = text
     end
 
     args.curpos = curpos

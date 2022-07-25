@@ -107,7 +107,7 @@ M.get_selections = function(start, str, pattern)
     if type(right_delimiter) == "string" then
         right = {
             first_pos = M.index_to_pos(start + last_index - #right_delimiter - 1),
-            last_pos = M.index_to_pos(start + last_index - 1),
+            last_pos = M.index_to_pos(start + last_index - 2),
         }
     end
     return {

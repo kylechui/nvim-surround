@@ -89,10 +89,12 @@ M.set_operator_marks = function(char)
     M.del_mark("]")
     -- Set the [ and ] marks by calling an operatorfunc
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
-    vim.cmd("normal! g@a" .. char)
+    vim.cmd("normal g@a" .. char)
     -- Adjust the marks to not reside on whitespace
-    M.adjust_mark("[")
-    M.adjust_mark("]")
+    if char == "'" or char == '"' or char == "`" then
+        M.adjust_mark("[")
+        M.adjust_mark("]")
+    end
     M.set_curpos(curpos)
 end
 

@@ -68,7 +68,7 @@ end
 
 -- Gets the coordinates of the start and end of a given selection.
 ---@return selection? @A table containing the start and end of the selection.
-M.get_selection = function(is_visual)
+M.get_user_selection = function(is_visual)
     -- Determine whether to use visual marks or operator marks
     local mark1, mark2
     if is_visual then
@@ -93,29 +93,48 @@ M.get_selection = function(is_visual)
     return selection
 end
 
+-- Gets a selection that contains the left and right surrounding pair.
+---@param char string A character representing what selection is to be found.
+---@param pattern string? A Lua pattern representing the wanted selection.
+---@return selection? @The corresponding selection for the given character.
+M.get_selection = function(char, pattern)
+    local selection
+    if config.get_opts().delimiters[char].find and pattern then
+        return patterns.find(config.get_opts().delimiters[char].find, pattern)
+    else
+        -- Use the correct quotes to surround the arguments for setting the marks
+        local args
+        if char == "'" then
+            args = [["'"]]
+        else
+            args = "'" .. char .. "'"
+        end
+        vim.cmd("silent call v:lua.require'nvim-surround.buffer'.set_operator_marks(" .. args .. ")")
+        selection = M.get_user_selection(false)
+    end
+    return selection
+end
+
 -- Gets two selections for the left and right surrounding pair.
 ---@param char string? A character representing what kind of surrounding pair is to be selected.
 ---@param pattern string? A Lua pattern representing the wanted selections.
 ---@return selections? @A table containing the start and end positions of the delimiters.
-M.get_surrounding_selections = function(char, pattern)
+M.get_selections = function(char, pattern)
+    -- Get an input character from the user
     char = M.get_alias(char)
     if not char then
         return nil
     end
 
-    if pattern then
-        local find = config.get_opts().delimiters[char].find
-        local selection
-        if find then
-            selection = patterns.find(config.get_opts().delimiters[char].find, pattern)
-        else
-            buffer.set_operator_marks("a" .. char)
-            selection = M.get_selection(false)
-        end
-        if not selection then
-            return nil
-        end
+    -- Get the "parent selection" that contains the left and right surround.
+    local selection = M.get_selection(char, pattern)
+    if not selection then
+        return nil
+    end
 
+    -- Narrow the "parent selection" down to the left and right surrounds.
+    if pattern then
+        -- If the pattern exists, use pattern-based methods to narrow down the selection
         local selections = patterns.get_selections(
             patterns.pos_to_index(selection.first_pos),
             M.join(buffer.get_text(selection)),
@@ -131,14 +150,6 @@ M.get_surrounding_selections = function(char, pattern)
 
         local open_first, open_last, close_first, close_last
         local curpos = buffer.get_curpos()
-        -- Use the correct quotes to surround the arguments for setting the marks
-        local args
-        if char == "'" then
-            args = [["'"]]
-        else
-            args = "'" .. char .. "'"
-        end
-        vim.cmd("silent call v:lua.require'nvim-surround.buffer'.set_operator_marks(" .. args .. ")")
         open_first = buffer.get_mark("[")
         close_last = buffer.get_mark("]")
 
@@ -201,7 +212,7 @@ M.get_nearest_selections = function(char, pattern)
     -- find the pair that is closest to the cursor position (that also still
     -- surrounds the cursor)
     for _, c in ipairs(chars) do
-        local cur_selections = M.get_surrounding_selections(c, pattern)
+        local cur_selections = M.get_selections(c, pattern)
         local n_first = nearest_selections and nearest_selections.left.first_pos
         local c_first = cur_selections and cur_selections.left.first_pos
         if c_first then
@@ -228,7 +239,7 @@ M.get_nearest_selections = function(char, pattern)
         for _, c in ipairs(chars) do
             -- Jump to the previous instance of this delimiter
             vim.fn.searchpos(vim.trim(c), "bW")
-            local cur_selections = M.get_surrounding_selections(c)
+            local cur_selections = M.get_selections(c)
             local n_last = nearest_selections and nearest_selections.right.last_pos
             local c_last = cur_selections and cur_selections.right.last_pos
             if c_last then
