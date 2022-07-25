@@ -94,16 +94,7 @@ M.visual_surround = function(line_mode)
     -- Get a character and selection from the user
     local ins_char = utils.get_char()
     local selection = utils.get_selection(true)
-    if not selection then
-        return
-    end
-
-    local delim_args = {
-        bufnr = vim.fn.bufnr(),
-        selection = selection,
-        text = buffer.get_text(selection),
-    }
-    local delimiters = utils.get_delimiters(ins_char, delim_args)
+    local delimiters = utils.get_delimiters(ins_char)
     if not delimiters or not selection then
         return
     end
@@ -221,13 +212,8 @@ M.normal_callback = function(mode)
     -- Get a character input and the delimiters (if not cached)
     if not cache.normal.delimiters then
         local char = utils.get_char()
-        local args = {
-            bufnr = vim.fn.bufnr(),
-            selection = selection,
-            text = buffer.get_text(selection),
-        }
         -- Get the delimiter pair based on the input character
-        cache.normal.delimiters = cache.normal.delimiters or utils.get_delimiters(char, args)
+        cache.normal.delimiters = cache.normal.delimiters or utils.get_delimiters(char)
         -- Add new lines if the addition is done line-wise
         if cache.normal.line_mode then
             table.insert(cache.normal.delimiters[2], 1, "")
