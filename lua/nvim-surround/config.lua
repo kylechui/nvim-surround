@@ -64,6 +64,21 @@ M.default_opts = {
                 return { { "[" }, { "]" } }
             end,
         },
+        ["'"] = {
+            add = function()
+                return { { "'" }, { "'" } }
+            end,
+        },
+        ['"'] = {
+            add = function()
+                return { { '"' }, { '"' } }
+            end,
+        },
+        ["`"] = {
+            add = function()
+                return { { "`" }, { "`" } }
+            end,
+        },
         ["i"] = {
             add = function()
                 local left_delimiter = get_input("Enter the left delimiter: ")
@@ -93,21 +108,6 @@ M.default_opts = {
                     end
                 end,
             },
-        },
-        ["'"] = {
-            add = function()
-                return { "'", "'" }
-            end,
-        },
-        ['"'] = {
-            add = function()
-                return { '"', '"' }
-            end,
-        },
-        ["`"] = {
-            add = function()
-                return { "`", "`" }
-            end,
         },
     },
     aliases = {

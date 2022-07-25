@@ -104,7 +104,18 @@ M.get_surrounding_selections = function(char, pattern)
     end
 
     if pattern then
-        local selection = patterns.find(config.get_opts().delimiters[char].find, pattern)
+        local find = config.get_opts().delimiters[char].find
+        local selection
+        if find then
+            selection = patterns.find(config.get_opts().delimiters[char].find, pattern)
+        else
+            buffer.set_operator_marks("a" .. char)
+            selection = M.get_selection(false)
+        end
+        if not selection then
+            return nil
+        end
+
         local selections = patterns.get_selections(
             patterns.pos_to_index(selection.first_pos),
             M.join(buffer.get_text(selection)),
