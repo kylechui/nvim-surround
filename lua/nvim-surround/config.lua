@@ -4,10 +4,7 @@ local M = {}
 -- used `<C-c>` to cancel the input. This is not needed if `<Esc>` is used to cancel the input.
 local get_input = function(prompt)
     local ok, result = pcall(vim.fn.input, { prompt = prompt })
-    if not ok then
-        return nil
-    end
-    return result
+    return ok and result
 end
 
 M.default_opts = {
