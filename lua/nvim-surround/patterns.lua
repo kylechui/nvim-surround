@@ -37,7 +37,7 @@ M.find = function(pattern, filter)
     -- Find the character positions of the pattern in the file (before/on the cursor)
     local b_first, b_last
     -- Linewise search for the pattern before/on the cursor
-    for lnum = curpos[1] - 1, 1, -1 do
+    for lnum = curpos[1], 1, -1 do
         -- Get the file contents from the first line to current line
         local cur_text = table.concat(buffer.get_lines(1, lnum - 1), "\n")
         -- Find the character positions of the pattern in the file (after the cursor)
