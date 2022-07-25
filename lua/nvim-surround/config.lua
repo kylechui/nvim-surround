@@ -82,14 +82,14 @@ M.default_opts = {
                     return { result .. "(", ")" }
                 end
             end,
-            find = "%w+%b()",
-            delete = "^(%w+%().*(%))$",
+            find = "[%w_]+%b()",
+            delete = "^([%w_]+%()().*(%))()$",
             change = {
-                target = "^(%w+).*()$",
+                target = "^([%w_]+)().*()()$",
                 replacement = function()
                     local result = get_input("Enter the function name: ")
                     if result then
-                        return { result, "" }
+                        return { { result }, { "" } }
                     end
                 end,
             },

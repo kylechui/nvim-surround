@@ -178,17 +178,12 @@ M.change_surround = function(args)
     end
 
     local change = config.get_opts().delimiters[args.del_char].change
-    local selections = utils.get_nearest_selections(args.del_char, change.target)
-    if change then
-        args.del_char = utils.get_alias(args.del_char)
-        local text = args.text:gsub(change.target, args.ins_delimiters)
-        buffer.change_selection(args.selection, utils.split(text))
-    else
-        if selections then
-            -- Change the right selection first to ensure selection positions are correct
-            buffer.change_selection(selections.right, args.ins_delimiters[2])
-            buffer.change_selection(selections.left, args.ins_delimiters[1])
-        end
+    local selections = utils.get_nearest_selections(args.del_char, change and change.target)
+    if selections then
+        local delimiters = args.add_delimiters()
+        -- Change the right selection first to ensure selection positions are correct
+        buffer.change_selection(selections.right, delimiters[2])
+        buffer.change_selection(selections.left, delimiters[1])
     end
 
     buffer.reset_curpos(args.curpos)
@@ -272,9 +267,9 @@ M.change_callback = function()
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
     -- Get character inputs if not cached
-    if not cache.change.del_char or not cache.change.ins_delimiters then
+    if not cache.change.del_char or not cache.change.add_delimiters then
         -- Get the surrounding selections to delete
-        local del_char = utils.get_char()
+        local del_char = utils.get_alias(utils.get_char())
         local pattern = config.get_opts().delimiters[del_char].change
             and config.get_opts().delimiters[del_char].change.target
         local selections, text = utils.get_nearest_selections(del_char, pattern)
@@ -308,14 +303,11 @@ M.change_callback = function()
         -- Set the cache
         cache.change = {
             del_char = del_char,
-            ins_delimiters = delimiters,
+            add_delimiters = delimiters,
         }
         args.del_char = del_char
-        args.ins_delimiters = vim.deepcopy(delimiters)
-        args.selection = {
-            first_pos = selections.left.first_pos,
-            last_pos = selections.right.last_pos,
-        }
+        args.add_delimiters = vim.deepcopy(delimiters)
+
         args.text = text
     end
 

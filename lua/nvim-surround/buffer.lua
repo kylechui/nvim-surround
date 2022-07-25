@@ -14,8 +14,11 @@ M.get_curpos = function()
 end
 
 -- Sets the position of the cursor, 1-indexed.
----@param pos integer[] The given position.
+---@param pos integer[]? The given position.
 M.set_curpos = function(pos)
+    if not pos then
+        return
+    end
     vim.api.nvim_win_set_cursor(0, { pos[1], pos[2] - 1 })
 end
 
@@ -155,9 +158,12 @@ M.delete_selection = function(selection)
 end
 
 -- Replaces a given selection with a set of lines.
----@param selection selection The given selection.
+---@param selection? selection The given selection.
 ---@param text string[] The given text to replace the selection.
 M.change_selection = function(selection, text)
+    if not selection then
+        return
+    end
     local first_pos, last_pos = selection.first_pos, selection.last_pos
     vim.api.nvim_buf_set_text(0, first_pos[1] - 1, first_pos[2] - 1, last_pos[1] - 1, last_pos[2], text)
 end
