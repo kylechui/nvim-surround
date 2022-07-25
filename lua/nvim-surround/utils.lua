@@ -50,17 +50,15 @@ end
 
 -- Gets a delimiter pair for a user-inputted character.
 ---@param char string? The user-given character.
----@param args? { bufnr: integer, selection: selection, text: string[] }
 ---@return delimiters @A pair of delimiters for the given input, or nil if not applicable.
-M.get_delimiters = function(char, args)
+M.get_delimiters = function(char)
     char = M.get_alias(char)
     -- Return nil if the user cancels the command
     if not char then
         return nil
     end
 
-    local delimiters
-    delimiters = config.get_opts().delimiters[char].add(args) or config.get_opts().invalid_key_behavior(char)
+    local delimiters = config.get_opts().delimiters[char].add() or config.get_opts().invalid_key_behavior(char)
     if not delimiters then
         return nil
     end

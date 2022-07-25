@@ -290,12 +290,12 @@ M.change_callback = function()
         -- Get the new surrounding pair
         local ins_char, delimiters
         if pattern then
-            delimiters = config.get_opts().delimiters[del_char].change.replacement
+            delimiters = config.get_opts().delimiters[del_char].change.replacement()
         else
             ins_char = utils.get_char()
             delimiters = utils.get_delimiters(ins_char)
-            buffer.clear_highlights()
         end
+        buffer.clear_highlights()
 
         if not delimiters then
             return
@@ -303,10 +303,14 @@ M.change_callback = function()
         -- Set the cache
         cache.change = {
             del_char = del_char,
-            add_delimiters = delimiters,
+            add_delimiters = function()
+                return delimiters
+            end,
         }
         args.del_char = del_char
-        args.add_delimiters = vim.deepcopy(delimiters)
+        args.add_delimiters = function()
+            return delimiters
+        end
 
         args.text = text
     end
