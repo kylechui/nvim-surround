@@ -141,7 +141,9 @@ M.delete_surround = function(args)
         return "g@l"
     end
 
-    local selections = utils.get_nearest_selections(args.del_char)
+    local delete = config.get_opts().delimiters[args.del_char] and config.get_opts().delimiters[args.del_char].delete
+
+    local selections = utils.get_nearest_selections(args.del_char, delete)
     if selections then
         -- Delete the right selection first to ensure selection positions are correct
         buffer.delete_selection(selections.right)
