@@ -54,7 +54,7 @@ end
 
 -- Gets a delimiter pair for a user-inputted character.
 ---@param char string? The user-given character.
----@return delimiters @A pair of delimiters for the given input, or nil if not applicable.
+---@return delimiters? @A pair of delimiters for the given input, or nil if not applicable.
 M.get_delimiters = function(char)
     char = M.get_alias(char)
     -- Return nil if the user cancels the command
