@@ -199,6 +199,24 @@ M.get_opts = function()
     return vim.b[0].nvim_surround_buffer_opts or M.user_opts
 end
 
+-- Returns the add key for the surround associated with a given character, if one exists.
+---@param char string? The input character.
+M.get_add = function(char)
+    return M.get_opts().delimiters[char] and M.get_opts().delimiters[char].add
+end
+
+-- Returns the delete key for the surround associated with a given character, if one exists.
+---@param char string? The input character.
+M.get_delete = function(char)
+    return M.get_opts().delimiters[char] and M.get_opts().delimiters[char].delete
+end
+
+-- Returns the change key for the surround associated with a given character, if one exists.
+---@param char string? The input character.
+M.get_change = function(char)
+    return M.get_opts().delimiters[char] and M.get_opts().delimiters[char].change
+end
+
 -- Updates the buffer-local options for the plugin based on the input.
 ---@param opts options? The options to be passed in.
 M.merge_opts = function(opts)

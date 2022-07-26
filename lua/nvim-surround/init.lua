@@ -141,9 +141,10 @@ M.delete_surround = function(args)
         return "g@l"
     end
 
-    local delete = config.get_opts().delimiters[args.del_char] and config.get_opts().delimiters[args.del_char].delete
-
+    local delete = config.get_delete(args.del_char)
+    -- Get the selections to delete
     local selections = utils.get_nearest_selections(args.del_char, delete)
+
     if selections then
         -- Delete the right selection first to ensure selection positions are correct
         buffer.delete_selection(selections.right)
@@ -170,9 +171,10 @@ M.change_surround = function(args)
         return "g@l"
     end
 
-    local target = config.get_opts().delimiters[args.del_char]
-        and config.get_opts().delimiters[args.del_char].change
-        and config.get_opts().delimiters[args.del_char].change.target
+    local change = config.get_change(args.del_char)
+    -- Get the target pattern to change, if one exists
+    local target = change and change.target
+    -- Get the selections to change
     local selections = utils.get_nearest_selections(args.del_char, target)
     if selections then
         local delimiters = args.add_delimiters()
@@ -246,6 +248,7 @@ M.delete_callback = function()
     if not cache.delete.char then
         return
     end
+
     M.delete_surround({
         del_char = cache.delete.char,
         curpos = curpos,
@@ -253,19 +256,15 @@ M.delete_callback = function()
 end
 
 M.change_callback = function()
-    local args = {}
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
-    -- Get character inputs if not cached
-    if cache.change.del_char and cache.change.add_delimiters then
-        args = vim.deepcopy(cache.change)
-    else
-        -- Get the surrounding selections to delete
+    if not cache.change.del_char or not cache.change.add_delimiters then
         local del_char = utils.get_alias(utils.get_char())
-        local pattern = config.get_opts().delimiters[del_char]
-            and config.get_opts().delimiters[del_char].change
-            and config.get_opts().delimiters[del_char].change.target
-        local selections = utils.get_nearest_selections(del_char, pattern)
+        local change = config.get_change(del_char)
+        -- Get the target pattern to change, if one exists
+        local target = change and change.target
+        -- Get the selections to delete
+        local selections = utils.get_nearest_selections(del_char, target)
         if not selections then
             return
         end
@@ -282,17 +281,19 @@ M.change_callback = function()
 
         -- Get the new surrounding pair
         local ins_char, delimiters
-        if config.get_opts().delimiters[del_char].change.replacement then
-            delimiters = config.get_opts().delimiters[del_char].change.replacement()
+        if change and change.replacement then
+            delimiters = change.replacement()
         else
             ins_char = utils.get_char()
             delimiters = utils.get_delimiters(ins_char)
         end
-        buffer.clear_highlights()
 
+        -- Clear the highlights after potentially getting user input
+        buffer.clear_highlights()
         if not delimiters then
             return
         end
+
         -- Set the cache
         cache.change = {
             del_char = del_char,
@@ -300,12 +301,8 @@ M.change_callback = function()
                 return delimiters
             end,
         }
-        args.del_char = del_char
-        args.add_delimiters = function()
-            return delimiters
-        end
     end
-
+    local args = vim.deepcopy(cache.change)
     args.curpos = curpos
     M.change_surround(args)
 end

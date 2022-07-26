@@ -6,7 +6,9 @@ local M = {}
 ---@param index integer The index of the character in the string.
 M.index_to_pos = function(index)
     local buffer_text = table.concat(buffer.get_lines(1, -1), "\n")
+    -- Counts the number of newline characters, plus one for the final character before the current line
     local lnum = select(2, buffer_text:sub(1, index - 1):gsub("\n", "\n")) + 1
+    -- Special case for first line, as there are no newline characters preceding it
     if lnum == 1 then
         return { 1, index }
     end
@@ -17,6 +19,7 @@ end
 -- Converts a 2D position in the buffer to the corresponding 1D string index.
 ---@param pos integer[] The position in the buffer.
 M.pos_to_index = function(pos)
+    -- Special case for first line, as there are no newline characters preceding it
     if pos[1] == 1 then
         return pos[2]
     end
@@ -92,22 +95,26 @@ M.find = function(pattern, filter)
     end
 end
 
--- Finds the start and end indices for the given match groups, as close to the beginning and end as possible.
----@param start integer
-M.get_selections = function(start, str, pattern)
-    -- Get the surrounding pair itself
+-- Finds the start and end indices for the given match groups.
+---@param offset integer The offset of the search string into the buffer.
+---@param str string The given string to match against.
+---@param pattern string The given Lua pattern to extract match groups from.
+---@return selections @The selections for the left and right delimiters.
+M.get_selections = function(offset, str, pattern)
+    -- Get the surrounding pair, and the start/end indices
     local _, _, left_delimiter, first_index, right_delimiter, last_index = str:find(pattern)
     local left, right
+    -- Validate that the match groups are non-empty, since empty match groups return indices
     if type(left_delimiter) == "string" then
         left = {
-            first_pos = M.index_to_pos(start + first_index - #left_delimiter - 1),
-            last_pos = M.index_to_pos(start + first_index - 2),
+            first_pos = M.index_to_pos(offset + first_index - #left_delimiter - 1),
+            last_pos = M.index_to_pos(offset + first_index - 2),
         }
     end
     if type(right_delimiter) == "string" then
         right = {
-            first_pos = M.index_to_pos(start + last_index - #right_delimiter - 1),
-            last_pos = M.index_to_pos(start + last_index - 2),
+            first_pos = M.index_to_pos(offset + last_index - #right_delimiter - 1),
+            last_pos = M.index_to_pos(offset + last_index - 2),
         }
     end
     return {
