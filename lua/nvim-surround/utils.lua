@@ -216,7 +216,7 @@ M.get_nearest_selections = function(char, pattern)
     -- surrounds the cursor)
     for _, c in ipairs(chars) do
         -- If the character is a separator and the next separator is on the same line, jump to it
-        if M.is_quote(c) and vim.fn.searchpos(c, "cnW")[1] == curpos[1] then
+        if M.is_quote(c) and vim.fn.searchpos(c, "cnW")[1] == curpos[1] and not pattern then
             vim.fn.cursor(vim.fn.searchpos(c, "cnW"))
         end
         local cur_selections = M.get_selections(c, pattern)
