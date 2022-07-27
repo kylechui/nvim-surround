@@ -1,5 +1,6 @@
 ---@class delimiters
 ---@field add function?
+---@field find string?
 ---@field delete string|function?
 ---@field change { target: string|function?, replacement: function? }
 
@@ -13,11 +14,10 @@
 
 ---@class options
 ---@field keymaps table<string, boolean|string>
----@field delimiters delimiters
+---@field delimiters table<string, delimiters>
 ---@field aliases table<string, boolean|string|string[]>
 ---@field highlight_motion { duration: boolean|integer }
 ---@field move_cursor boolean|string
----@field invalid_key_behavior function
 
 local buffer = require("nvim-surround.buffer")
 local cache = require("nvim-surround.cache")

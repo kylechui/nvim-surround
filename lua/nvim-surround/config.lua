@@ -170,6 +170,13 @@ M.default_opts = {
                 end,
             },
         },
+        invalid_key_behavior = {
+            add = function()
+                vim.api.nvim_err_writeln(
+                    "Error: Invalid character! Configure this message in " .. 'require("nvim-surround").setup()'
+                )
+            end,
+        },
     },
     aliases = {
         ["a"] = ">",
@@ -183,11 +190,6 @@ M.default_opts = {
         duration = 0,
     },
     move_cursor = "begin",
-    invalid_key_behavior = function()
-        vim.api.nvim_err_writeln(
-            "Error: Invalid character! Configure this message in " .. 'require("nvim-surround").setup()'
-        )
-    end,
 }
 
 -- Stores the global user-set options for the plugin.

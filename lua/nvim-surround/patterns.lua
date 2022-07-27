@@ -28,7 +28,7 @@ end
 
 -- Finds a Lua pattern in the buffer.
 ---@param pattern string The pattern to search for.
----@param filter string The pattern to filter for.
+---@param filter string? The pattern to filter for.
 M.find = function(pattern, filter)
     -- Get the current cursor position, buffer contents
     local curpos = buffer.get_curpos()
@@ -68,7 +68,7 @@ M.find = function(pattern, filter)
         if (b_last < cursor_index and b_last < t_last) or (b_last >= cursor_index and t_last >= cursor_index) then
             b_first, b_last = t_first, t_last
         end
-        local len = #buffer_text:sub(b_first, b_last):match(filter)
+        local len = filter and #buffer_text:sub(b_first, b_last):match(filter) or 1
         tmp = t_first + len
     end
 

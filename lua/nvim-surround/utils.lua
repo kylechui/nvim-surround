@@ -62,7 +62,8 @@ M.get_delimiters = function(char)
         return nil
     end
 
-    local delimiters = config.get_opts().delimiters[char].add() or config.get_opts().invalid_key_behavior(char)
+    local delimiters = config.get_add(char) and config.get_add(char)()
+        or config.get_opts().delimiters.invalid_key_behavior.add(char)
     if not delimiters then
         return nil
     end
@@ -103,7 +104,7 @@ end
 ---@return selection? @The corresponding selection for the given character.
 M.get_selection = function(char, pattern)
     local selection
-    if config.get_opts().delimiters[char].find and pattern then
+    if config.get_opts().delimiters[char].find then
         return patterns.find(config.get_opts().delimiters[char].find, pattern)
     else
         -- Use the correct quotes to surround the arguments for setting the marks
