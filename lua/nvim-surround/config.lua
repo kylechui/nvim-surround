@@ -219,6 +219,35 @@ M.get_change = function(char)
     return M.get_opts().delimiters[char] and M.get_opts().delimiters[char].change
 end
 
+-- Translates the user-provided configuration into the internal form.
+---@param opts options? The user-provided options.
+M.translate_opts = function(opts)
+    if not (opts and opts.delimiters) then
+        return opts
+    end
+    for char, val in pairs(opts.delimiters) do
+        local add = val.add
+        if add then
+            -- Check if the add key is a table instead of a function
+            if vim.tbl_islist(add) then
+                -- Wrap the left/right delimiters if they are only one line
+                if type(add[1]) == "string" then
+                    add[1] = { add[1] }
+                end
+                if type(add[2]) == "string" then
+                    add[2] = { add[2] }
+                end
+            end
+            -- Wrap the delimiter pair in a function
+            val.add = function()
+                return add
+            end
+        end
+        opts.delimiters[char] = val
+    end
+    return opts
+end
+
 -- Updates the buffer-local options for the plugin based on the input.
 ---@param opts options? The options to be passed in.
 M.merge_opts = function(opts)
@@ -380,7 +409,8 @@ end
 ---@param user_opts options? The user-defined options to be merged with default_opts.
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
-    M.user_opts = user_opts and vim.tbl_deep_extend("force", M.default_opts, user_opts) or M.default_opts
+    M.user_opts = user_opts and vim.tbl_deep_extend("force", M.default_opts, M.translate_opts(user_opts))
+        or M.default_opts
     -- Configure global keymaps
     M.set_keymaps(false)
     -- Configure highlight group, if necessary
@@ -395,7 +425,7 @@ end
 ---@param buffer_opts table? The buffer-local options to be merged with the global user_opts.
 M.buffer_setup = function(buffer_opts)
     -- Merge the given table into the buffer-local options table
-    M.merge_opts(buffer_opts)
+    M.merge_opts(M.translate_opts(buffer_opts))
     -- Configure buffer-local keymaps
     M.set_keymaps(true)
 end

@@ -67,10 +67,10 @@ M.get_selection = function(find)
         if c_last then
             -- If no match yet or the current match is "better", use the current match
             if
-                not (b_first and b_last)
-                or (cursor_index < b_first)
-                or (b_last == c_last)
-                or (b_last < cursor_index and b_last < c_last)
+                not (b_first and b_last) -- No match yet
+                or (b_last == c_last) -- Extending current match
+                or (cursor_index < b_first and c_first < b_first) -- Current is closer to cursor, after case
+                or (b_last < cursor_index and b_last < c_last) -- Current is closer to cursor, before case
             then
                 b_first, b_last = c_first, c_last
             end
