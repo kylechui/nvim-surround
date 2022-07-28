@@ -92,7 +92,6 @@ M.default_opts = {
                 end,
             },
         },
-        -- FIXME: Figure out some way to alias `T` to call the `at` text-object
         ["T"] = {
             add = function()
                 local input = get_input("Enter the HTML tag: ")
@@ -108,6 +107,10 @@ M.default_opts = {
 
                     return { { "<" .. open .. ">" }, { "</" .. close .. ">" } }
                 end
+            end,
+            find = function()
+                require("nvim-surround.buffer").set_operator_marks("t")
+                return require("nvim-surround.utils").get_user_selection(false)
             end,
             delete = "^(%b<>)().-(%b<>)()$",
             change = {
@@ -160,6 +163,13 @@ M.default_opts = {
                     "Error: Invalid character! Configure this message in " .. 'require("nvim-surround").setup()'
                 )
             end,
+            change = {
+                target = function()
+                    vim.api.nvim_err_writeln(
+                        "Error: Invalid character! Configure this message in " .. 'require("nvim-surround").setup()'
+                    )
+                end,
+            },
         },
     },
     aliases = {
@@ -233,12 +243,15 @@ M.translate_opts = function(opts)
                     return add
                 end
             end
-            if find then
+            if not find then
+                opts.delimiters[char].find = function()
+                    require("nvim-surround.buffer").set_operator_marks(char)
+                    return require("nvim-surround.utils").get_user_selection(false)
+                end
+            elseif type(find) == "string" then
                 -- Treat the string as a Lua pattern, and find the selection
-                if type(find) == "string" then
-                    opts.delimiters[char].find = function()
-                        return require("nvim-surround.patterns").get_selection(find)
-                    end
+                opts.delimiters[char].find = function()
+                    return require("nvim-surround.patterns").get_selection(find)
                 end
             end
             if not delete or type(delete) == "string" then
