@@ -81,13 +81,9 @@ M.default_opts = {
                     return { { "<" .. open .. ">" }, { "</" .. close .. ">" } }
                 end
             end,
-            delete = function()
-                return require("nvim-surround.utils").get_selections("(", "^(%b<>)().-(%b<>)()$")
-            end,
+            delete = "^(%b<>)().-(%b<>)()$",
             change = {
-                target = function()
-                    return require("nvim-surround.utils").get_selections("(", "^<([%w-]*)().-([^/]*)()>$")
-                end,
+                target = "^<([%w-]*)().-([^/]*)()>$",
                 replacement = function()
                     local element = get_input("Enter the HTML element: ")
                     if element then
@@ -113,13 +109,9 @@ M.default_opts = {
                     return { { "<" .. open .. ">" }, { "</" .. close .. ">" } }
                 end
             end,
-            delete = function()
-                return require("nvim-surround.utils").get_selections("(", "^(%b<>)().-(%b<>)()$")
-            end,
+            delete = "^(%b<>)().-(%b<>)()$",
             change = {
-                target = function()
-                    return require("nvim-surround.utils").get_selections("(", "^<([^>]*)().-([^%/]*)()>$")
-                end,
+                target = "^<([^>]*)().-([^%/]*)()>$",
                 replacement = function()
                     local input = get_input("Enter the HTML tag: ")
                     if input then
@@ -144,16 +136,10 @@ M.default_opts = {
                     return { { result .. "(" }, { ")" } }
                 end
             end,
-            find = function()
-                return require("nvim-surround.patterns").get_selection("[%w_:.->]+%b()")
-            end,
-            delete = function()
-                return require("nvim-surround.utils").get_selections("f", "^([%w_:.->]+%()().-(%))()$")
-            end,
+            find = "[%w_:.->]+%b()",
+            delete = "^([%w_:.->]+%()().-(%))()$",
             change = {
-                target = function()
-                    return require("nvim-surround.utils").get_selections("f", "^([%w_]+)().-()()$")
-                end,
+                target = "^([%w_]+)().-()()$",
                 replacement = function()
                     local result = get_input("Enter the function name: ")
                     if result then
@@ -164,6 +150,12 @@ M.default_opts = {
         },
         invalid_key_behavior = {
             add = function()
+                vim.api.nvim_err_writeln(
+                    "Error: Invalid character! Configure this message in " .. 'require("nvim-surround").setup()'
+                )
+            end,
+            -- FIXME: FIgure out a sensible way to make this work
+            delete = function()
                 vim.api.nvim_err_writeln(
                     "Error: Invalid character! Configure this message in " .. 'require("nvim-surround").setup()'
                 )
