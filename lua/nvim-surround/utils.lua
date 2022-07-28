@@ -105,7 +105,7 @@ end
 M.get_selection = function(char, pattern)
     local selection
     if config.get_opts().delimiters[char].find then
-        return patterns.find(config.get_opts().delimiters[char].find, pattern)
+        return patterns.get_selection(config.get_opts().delimiters[char].find, pattern)
     else
         -- Use the correct quotes to surround the arguments for setting the marks
         local args

@@ -26,17 +26,17 @@ M.pos_to_index = function(pos)
     return #table.concat(buffer.get_lines(1, pos[1] - 1), "\n") + pos[2] + 1
 end
 
--- Finds a Lua pattern in the buffer.
----@param pattern string The pattern to search for.
----@param filter string? The pattern to filter for.
-M.find = function(pattern, filter)
+-- Returns a selection in the buffer based on a Lua pattern.
+---@param find string The Lua pattern to find in the buffer.
+---@param pattern string? The Lua pattern to filter for.
+M.get_selection = function(find, pattern)
     -- Get the current cursor position, buffer contents
     local curpos = buffer.get_curpos()
     local buffer_text = table.concat(buffer.get_lines(1, -1), "\n")
     -- Find which character the cursor is in the file
     local cursor_index = M.pos_to_index(curpos)
     -- Find the character positions of the pattern in the file (after the cursor)
-    local a_first, a_last = buffer_text:find(pattern, cursor_index)
+    local a_first, a_last = buffer_text:find(find, cursor_index)
     -- Find the character positions of the pattern in the file (before/on the cursor)
     local b_first, b_last
     -- Linewise search for the pattern before/on the cursor
@@ -44,7 +44,7 @@ M.find = function(pattern, filter)
         -- Get the file contents from the first line to current line
         local cur_text = table.concat(buffer.get_lines(1, lnum - 1), "\n")
         -- Find the character positions of the pattern in the file (after the cursor)
-        b_first, b_last = buffer_text:find(pattern, #cur_text + 1)
+        b_first, b_last = buffer_text:find(find, #cur_text + 1)
         if b_first and b_first < cursor_index then
             break
         end
@@ -61,14 +61,14 @@ M.find = function(pattern, filter)
     -- Adjust the selection character-wise
     local tmp = b_first
     while true do
-        local t_first, t_last = buffer_text:find(pattern, tmp)
+        local t_first, t_last = buffer_text:find(find, tmp)
         if not t_first or t_first > cursor_index then
             break
         end
         if (b_last < cursor_index and b_last < t_last) or (b_last >= cursor_index and t_last >= cursor_index) then
             b_first, b_last = t_first, t_last
         end
-        local len = filter and #buffer_text:sub(b_first, b_last):match(filter) or 1
+        local len = pattern and #buffer_text:sub(b_first, b_last):match(pattern) or 1
         tmp = t_first + len
     end
 

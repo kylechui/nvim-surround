@@ -159,9 +159,9 @@ M.default_opts = {
                 end
             end,
             find = "[%w_]+%b()",
-            delete = "^([%w_]+%()().*(%))()$",
+            delete = "^([%w_]+%()().-(%))()$",
             change = {
-                target = "^([%w_]+)().*()()$",
+                target = "^([%w_]+)().-()()$",
                 replacement = function()
                     local result = get_input("Enter the function name: ")
                     if result then
