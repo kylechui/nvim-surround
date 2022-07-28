@@ -62,9 +62,10 @@ M.get_delimiters = function(char)
         return nil
     end
 
-    local delimiters = config.get_add(char) or config.get_opts().delimiters.invalid_key_behavior.add(char)
+    -- Get the function for adding the delimiters, if it exists
+    local delimiters = config.get_add(char)
 
-    return delimiters and delimiters()
+    return delimiters and vim.deepcopy(delimiters()) or config.get_opts().delimiters.invalid_key_behavior.add(char)
 end
 
 -- Gets the coordinates of the start and end of a given selection.

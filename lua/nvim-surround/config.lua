@@ -22,147 +22,37 @@ M.default_opts = {
     },
     delimiters = {
         ["("] = {
-            add = function()
-                return { { "( " }, { " )" } }
-            end,
-            delete = function()
-                return require("nvim-surround.utils").get_selections("(")
-            end,
-            change = {
-                target = function()
-                    return require("nvim-surround.utils").get_selections("(")
-                end,
-            },
+            add = { "( ", " )" },
         },
         [")"] = {
-            add = function()
-                return { { "(" }, { ")" } }
-            end,
-            delete = function()
-                return require("nvim-surround.utils").get_selections(")")
-            end,
-            change = {
-                target = function()
-                    return require("nvim-surround.utils").get_selections(")")
-                end,
-            },
+            add = { "(", ")" },
         },
         ["{"] = {
-            add = function()
-                return { { "{ " }, { " }" } }
-            end,
-            delete = function()
-                return require("nvim-surround.utils").get_selections("{")
-            end,
-            change = {
-                target = function()
-                    return require("nvim-surround.utils").get_selections("{")
-                end,
-            },
+            add = { "{ ", " }" },
         },
         ["}"] = {
-            add = function()
-                return { { "{" }, { "}" } }
-            end,
-            delete = function()
-                return require("nvim-surround.utils").get_selections("}")
-            end,
-            change = {
-                target = function()
-                    return require("nvim-surround.utils").get_selections("}")
-                end,
-            },
+            add = { "{", "}" },
         },
         ["<"] = {
-            add = function()
-                return { { "< " }, { " >" } }
-            end,
-            delete = function()
-                return require("nvim-surround.utils").get_selections("<")
-            end,
-            change = {
-                target = function()
-                    return require("nvim-surround.utils").get_selections("<")
-                end,
-            },
+            add = { "< ", " >" },
         },
         [">"] = {
-            add = function()
-                return { { "<" }, { ">" } }
-            end,
-            delete = function()
-                return require("nvim-surround.utils").get_selections(">")
-            end,
-            change = {
-                target = function()
-                    return require("nvim-surround.utils").get_selections(">")
-                end,
-            },
+            add = { "<", ">" },
         },
         ["["] = {
-            add = function()
-                return { { "[ " }, { " ]" } }
-            end,
-            delete = function()
-                return require("nvim-surround.utils").get_selections("[")
-            end,
-            change = {
-                target = function()
-                    return require("nvim-surround.utils").get_selections("[")
-                end,
-            },
+            add = { "[ ", " ]" },
         },
         ["]"] = {
-            add = function()
-                return { { "[" }, { "]" } }
-            end,
-            delete = function()
-                return require("nvim-surround.utils").get_selections("]")
-            end,
-            change = {
-                target = function()
-                    return require("nvim-surround.utils").get_selections("]")
-                end,
-            },
+            add = { "[", "]" },
         },
         ["'"] = {
-            add = function()
-                return { { "'" }, { "'" } }
-            end,
-            delete = function()
-                return require("nvim-surround.utils").get_selections("'")
-            end,
-            change = {
-                target = function()
-                    return require("nvim-surround.utils").get_selections("'")
-                end,
-            },
+            add = { "'", "'" },
         },
         ['"'] = {
-            add = function()
-                return { { '"' }, { '"' } }
-            end,
-            delete = function()
-                return require("nvim-surround.utils").get_selections('"')
-            end,
-            change = {
-                target = function()
-                    return require("nvim-surround.utils").get_selections('"')
-                end,
-            },
+            add = { '"', '"' },
         },
         ["`"] = {
-            add = function()
-                return { { "`" }, { "`" } }
-            end,
-            delete = function()
-                return require("nvim-surround.utils").get_selections("`")
-            end,
-            change = {
-                target = function()
-                    return require("nvim-surround.utils").get_selections("`")
-                end,
-            },
+            add = { "`", "`" },
         },
         ["i"] = {
             add = function()
@@ -362,7 +252,7 @@ M.translate_opts = function(opts)
             if not delete or type(delete) == "string" then
                 -- Wrap delete in a function
                 opts.delimiters[char].delete = function()
-                    return require("nvim-surround.utils").get_nearest_selections(char, delete)
+                    return require("nvim-surround.utils").get_selections(char, delete)
                 end
             end
             if change then
@@ -370,7 +260,7 @@ M.translate_opts = function(opts)
                 -- Wrap target in a function
                 if not target or type(target) == "string" then
                     opts.delimiters[char].change.target = function()
-                        return require("nvim-surround.utils").get_nearest_selections(char, target)
+                        return require("nvim-surround.utils").get_selections(char, target)
                     end
                 end
                 -- Check if the replacement key is a table instead of a function
@@ -390,7 +280,7 @@ M.translate_opts = function(opts)
             else
                 opts.delimiters[char].change = {
                     target = function()
-                        return require("nvim-surround.utils").get_nearest_selections(char)
+                        return require("nvim-surround.utils").get_selections(char)
                     end,
                 }
             end
@@ -558,7 +448,7 @@ end
 ---@param user_opts options? The user-defined options to be merged with default_opts.
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
-    M.user_opts = M.merge_opts(M.default_opts, user_opts)
+    M.user_opts = M.merge_opts(M.translate_opts(M.default_opts), user_opts)
     -- Configure global keymaps
     M.set_keymaps(false)
     -- Configure highlight group, if necessary
