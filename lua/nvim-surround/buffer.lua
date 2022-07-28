@@ -126,7 +126,7 @@ M.format_lines = function(start, stop)
     end
 end
 
--- Returns whether a position comes before another in a buffer, true if the position.
+-- Returns whether a position comes before another in a buffer, true if the positions are the same.
 ---@param pos1 integer[] The first position.
 ---@param pos2 integer[] The second position.
 ---@return boolean @Whether or not pos1 comes before pos2.

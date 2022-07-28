@@ -100,12 +100,11 @@ end
 
 -- Gets a selection that contains the left and right surrounding pair.
 ---@param char string A character representing what selection is to be found.
----@param pattern string? A Lua pattern representing the wanted selection.
 ---@return selection? @The corresponding selection for the given character.
-M.get_selection = function(char, pattern)
+M.get_selection = function(char)
     local selection
     if config.get_opts().delimiters[char].find then
-        return patterns.get_selection(config.get_opts().delimiters[char].find, pattern)
+        return patterns.get_selection(config.get_opts().delimiters[char].find)
     else
         -- Use the correct quotes to surround the arguments for setting the marks
         local args
@@ -132,7 +131,7 @@ M.get_selections = function(char, pattern)
     end
 
     -- Get the "parent selection" that contains the left and right surround.
-    local selection = M.get_selection(char, pattern)
+    local selection = M.get_selection(char)
     if not selection then
         return nil
     end

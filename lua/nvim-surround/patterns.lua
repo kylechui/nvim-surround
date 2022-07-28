@@ -28,22 +28,21 @@ end
 
 -- Returns a selection in the buffer based on a Lua pattern.
 ---@param find string The Lua pattern to find in the buffer.
----@param pattern string? The Lua pattern to filter for.
-M.get_selection = function(find, pattern)
+M.get_selection = function(find)
     -- Get the current cursor position, buffer contents
     local curpos = buffer.get_curpos()
     local buffer_text = table.concat(buffer.get_lines(1, -1), "\n")
     -- Find which character the cursor is in the file
     local cursor_index = M.pos_to_index(curpos)
-    -- Find the character positions of the pattern in the file (after the cursor)
+    -- Find the character positions of the pattern in the file (after/on the cursor)
     local a_first, a_last = buffer_text:find(find, cursor_index)
-    -- Find the character positions of the pattern in the file (before/on the cursor)
+    -- Find the character positions of the pattern in the file (before the cursor)
     local b_first, b_last
     -- Linewise search for the pattern before/on the cursor
     for lnum = curpos[1], 1, -1 do
         -- Get the file contents from the first line to current line
         local cur_text = table.concat(buffer.get_lines(1, lnum - 1), "\n")
-        -- Find the character positions of the pattern in the file (after the cursor)
+        -- Find the character positions of the pattern in the file (before the cursor)
         b_first, b_last = buffer_text:find(find, #cur_text + 1)
         if b_first and b_first < cursor_index then
             break
@@ -59,21 +58,26 @@ M.get_selection = function(find, pattern)
             }
     end
     -- Adjust the selection character-wise
-    local tmp = b_first
-    while true do
-        local t_first, t_last = buffer_text:find(find, tmp)
-        if not t_first or t_first > cursor_index then
-            break
+    local start_col, end_col = math.min(b_last, cursor_index), b_first
+    b_first, b_last = nil, nil
+    for index = start_col, end_col, -1 do
+        vim.pretty_print(M.index_to_pos(index))
+        local c_first, c_last = buffer_text:find(find, index)
+        -- Validate if there is a current match
+        if c_last then
+            -- If no match yet or the current match is "better", use the current match
+            if
+                not (b_first and b_last)
+                or (cursor_index < b_first)
+                or (b_last == c_last)
+                or (b_last < cursor_index and b_last < c_last)
+            then
+                b_first, b_last = c_first, c_last
+            end
         end
-        if (b_last < cursor_index and b_last < t_last) or (b_last >= cursor_index and t_last >= cursor_index) then
-            b_first, b_last = t_first, t_last
-        end
-        local len = pattern and #buffer_text:sub(b_first, b_last):match(pattern) or 1
-        tmp = t_first + len
     end
-
     -- If the cursor is inside the range then return it
-    if b_last >= cursor_index then
+    if b_last and b_first and b_last >= cursor_index then
         return {
             first_pos = M.index_to_pos(b_first),
             last_pos = M.index_to_pos(b_last),
