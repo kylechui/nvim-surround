@@ -1,9 +1,3 @@
----@class delimiters
----@field add function?
----@field find string?
----@field delete string|function?
----@field change { target: string|function?, replacement: function? }
-
 ---@class selection
 ---@field first_pos integer[]
 ---@field last_pos integer[]
@@ -11,6 +5,12 @@
 ---@class selections
 ---@field left selection?
 ---@field right selection?
+
+---@class delimiters
+---@field add function?
+---@field find function?
+---@field delete function
+---@field change { target: function, replacement: function? }
 
 ---@class options
 ---@field keymaps table<string, boolean|string>
@@ -144,9 +144,8 @@ M.delete_surround = function(args)
         return "g@l"
     end
 
-    local delete = config.get_delete(args.del_char)
     -- Get the selections to delete
-    local selections = utils.get_nearest_selections(args.del_char, delete)
+    local selections = utils.get_nearest_selections(args.del_char, "delete")
 
     if selections then
         -- Delete the right selection first to ensure selection positions are correct
@@ -174,11 +173,8 @@ M.change_surround = function(args)
         return "g@l"
     end
 
-    local change = config.get_change(args.del_char)
-    -- Get the target pattern to change, if one exists
-    local target = change and change.target
     -- Get the selections to change
-    local selections = utils.get_nearest_selections(args.del_char, target)
+    local selections = utils.get_nearest_selections(args.del_char, "change")
     if selections then
         local delimiters = args.add_delimiters()
         -- Change the right selection first to ensure selection positions are correct
@@ -264,10 +260,8 @@ M.change_callback = function()
     if not cache.change.del_char or not cache.change.add_delimiters then
         local del_char = utils.get_alias(utils.get_char())
         local change = config.get_change(del_char)
-        -- Get the target pattern to change, if one exists
-        local target = change and change.target
-        -- Get the selections to delete
-        local selections = utils.get_nearest_selections(del_char, target)
+        -- Get the selections to change
+        local selections = utils.get_nearest_selections(del_char, "change")
         if not selections then
             return
         end

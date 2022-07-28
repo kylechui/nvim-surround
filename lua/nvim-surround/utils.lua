@@ -54,7 +54,7 @@ end
 
 -- Gets a delimiter pair for a user-inputted character.
 ---@param char string? The user-given character.
----@return delimiters? @A pair of delimiters for the given input, or nil if not applicable.
+---@return string[][]? @A pair of delimiters for the given input, or nil if not applicable.
 M.get_delimiters = function(char)
     char = M.get_alias(char)
     -- Return nil if the user cancels the command
@@ -62,13 +62,9 @@ M.get_delimiters = function(char)
         return nil
     end
 
-    local delimiters = config.get_add(char) and config.get_add(char)()
-        or config.get_opts().delimiters.invalid_key_behavior.add(char)
-    if not delimiters then
-        return nil
-    end
+    local delimiters = config.get_add(char) or config.get_opts().delimiters.invalid_key_behavior.add(char)
 
-    return vim.deepcopy(delimiters)
+    return delimiters and delimiters()
 end
 
 -- Gets the coordinates of the start and end of a given selection.
@@ -104,7 +100,7 @@ end
 M.get_selection = function(char)
     local selection
     if config.get_opts().delimiters[char].find then
-        return patterns.get_selection(config.get_opts().delimiters[char].find)
+        return config.get_opts().delimiters[char].find()
     else
         -- Use the correct quotes to surround the arguments for setting the marks
         local args
@@ -203,9 +199,9 @@ end
 
 -- Gets the nearest two selections for the left and right surrounding pair.
 ---@param char string? A character representing what kind of surrounding pair is to be selected.
----@param pattern string? A Lua pattern representing the wanted selections.
+---@param action "delete"|"change" A string representing what action is being performed.
 ---@return selections? @A table containing the start and end positions of the delimiters.
-M.get_nearest_selections = function(char, pattern)
+M.get_nearest_selections = function(char, action)
     char = M.get_alias(char)
 
     local chars = config.get_opts().aliases[char] or { char }
@@ -216,10 +212,10 @@ M.get_nearest_selections = function(char, pattern)
     -- surrounds the cursor)
     for _, c in ipairs(chars) do
         -- If the character is a separator and the next separator is on the same line, jump to it
-        if M.is_quote(c) and vim.fn.searchpos(c, "cnW")[1] == curpos[1] and not pattern then
+        if M.is_quote(c) and vim.fn.searchpos(c, "cnW")[1] == curpos[1] then
             vim.fn.cursor(vim.fn.searchpos(c, "cnW"))
         end
-        local cur_selections = M.get_selections(c, pattern)
+        local cur_selections = action == "change" and config.get_change(c).target() or config.get_delete(c)()
         local n_first = nearest_selections and nearest_selections.left.first_pos
         local c_first = cur_selections and cur_selections.left.first_pos
         if c_first then

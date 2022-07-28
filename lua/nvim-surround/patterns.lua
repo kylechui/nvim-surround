@@ -61,7 +61,6 @@ M.get_selection = function(find)
     local start_col, end_col = math.min(b_last, cursor_index), b_first
     b_first, b_last = nil, nil
     for index = start_col, end_col, -1 do
-        vim.pretty_print(M.index_to_pos(index))
         local c_first, c_last = buffer_text:find(find, index)
         -- Validate if there is a current match
         if c_last then

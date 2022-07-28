@@ -25,56 +25,144 @@ M.default_opts = {
             add = function()
                 return { { "( " }, { " )" } }
             end,
+            delete = function()
+                return require("nvim-surround.utils").get_selections("(")
+            end,
+            change = {
+                target = function()
+                    return require("nvim-surround.utils").get_selections("(")
+                end,
+            },
         },
         [")"] = {
             add = function()
                 return { { "(" }, { ")" } }
             end,
+            delete = function()
+                return require("nvim-surround.utils").get_selections(")")
+            end,
+            change = {
+                target = function()
+                    return require("nvim-surround.utils").get_selections(")")
+                end,
+            },
         },
         ["{"] = {
             add = function()
                 return { { "{ " }, { " }" } }
             end,
+            delete = function()
+                return require("nvim-surround.utils").get_selections("{")
+            end,
+            change = {
+                target = function()
+                    return require("nvim-surround.utils").get_selections("{")
+                end,
+            },
         },
         ["}"] = {
             add = function()
                 return { { "{" }, { "}" } }
             end,
+            delete = function()
+                return require("nvim-surround.utils").get_selections("}")
+            end,
+            change = {
+                target = function()
+                    return require("nvim-surround.utils").get_selections("}")
+                end,
+            },
         },
         ["<"] = {
             add = function()
                 return { { "< " }, { " >" } }
             end,
+            delete = function()
+                return require("nvim-surround.utils").get_selections("<")
+            end,
+            change = {
+                target = function()
+                    return require("nvim-surround.utils").get_selections("<")
+                end,
+            },
         },
         [">"] = {
             add = function()
                 return { { "<" }, { ">" } }
             end,
+            delete = function()
+                return require("nvim-surround.utils").get_selections(">")
+            end,
+            change = {
+                target = function()
+                    return require("nvim-surround.utils").get_selections(">")
+                end,
+            },
         },
         ["["] = {
             add = function()
                 return { { "[ " }, { " ]" } }
             end,
+            delete = function()
+                return require("nvim-surround.utils").get_selections("[")
+            end,
+            change = {
+                target = function()
+                    return require("nvim-surround.utils").get_selections("[")
+                end,
+            },
         },
         ["]"] = {
             add = function()
                 return { { "[" }, { "]" } }
             end,
+            delete = function()
+                return require("nvim-surround.utils").get_selections("]")
+            end,
+            change = {
+                target = function()
+                    return require("nvim-surround.utils").get_selections("]")
+                end,
+            },
         },
         ["'"] = {
             add = function()
                 return { { "'" }, { "'" } }
             end,
+            delete = function()
+                return require("nvim-surround.utils").get_selections("'")
+            end,
+            change = {
+                target = function()
+                    return require("nvim-surround.utils").get_selections("'")
+                end,
+            },
         },
         ['"'] = {
             add = function()
                 return { { '"' }, { '"' } }
             end,
+            delete = function()
+                return require("nvim-surround.utils").get_selections('"')
+            end,
+            change = {
+                target = function()
+                    return require("nvim-surround.utils").get_selections('"')
+                end,
+            },
         },
         ["`"] = {
             add = function()
                 return { { "`" }, { "`" } }
             end,
+            delete = function()
+                return require("nvim-surround.utils").get_selections("`")
+            end,
+            change = {
+                target = function()
+                    return require("nvim-surround.utils").get_selections("`")
+                end,
+            },
         },
         ["i"] = {
             add = function()
@@ -103,9 +191,13 @@ M.default_opts = {
                     return { { "<" .. open .. ">" }, { "</" .. close .. ">" } }
                 end
             end,
-            delete = "^(%b<>)().-(%b<>)()$",
+            delete = function()
+                return require("nvim-surround.utils").get_selections("(", "^(%b<>)().-(%b<>)()$")
+            end,
             change = {
-                target = "^<([%w-]*)().-([^/]*)()>$",
+                target = function()
+                    return require("nvim-surround.utils").get_selections("(", "^<([%w-]*)().-([^/]*)()>$")
+                end,
                 replacement = function()
                     local element = get_input("Enter the HTML element: ")
                     if element then
@@ -131,9 +223,13 @@ M.default_opts = {
                     return { { "<" .. open .. ">" }, { "</" .. close .. ">" } }
                 end
             end,
-            delete = "^(%b<>)().-(%b<>)()$",
+            delete = function()
+                return require("nvim-surround.utils").get_selections("(", "^(%b<>)().-(%b<>)()$")
+            end,
             change = {
-                target = "^<([^>]*)().-([^%/]*)()>$",
+                target = function()
+                    return require("nvim-surround.utils").get_selections("(", "^<([^>]*)().-([^%/]*)()>$")
+                end,
                 replacement = function()
                     local input = get_input("Enter the HTML tag: ")
                     if input then
@@ -158,10 +254,16 @@ M.default_opts = {
                     return { { result .. "(" }, { ")" } }
                 end
             end,
-            find = "[%w_]+%b()",
-            delete = "^([%w_]+%()().-(%))()$",
+            find = function()
+                return require("nvim-surround.patterns").get_selection("[%w_:.->]+%b()")
+            end,
+            delete = function()
+                return require("nvim-surround.utils").get_selections("f", "^([%w_:.->]+%()().-(%))()$")
+            end,
             change = {
-                target = "^([%w_]+)().-()()$",
+                target = function()
+                    return require("nvim-surround.utils").get_selections("f", "^([%w_]+)().-()()$")
+                end,
                 replacement = function()
                     local result = get_input("Enter the function name: ")
                     if result then
@@ -203,19 +305,25 @@ end
 
 -- Returns the add key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
+---@return function? @The function to get the delimiters to be added.
 M.get_add = function(char)
+    char = require("nvim-surround.utils").get_alias(char)
     return M.get_opts().delimiters[char] and M.get_opts().delimiters[char].add
 end
 
 -- Returns the delete key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
+---@return function? @The function to get the selections to be deleted.
 M.get_delete = function(char)
+    char = require("nvim-surround.utils").get_alias(char)
     return M.get_opts().delimiters[char] and M.get_opts().delimiters[char].delete
 end
 
 -- Returns the change key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
+---@return { target: function, replacement: function? }? @A table holding the target/replacment functions.
 M.get_change = function(char)
+    char = require("nvim-surround.utils").get_alias(char)
     return M.get_opts().delimiters[char] and M.get_opts().delimiters[char].change
 end
 
@@ -226,10 +334,11 @@ M.translate_opts = function(opts)
         return opts
     end
     for char, val in pairs(opts.delimiters) do
-        local add = val.add
-        if add then
+        -- Validate that the delimiter has not been disabled
+        if val then
+            local add, find, delete, change = val.add, val.find, val.delete, val.change
             -- Check if the add key is a table instead of a function
-            if vim.tbl_islist(add) then
+            if add and vim.tbl_islist(add) then
                 -- Wrap the left/right delimiters if they are only one line
                 if type(add[1]) == "string" then
                     add[1] = { add[1] }
@@ -237,25 +346,65 @@ M.translate_opts = function(opts)
                 if type(add[2]) == "string" then
                     add[2] = { add[2] }
                 end
+                -- Wrap the delimiter pair in a function
+                opts.delimiters[char].add = function()
+                    return add
+                end
             end
-            -- Wrap the delimiter pair in a function
-            val.add = function()
-                return add
+            if find then
+                -- Treat the string as a Lua pattern, and find the selection
+                if type(find) == "string" then
+                    opts.delimiters[char].find = function()
+                        return require("nvim-surround.patterns").get_selection(find)
+                    end
+                end
+            end
+            if not delete or type(delete) == "string" then
+                -- Wrap delete in a function
+                opts.delimiters[char].delete = function()
+                    return require("nvim-surround.utils").get_nearest_selections(char, delete)
+                end
+            end
+            if change then
+                local target, replacement = change.target, change.replacement
+                -- Wrap target in a function
+                if not target or type(target) == "string" then
+                    opts.delimiters[char].change.target = function()
+                        return require("nvim-surround.utils").get_nearest_selections(char, target)
+                    end
+                end
+                -- Check if the replacement key is a table instead of a function
+                if replacement and vim.tbl_islist(replacement) then
+                    -- Wrap the left/right delimiters if they are only one line
+                    if type(replacement[1]) == "string" then
+                        replacement[1] = { replacement[1] }
+                    end
+                    if type(replacement[2]) == "string" then
+                        replacement[2] = { replacement[2] }
+                    end
+                    -- Wrap the delimiter pair in a function
+                    opts.delimiters[char].change.replacement = function()
+                        return replacement
+                    end
+                end
+            else
+                opts.delimiters[char].change = {
+                    target = function()
+                        return require("nvim-surround.utils").get_nearest_selections(char)
+                    end,
+                }
             end
         end
-        opts.delimiters[char] = val
     end
     return opts
 end
 
 -- Updates the buffer-local options for the plugin based on the input.
----@param opts options? The options to be passed in.
-M.merge_opts = function(opts)
-    -- Grab the current buffer-local options, or the global user options otherwise
-    local cur_opts = M.get_opts() or M.user_opts
-    -- Overwrite the current options with buffer-local options, if they exist
-    opts = opts and vim.tbl_deep_extend("force", cur_opts, opts) or cur_opts
-    vim.b[0].nvim_surround_buffer_opts = opts
+---@param base_opts options The base options that will be used for configuration.
+---@param new_opts options? The new options to potentially override the base options.
+---@return options The merged options.
+M.merge_opts = function(base_opts, new_opts)
+    return new_opts and vim.tbl_deep_extend("force", base_opts, M.translate_opts(new_opts)) or base_opts
 end
 
 -- Check if a keymap should be added before setting it.
@@ -409,8 +558,7 @@ end
 ---@param user_opts options? The user-defined options to be merged with default_opts.
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
-    M.user_opts = user_opts and vim.tbl_deep_extend("force", M.default_opts, M.translate_opts(user_opts))
-        or M.default_opts
+    M.user_opts = M.merge_opts(M.default_opts, user_opts)
     -- Configure global keymaps
     M.set_keymaps(false)
     -- Configure highlight group, if necessary
@@ -424,8 +572,8 @@ end
 -- Setup the user options for the current buffer.
 ---@param buffer_opts table? The buffer-local options to be merged with the global user_opts.
 M.buffer_setup = function(buffer_opts)
-    -- Merge the given table into the buffer-local options table
-    M.merge_opts(M.translate_opts(buffer_opts))
+    -- Merge the given table into the existing buffer-local options, or global options otherwise
+    vim.b[0].nvim_surround_buffer_opts = M.merge_opts(M.get_opts(), buffer_opts)
     -- Configure buffer-local keymaps
     M.set_keymaps(true)
 end
