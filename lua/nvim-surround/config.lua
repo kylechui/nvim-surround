@@ -298,7 +298,13 @@ M.translate_opts = function(opts)
             end
 
             -- Handle `delete` key translation
-            if not delete or type(delete) == "string" then
+            if not delete then -- If the user does not provide the delete key
+                if opts.delimiters.invalid_key_behavior then
+                    opts.delimiters[char].delete = opts.delimiters.invalid_key_behavior.delete
+                else
+                    opts.delimiters[char].delete = M.get_opts().delimiters.invalid_key_behavior.delete
+                end
+            elseif type(delete) == "string" then
                 -- Wrap delete in a function
                 opts.delimiters[char].delete = function()
                     return require("nvim-surround.utils").get_selections(char, delete)
