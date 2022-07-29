@@ -63,9 +63,9 @@ M.get_delimiters = function(char)
     end
 
     -- Get the function for adding the delimiters, if it exists
-    local delimiters = config.get_add(char)
+    local add = config.get_add(char)
 
-    return delimiters and vim.deepcopy(delimiters(char)) or config.get_opts().delimiters.invalid_key_behavior.add(char)
+    return add and vim.deepcopy(add(char)) or config.get_opts().delimiters.invalid_key_behavior.add(char)
 end
 
 -- Gets the coordinates of the start and end of a given selection.
@@ -101,7 +101,7 @@ end
 M.get_selection = function(char)
     local selection
     if config.get_opts().delimiters[char].find then
-        return config.get_opts().delimiters[char].find()
+        return config.get_opts().delimiters[char].find(char)
     else
         -- Use the correct quotes to surround the arguments for setting the marks
         local args

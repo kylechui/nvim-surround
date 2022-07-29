@@ -154,19 +154,52 @@ M.default_opts = {
         invalid_key_behavior = {
             add = function()
                 vim.api.nvim_err_writeln(
-                    "Error: Invalid character! Configure this message in " .. 'require("nvim-surround").setup()'
+                    'Error: Invalid add character! Configure this message in require("nvim-surround").setup()'
                 )
             end,
-            -- FIXME: FIgure out a sensible way to make this work
+            find = function(char)
+                -- Check if the text-object `a[char]` exists first and use that to find a selection, error otherwise
+                local builtins = {
+                    ["("] = true,
+                    [")"] = true,
+                    ["["] = true,
+                    ["]"] = true,
+                    ["{"] = true,
+                    ["}"] = true,
+                    ["<"] = true,
+                    [">"] = true,
+                    ["'"] = true,
+                    ['"'] = true,
+                    ["`"] = true,
+                }
+                local has_operator_map = builtins[char]
+                for _, omap in ipairs(vim.api.nvim_buf_get_keymap(0, "o")) do
+                    if omap.lhs == "a" .. char then
+                        has_operator_map = true
+                        break
+                    end
+                end
+
+                if has_operator_map then
+                    -- Text-object exists, use it to find the selection
+                    require("nvim-surround.buffer").set_operator_marks(char)
+                    return require("nvim-surround.utils").get_user_selection(false)
+                else
+                    -- Text-object not found, send an error message
+                    vim.api.nvim_err_writeln(
+                        'Error: Invalid find character! Configure this message in require("nvim-surround").setup()'
+                    )
+                end
+            end,
             delete = function()
                 vim.api.nvim_err_writeln(
-                    "Error: Invalid character! Configure this message in " .. 'require("nvim-surround").setup()'
+                    'Error: Invalid delete character! Configure this message in require("nvim-surround").setup()'
                 )
             end,
             change = {
                 target = function()
                     vim.api.nvim_err_writeln(
-                        "Error: Invalid character! Configure this message in " .. 'require("nvim-surround").setup()'
+                        'Error: Invalid change character! Configure this message in require("nvim-surround").setup()'
                     )
                 end,
             },
@@ -229,6 +262,7 @@ M.translate_opts = function(opts)
         -- Validate that the delimiter has not been disabled
         if val then
             local add, find, delete, change = val.add, val.find, val.delete, val.change
+            -- Handle `add` key translation
             if not add then -- If the user does not provide the add key
                 if opts.delimiters.invalid_key_behavior then
                     opts.delimiters[char].add = opts.delimiters.invalid_key_behavior.add
@@ -236,7 +270,7 @@ M.translate_opts = function(opts)
                     opts.delimiters[char].add = M.get_opts().delimiters.invalid_key_behavior.add
                 end
             elseif vim.tbl_islist(add) then -- Check if the add key is a table instead of a function
-                -- Wrap the left/right delimiters if they are only one line
+                -- Wrap the left/right delimiters in a table if they are strings (single line)
                 if type(add[1]) == "string" then
                     add[1] = { add[1] }
                 end
@@ -248,10 +282,13 @@ M.translate_opts = function(opts)
                     return add
                 end
             end
-            if not find then
-                opts.delimiters[char].find = function()
-                    require("nvim-surround.buffer").set_operator_marks(char)
-                    return require("nvim-surround.utils").get_user_selection(false)
+
+            -- Handle `find` key translation
+            if not find then -- If the user does not provide the find key
+                if opts.delimiters.invalid_key_behavior then
+                    opts.delimiters[char].find = opts.delimiters.invalid_key_behavior.find
+                else
+                    opts.delimiters[char].find = M.get_opts().delimiters.invalid_key_behavior.find
                 end
             elseif type(find) == "string" then
                 -- Treat the string as a Lua pattern, and find the selection
@@ -259,12 +296,16 @@ M.translate_opts = function(opts)
                     return require("nvim-surround.patterns").get_selection(find)
                 end
             end
+
+            -- Handle `delete` key translation
             if not delete or type(delete) == "string" then
                 -- Wrap delete in a function
                 opts.delimiters[char].delete = function()
                     return require("nvim-surround.utils").get_selections(char, delete)
                 end
             end
+
+            -- Handle `change` key translation
             if change then
                 local target, replacement = change.target, change.replacement
                 -- Wrap target in a function
@@ -275,7 +316,7 @@ M.translate_opts = function(opts)
                 end
                 -- Check if the replacement key is a table instead of a function
                 if replacement and vim.tbl_islist(replacement) then
-                    -- Wrap the left/right delimiters if they are only one line
+                    -- Wrap the left/right delimiters in a table if they are strings (single line)
                     if type(replacement[1]) == "string" then
                         replacement[1] = { replacement[1] }
                     end
