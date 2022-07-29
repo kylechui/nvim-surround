@@ -229,8 +229,13 @@ M.translate_opts = function(opts)
         -- Validate that the delimiter has not been disabled
         if val then
             local add, find, delete, change = val.add, val.find, val.delete, val.change
-            -- Check if the add key is a table instead of a function
-            if add and vim.tbl_islist(add) then
+            if not add then -- If the user does not provide the add key
+                if opts.delimiters.invalid_key_behavior then
+                    opts.delimiters[char].add = opts.delimiters.invalid_key_behavior.add
+                else
+                    opts.delimiters[char].add = M.get_opts().delimiters.invalid_key_behavior.add
+                end
+            elseif vim.tbl_islist(add) then -- Check if the add key is a table instead of a function
                 -- Wrap the left/right delimiters if they are only one line
                 if type(add[1]) == "string" then
                     add[1] = { add[1] }

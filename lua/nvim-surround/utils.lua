@@ -65,7 +65,7 @@ M.get_delimiters = function(char)
     -- Get the function for adding the delimiters, if it exists
     local delimiters = config.get_add(char)
 
-    return delimiters and vim.deepcopy(delimiters()) or config.get_opts().delimiters.invalid_key_behavior.add(char)
+    return delimiters and vim.deepcopy(delimiters(char)) or config.get_opts().delimiters.invalid_key_behavior.add(char)
 end
 
 -- Gets the coordinates of the start and end of a given selection.
