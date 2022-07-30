@@ -100,7 +100,9 @@ end
 ---@return selection? @The corresponding selection for the given character.
 M.get_selection = function(char)
     local selection
-    if config.get_opts().delimiters[char].find then
+    if not config.get_opts().delimiters[char] then
+        return config.get_opts().delimiters.invalid_key_behavior.find(char)
+    elseif config.get_opts().delimiters[char].find then
         return config.get_opts().delimiters[char].find(char)
     else
         -- Use the correct quotes to surround the arguments for setting the marks
@@ -216,7 +218,16 @@ M.get_nearest_selections = function(char, action)
         if M.is_quote(c) and vim.fn.searchpos(c, "cnW")[1] == curpos[1] then
             vim.fn.cursor(vim.fn.searchpos(c, "cnW"))
         end
-        local cur_selections = action == "change" and config.get_change(c).target(c) or config.get_delete(c)(c)
+        local cur_selections
+        if config.get_opts().delimiters[c] then
+            cur_selections = action == "change" and config.get_change(c).target(c) or config.get_delete(c)(c)
+        else
+            if action == "change" then
+                cur_selections = config.get_opts().delimiters.invalid_key_behavior.change.target(c)
+            else
+                cur_selections = config.get_opts().delimiters.invalid_key_behavior.delete(c)
+            end
+        end
         local n_first = nearest_selections and nearest_selections.left.first_pos
         local c_first = cur_selections and cur_selections.left.first_pos
         if c_first then
@@ -243,7 +254,16 @@ M.get_nearest_selections = function(char, action)
         for _, c in ipairs(chars) do
             -- Jump to the previous instance of this delimiter
             vim.fn.searchpos(vim.trim(c), "bW")
-            local cur_selections = M.get_selections(c)
+            local cur_selections
+            if config.get_opts().delimiters[c] then
+                cur_selections = action == "change" and config.get_change(c).target(c) or config.get_delete(c)(c)
+            else
+                if action == "change" then
+                    cur_selections = config.get_opts().delimiters.invalid_key_behavior.change.target(c)
+                else
+                    cur_selections = config.get_opts().delimiters.invalid_key_behavior.delete(c)
+                end
+            end
             local n_last = nearest_selections and nearest_selections.right.last_pos
             local c_last = cur_selections and cur_selections.right.last_pos
             if c_last then

@@ -361,7 +361,7 @@ end
 --]====================================================================================================================]
 
 -- Stores the global user-set options for the plugin.
-M.user_opts = {}
+M.user_opts = nil
 
 -- Returns the buffer-local options for the plugin, or global options if buffer-local does not exist.
 ---@return options @The buffer-local options.
@@ -399,15 +399,25 @@ M.translate_opts = function(opts)
     if not (opts and opts.delimiters) then
         return opts
     end
+    local invalid = opts.delimiters.invalid_key_behavior or M.default_opts.delimiters.invalid_key_behavior
     for char, val in pairs(opts.delimiters) do
         -- Validate that the delimiter has not been disabled
         if val then
             local add, find, delete, change = val.add, val.find, val.delete, val.change
             -- Ensure that all necessary keys are present
-            if not (add and find and delete and change and change.target) then
-                vim.api.nvim_err_writeln("ERROR: Not all keys are present for: " .. char)
-                return nil
+            if not add then
+                opts.delimiters[char].add = invalid.add
             end
+            if not find then
+                opts.delimiters[char].find = invalid.find
+            end
+            if not delete then
+                opts.delimiters[char].delete = invalid.delete
+            end
+            if not (change and change.target) then
+                opts.delimiters[char].change = { target = invalid.change.target }
+            end
+
             -- Handle `add` key translation
             if vim.tbl_islist(add) then -- Check if the add key is a table instead of a function
                 -- Wrap the left/right delimiters in a table if they are strings (single line)
@@ -440,7 +450,7 @@ M.translate_opts = function(opts)
             end
 
             -- Handle `change` key translation
-            local target, replacement = change.target, change.replacement
+            local target, replacement = change and change.target, change and change.replacement
             -- Wrap target in a function
             if type(target) == "string" then
                 opts.delimiters[char].change.target = function()
