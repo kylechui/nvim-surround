@@ -7,8 +7,8 @@
 ---@field right selection?
 
 ---@class delimiters
----@field add function?
----@field find function?
+---@field add function
+---@field find function
 ---@field delete function
 ---@field change { target: function, replacement: function? }
 

@@ -216,7 +216,7 @@ M.get_nearest_selections = function(char, action)
         if M.is_quote(c) and vim.fn.searchpos(c, "cnW")[1] == curpos[1] then
             vim.fn.cursor(vim.fn.searchpos(c, "cnW"))
         end
-        local cur_selections = action == "change" and config.get_change(c).target() or config.get_delete(c)(c)
+        local cur_selections = action == "change" and config.get_change(c).target(c) or config.get_delete(c)(c)
         local n_first = nearest_selections and nearest_selections.left.first_pos
         local c_first = cur_selections and cur_selections.left.first_pos
         if c_first then

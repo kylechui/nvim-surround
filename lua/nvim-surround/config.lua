@@ -1,12 +1,5 @@
 local M = {}
 
--- Since `vim.fn.input()` does not handle keyboard interrupts, we use a protected call to check whether the user has
--- used `<C-c>` to cancel the input. This is not needed if `<Esc>` is used to cancel the input.
-local get_input = function(prompt)
-    local ok, result = pcall(vim.fn.input, { prompt = prompt })
-    return ok and result
-end
-
 M.default_opts = {
     keymaps = {
         insert = "<C-g>s",
@@ -23,78 +16,175 @@ M.default_opts = {
     delimiters = {
         ["("] = {
             add = { "( ", " )" },
+            find = function()
+                return M.get_selection({ textobject = "(" })
+            end,
+            delete = function()
+                return M.get_selections({ char = "(", pattern = "^(.)().-(.)()$" })
+            end,
+            change = {
+                target = function()
+                    return M.get_selections({ char = "(", pattern = "^(.)().-(.)()$" })
+                end,
+            },
         },
         [")"] = {
             add = { "(", ")" },
+            find = function()
+                return M.get_selection({ textobject = ")" })
+            end,
+            delete = function()
+                return M.get_selections({ char = ")", pattern = "^(.)().-(.)()$" })
+            end,
+            change = {
+                target = function()
+                    return M.get_selections({ char = ")", pattern = "^(.)().-(.)()$" })
+                end,
+            },
         },
         ["{"] = {
             add = { "{ ", " }" },
+            find = function()
+                return M.get_selection({ textobject = "{" })
+            end,
+            delete = function()
+                return M.get_selections({ char = "{", pattern = "^(.)().-(.)()$" })
+            end,
+            change = {
+                target = function()
+                    return M.get_selections({ char = "{", pattern = "^(.)().-(.)()$" })
+                end,
+            },
         },
         ["}"] = {
             add = { "{", "}" },
+            find = function()
+                return M.get_selection({ textobject = "}" })
+            end,
+            delete = function()
+                return M.get_selections({ char = "}", pattern = "^(.)().-(.)()$" })
+            end,
+            change = {
+                target = function()
+                    return M.get_selections({ char = "}", pattern = "^(.)().-(.)()$" })
+                end,
+            },
         },
         ["<"] = {
             add = { "< ", " >" },
+            find = function()
+                return M.get_selection({ textobject = "<" })
+            end,
+            delete = function()
+                return M.get_selections({ char = "<", pattern = "^(.)().-(.)()$" })
+            end,
+            change = {
+                target = function()
+                    return M.get_selections({ char = "<", pattern = "^(.)().-(.)()$" })
+                end,
+            },
         },
         [">"] = {
             add = { "<", ">" },
+            find = function()
+                return M.get_selection({ textobject = ">" })
+            end,
+            delete = function()
+                return M.get_selections({ char = ">", pattern = "^(.)().-(.)()$" })
+            end,
+            change = {
+                target = function()
+                    return M.get_selections({ char = ">", pattern = "^(.)().-(.)()$" })
+                end,
+            },
         },
         ["["] = {
             add = { "[ ", " ]" },
+            find = function()
+                return M.get_selection({ textobject = "[" })
+            end,
+            delete = function()
+                return M.get_selections({ char = "[", pattern = "^(.)().-(.)()$" })
+            end,
+            change = {
+                target = function()
+                    return M.get_selections({ char = "[", pattern = "^(.)().-(.)()$" })
+                end,
+            },
         },
         ["]"] = {
             add = { "[", "]" },
+            find = function()
+                return M.get_selection({ textobject = "]" })
+            end,
+            delete = function()
+                return M.get_selections({ char = "]", pattern = "^(.)().-(.)()$" })
+            end,
+            change = {
+                target = function()
+                    return M.get_selections({ char = "]", pattern = "^(.)().-(.)()$" })
+                end,
+            },
         },
         ["'"] = {
             add = { "'", "'" },
+            find = function()
+                return M.get_selection({ textobject = "'" })
+            end,
+            delete = function()
+                return M.get_selections({ char = "'", pattern = "^(.)().-(.)()$" })
+            end,
+            change = {
+                target = function()
+                    return M.get_selections({ char = "'", pattern = "^(.)().-(.)()$" })
+                end,
+            },
         },
         ['"'] = {
             add = { '"', '"' },
+            find = function()
+                return M.get_selection({ textobject = '"' })
+            end,
+            delete = function()
+                return M.get_selections({ char = '"', pattern = "^(.)().-(.)()$" })
+            end,
+            change = {
+                target = function()
+                    return M.get_selections({ char = '"', pattern = "^(.)().-(.)()$" })
+                end,
+            },
         },
         ["`"] = {
             add = { "`", "`" },
+            find = function()
+                return M.get_selection({ textobject = "`" })
+            end,
+            delete = function()
+                return M.get_selections({ char = "`", pattern = "^(.)().-(.)()$" })
+            end,
+            change = {
+                target = function()
+                    return M.get_selections({ char = "`", pattern = "^(.)().-(.)()$" })
+                end,
+            },
         },
         ["i"] = {
             add = function()
-                local left_delimiter = get_input("Enter the left delimiter: ")
+                local left_delimiter = M.get_input("Enter the left delimiter: ")
                 if left_delimiter then
-                    local right_delimiter = get_input("Enter the right delimiter: ")
+                    local right_delimiter = M.get_input("Enter the right delimiter: ")
                     if right_delimiter then
                         return { { left_delimiter }, { right_delimiter } }
                     end
                 end
             end,
+            find = function() end,
+            delete = function() end,
+            change = { target = function() end },
         },
         ["t"] = {
             add = function()
-                local input = get_input("Enter the HTML tag: ")
-                if input then
-                    local element = input:match("^<?([%w-]+)")
-                    local attributes = input:match("%s+([^>]+)>?$")
-                    if not element then
-                        return nil
-                    end
-
-                    local open = attributes and element .. " " .. attributes or element
-                    local close = element
-
-                    return { { "<" .. open .. ">" }, { "</" .. close .. ">" } }
-                end
-            end,
-            delete = "^(%b<>)().-(%b<>)()$",
-            change = {
-                target = "^<([%w-]*)().-([^/]*)()>$",
-                replacement = function()
-                    local element = get_input("Enter the HTML element: ")
-                    if element then
-                        return { { element }, { element } }
-                    end
-                end,
-            },
-        },
-        ["T"] = {
-            add = function()
-                local input = get_input("Enter the HTML tag: ")
+                local input = M.get_input("Enter the HTML tag: ")
                 if input then
                     local element = input:match("^<?([%w-]+)")
                     local attributes = input:match("%s+([^>]+)>?$")
@@ -109,14 +199,51 @@ M.default_opts = {
                 end
             end,
             find = function()
-                require("nvim-surround.buffer").set_operator_marks("t")
-                return require("nvim-surround.utils").get_user_selection(false)
+                return M.get_selection({ textobject = "t" })
             end,
-            delete = "^(%b<>)().-(%b<>)()$",
+            delete = function()
+                return M.get_selections({ char = "t", pattern = "^(%b<>)().-(%b<>)()$" })
+            end,
             change = {
-                target = "^<([^>]*)().-([^%/]*)()>$",
+                target = function()
+                    return M.get_selections({ char = "t", pattern = "^<([%w-]*)().-([^/]*)()>$" })
+                end,
                 replacement = function()
-                    local input = get_input("Enter the HTML tag: ")
+                    local element = M.get_input("Enter the HTML element: ")
+                    if element then
+                        return { { element }, { element } }
+                    end
+                end,
+            },
+        },
+        ["T"] = {
+            add = function()
+                local input = M.get_input("Enter the HTML tag: ")
+                if input then
+                    local element = input:match("^<?([%w-]+)")
+                    local attributes = input:match("%s+([^>]+)>?$")
+                    if not element then
+                        return nil
+                    end
+
+                    local open = attributes and element .. " " .. attributes or element
+                    local close = element
+
+                    return { { "<" .. open .. ">" }, { "</" .. close .. ">" } }
+                end
+            end,
+            find = function()
+                M.get_selection({ textobject = "t" })
+            end,
+            delete = function()
+                return M.get_selections({ char = "T", pattern = "^(%b<>)().-(%b<>)()$" })
+            end,
+            change = {
+                target = function()
+                    return M.get_selections({ char = "T", pattern = "^<([^>]*)().-([^%/]*)()>$" })
+                end,
+                replacement = function()
+                    local input = M.get_input("Enter the HTML tag: ")
                     if input then
                         local element = input:match("^<?([%w-]+)")
                         local attributes = input:match("%s+([^>]+)>?$")
@@ -134,17 +261,23 @@ M.default_opts = {
         },
         ["f"] = {
             add = function()
-                local result = get_input("Enter the function name: ")
+                local result = M.get_input("Enter the function name: ")
                 if result then
                     return { { result .. "(" }, { ")" } }
                 end
             end,
-            find = "[%w_:.->]+%b()",
-            delete = "^([%w_:.->]+%()().-(%))()$",
+            find = function()
+                return M.get_selection({ pattern = "[%w_:.->]+%b()" })
+            end,
+            delete = function()
+                return M.get_selections({ char = "f", pattern = "^([%w_:.->]+%()().-(%))()$" })
+            end,
             change = {
-                target = "^([%w_]+)().-()()$",
+                target = function()
+                    return M.get_selections({ char = "f", pattern = "^([%w_]+)().-()()$" })
+                end,
                 replacement = function()
-                    local result = get_input("Enter the function name: ")
+                    local result = M.get_input("Enter the function name: ")
                     if result then
                         return { { result }, { "" } }
                     end
@@ -157,39 +290,10 @@ M.default_opts = {
                     'Error: Invalid add character! Configure this message in require("nvim-surround").setup()'
                 )
             end,
-            find = function(char)
-                -- Check if the text-object `a[char]` exists first and use that to find a selection, error otherwise
-                local builtins = {
-                    ["("] = true,
-                    [")"] = true,
-                    ["["] = true,
-                    ["]"] = true,
-                    ["{"] = true,
-                    ["}"] = true,
-                    ["<"] = true,
-                    [">"] = true,
-                    ["'"] = true,
-                    ['"'] = true,
-                    ["`"] = true,
-                }
-                local has_operator_map = builtins[char]
-                for _, omap in ipairs(vim.api.nvim_buf_get_keymap(0, "o")) do
-                    if omap.lhs == "a" .. char then
-                        has_operator_map = true
-                        break
-                    end
-                end
-
-                if has_operator_map then
-                    -- Text-object exists, use it to find the selection
-                    require("nvim-surround.buffer").set_operator_marks(char)
-                    return require("nvim-surround.utils").get_user_selection(false)
-                else
-                    -- Text-object not found, send an error message
-                    vim.api.nvim_err_writeln(
-                        'Error: Invalid find character! Configure this message in require("nvim-surround").setup()'
-                    )
-                end
+            find = function()
+                vim.api.nvim_err_writeln(
+                    'Error: Invalid find character! Configure this message in require("nvim-surround").setup()'
+                )
             end,
             delete = function()
                 vim.api.nvim_err_writeln(
@@ -218,6 +322,43 @@ M.default_opts = {
     },
     move_cursor = "begin",
 }
+
+--[====================================================================================================================[
+                                             Configuration Helper Functions
+--]====================================================================================================================]
+
+-- Gets input from the user.
+---@param prompt string The input prompt.
+---@return string? @The user input.
+M.get_input = function(prompt)
+    -- Since `vim.fn.input()` does not handle keyboard interrupts, we use a protected call to detect <C-c>
+    local ok, result = pcall(vim.fn.input, { prompt = prompt })
+    return ok and result
+end
+
+-- Gets a selection from the buffer based on some heuristic.
+---@param args { char: string?, pattern: string?, textobject: string? }
+---@return selection? The retrieved selection.
+M.get_selection = function(args)
+    if args.pattern then
+        return require("nvim-surround.patterns").get_selection(args.pattern)
+    elseif args.textobject then
+        require("nvim-surround.buffer").set_operator_marks(args.textobject)
+        return require("nvim-surround.utils").get_user_selection(false)
+    end
+end
+
+-- Gets a pair of selections from the buffer based on some heuristic.
+---@param args { char: string?, pattern: string? }
+M.get_selections = function(args)
+    if args.pattern then
+        return require("nvim-surround.utils").get_selections(args.char, args.pattern)
+    end
+end
+
+--[====================================================================================================================[
+                                                End of Helper Functions
+--]====================================================================================================================]
 
 -- Stores the global user-set options for the plugin.
 M.user_opts = {}
@@ -262,14 +403,13 @@ M.translate_opts = function(opts)
         -- Validate that the delimiter has not been disabled
         if val then
             local add, find, delete, change = val.add, val.find, val.delete, val.change
+            -- Ensure that all necessary keys are present
+            if not (add and find and delete and change and change.target) then
+                vim.api.nvim_err_writeln("ERROR: Not all keys are present for: " .. char)
+                return nil
+            end
             -- Handle `add` key translation
-            if not add then -- If the user does not provide the add key
-                if opts.delimiters.invalid_key_behavior then
-                    opts.delimiters[char].add = opts.delimiters.invalid_key_behavior.add
-                else
-                    opts.delimiters[char].add = M.get_opts().delimiters.invalid_key_behavior.add
-                end
-            elseif vim.tbl_islist(add) then -- Check if the add key is a table instead of a function
+            if vim.tbl_islist(add) then -- Check if the add key is a table instead of a function
                 -- Wrap the left/right delimiters in a table if they are strings (single line)
                 if type(add[1]) == "string" then
                     add[1] = { add[1] }
@@ -284,13 +424,7 @@ M.translate_opts = function(opts)
             end
 
             -- Handle `find` key translation
-            if not find then -- If the user does not provide the find key
-                if opts.delimiters.invalid_key_behavior then
-                    opts.delimiters[char].find = opts.delimiters.invalid_key_behavior.find
-                else
-                    opts.delimiters[char].find = M.get_opts().delimiters.invalid_key_behavior.find
-                end
-            elseif type(find) == "string" then
+            if type(find) == "string" then
                 -- Treat the string as a Lua pattern, and find the selection
                 opts.delimiters[char].find = function()
                     return require("nvim-surround.patterns").get_selection(find)
@@ -298,13 +432,7 @@ M.translate_opts = function(opts)
             end
 
             -- Handle `delete` key translation
-            if not delete then -- If the user does not provide the delete key
-                if opts.delimiters.invalid_key_behavior then
-                    opts.delimiters[char].delete = opts.delimiters.invalid_key_behavior.delete
-                else
-                    opts.delimiters[char].delete = M.get_opts().delimiters.invalid_key_behavior.delete
-                end
-            elseif type(delete) == "string" then
+            if type(delete) == "string" then
                 -- Wrap delete in a function
                 opts.delimiters[char].delete = function()
                     return require("nvim-surround.utils").get_selections(char, delete)
@@ -312,34 +440,26 @@ M.translate_opts = function(opts)
             end
 
             -- Handle `change` key translation
-            if change then
-                local target, replacement = change.target, change.replacement
-                -- Wrap target in a function
-                if not target or type(target) == "string" then
-                    opts.delimiters[char].change.target = function()
-                        return require("nvim-surround.utils").get_selections(char, target)
-                    end
+            local target, replacement = change.target, change.replacement
+            -- Wrap target in a function
+            if type(target) == "string" then
+                opts.delimiters[char].change.target = function()
+                    return require("nvim-surround.utils").get_selections(char, target)
                 end
-                -- Check if the replacement key is a table instead of a function
-                if replacement and vim.tbl_islist(replacement) then
-                    -- Wrap the left/right delimiters in a table if they are strings (single line)
-                    if type(replacement[1]) == "string" then
-                        replacement[1] = { replacement[1] }
-                    end
-                    if type(replacement[2]) == "string" then
-                        replacement[2] = { replacement[2] }
-                    end
-                    -- Wrap the delimiter pair in a function
-                    opts.delimiters[char].change.replacement = function()
-                        return replacement
-                    end
+            end
+            -- Check if the replacement key is a table instead of a function
+            if replacement and vim.tbl_islist(replacement) then
+                -- Wrap the left/right delimiters in a table if they are strings (single line)
+                if type(replacement[1]) == "string" then
+                    replacement[1] = { replacement[1] }
                 end
-            else
-                opts.delimiters[char].change = {
-                    target = function()
-                        return require("nvim-surround.utils").get_selections(char)
-                    end,
-                }
+                if type(replacement[2]) == "string" then
+                    replacement[2] = { replacement[2] }
+                end
+                -- Wrap the delimiter pair in a function
+                opts.delimiters[char].change.replacement = function()
+                    return replacement
+                end
             end
         end
     end
