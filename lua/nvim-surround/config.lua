@@ -285,27 +285,11 @@ M.default_opts = {
             },
         },
         invalid_key_behavior = {
-            add = function()
-                vim.api.nvim_err_writeln(
-                    'Error: Invalid add character! Configure this message in require("nvim-surround").setup()'
-                )
-            end,
-            find = function()
-                vim.api.nvim_err_writeln(
-                    'Error: Invalid find character! Configure this message in require("nvim-surround").setup()'
-                )
-            end,
-            delete = function()
-                vim.api.nvim_err_writeln(
-                    'Error: Invalid delete character! Configure this message in require("nvim-surround").setup()'
-                )
-            end,
+            add = function() end,
+            find = function() end,
+            delete = function() end,
             change = {
-                target = function()
-                    vim.api.nvim_err_writeln(
-                        'Error: Invalid change character! Configure this message in require("nvim-surround").setup()'
-                    )
-                end,
+                target = function() end,
             },
         },
     },
