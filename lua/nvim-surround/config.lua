@@ -274,7 +274,7 @@ M.default_opts = {
             end,
             change = {
                 target = function()
-                    return M.get_selections({ char = "f", pattern = "^([%w_]+)().-()()$" })
+                    return M.get_selections({ char = "f", pattern = "^.-([%w_]+)()%b()()()$" })
                 end,
                 replacement = function()
                     local result = M.get_input("Enter the function name: ")
