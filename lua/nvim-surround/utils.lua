@@ -1,6 +1,7 @@
 local buffer = require("nvim-surround.buffer")
 local config = require("nvim-surround.config")
 local patterns = require("nvim-surround.patterns")
+local textobjects = require("nvim-surround.textobjects")
 
 local M = {}
 
@@ -102,18 +103,8 @@ M.get_selection = function(char)
     local selection
     if not config.get_opts().delimiters[char] then
         return config.get_opts().delimiters.invalid_key_behavior.find(char)
-    elseif config.get_opts().delimiters[char].find then
-        return config.get_opts().delimiters[char].find(char)
     else
-        -- Use the correct quotes to surround the arguments for setting the marks
-        local args
-        if char == "'" then
-            args = [["'"]]
-        else
-            args = "'" .. char .. "'"
-        end
-        vim.cmd("silent call v:lua.require'nvim-surround.buffer'.set_operator_marks(" .. args .. ")")
-        selection = M.get_user_selection(false)
+        return config.get_opts().delimiters[char].find(char)
     end
     return selection
 end
@@ -162,29 +153,8 @@ M.get_selections = function(char, pattern)
         end
 
         -- Use the length of the pair to find the proper selection boundaries
-        local open_line = buffer.get_line(open_first[1])
-        local close_line = buffer.get_line(close_last[1])
         open_last = { open_first[1], open_first[2] + #delimiters[1][1] - 1 }
         close_first = { close_last[1], close_last[2] - #delimiters[2][1] + 1 }
-        -- Validate that the pair actually exists at the given selection
-        if
-            open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1]
-            or close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1]
-        then
-            -- If not strictly there, trim the delimiters' whitespace and try again
-            delimiters[1][1] = vim.trim(delimiters[1][1])
-            delimiters[2][1] = vim.trim(delimiters[2][1])
-            open_last = { open_first[1], open_first[2] + #delimiters[1][1] - 1 }
-            close_first = { close_last[1], close_last[2] - #delimiters[2][1] + 1 }
-            -- If still not found, return nil
-            if
-                open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1]
-                or close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1]
-            then
-                return nil
-            end
-        end
-
         local selections = {
             left = {
                 first_pos = open_first,

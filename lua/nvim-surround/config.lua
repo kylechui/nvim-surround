@@ -24,7 +24,7 @@ M.default_opts = {
             end,
             change = {
                 target = function()
-                    return M.get_selections({ char = "(", pattern = "^(.)().-(.)()$" })
+                    return M.get_selections({ char = "(", pattern = "^(. ?)().-( ?.)()$" })
                 end,
             },
         },
@@ -52,7 +52,7 @@ M.default_opts = {
             end,
             change = {
                 target = function()
-                    return M.get_selections({ char = "{", pattern = "^(.)().-(.)()$" })
+                    return M.get_selections({ char = "{", pattern = "^(. ?)().-( ?.)()$" })
                 end,
             },
         },
@@ -80,7 +80,7 @@ M.default_opts = {
             end,
             change = {
                 target = function()
-                    return M.get_selections({ char = "<", pattern = "^(.)().-(.)()$" })
+                    return M.get_selections({ char = "<", pattern = "^(. ?)().-( ?.)()$" })
                 end,
             },
         },
@@ -108,7 +108,7 @@ M.default_opts = {
             end,
             change = {
                 target = function()
-                    return M.get_selections({ char = "[", pattern = "^(.)().-(.)()$" })
+                    return M.get_selections({ char = "[", pattern = "^(. ?)().-( ?.)()$" })
                 end,
             },
         },
@@ -327,8 +327,7 @@ M.get_selection = function(args)
     if args.pattern then
         return require("nvim-surround.patterns").get_selection(args.pattern)
     elseif args.textobject then
-        require("nvim-surround.buffer").set_operator_marks(args.textobject)
-        return require("nvim-surround.utils").get_user_selection(false)
+        return require("nvim-surround.textobjects").get_selection(args.textobject)
     end
 end
 
