@@ -73,13 +73,10 @@ end
 ---@param char string A character representing what selection is to be found.
 ---@return selection? @The corresponding selection for the given character.
 M.get_selection = function(char)
-    local selection
-    if not config.get_opts().delimiters[char] then
-        return config.get_opts().delimiters.invalid_key_behavior.find(char)
-    else
+    if config.get_opts().delimiters[char] then
         return config.get_opts().delimiters[char].find(char)
     end
-    return selection
+    return config.get_opts().delimiters.invalid_key_behavior.find(char)
 end
 
 -- Gets two selections for the left and right surrounding pair.
@@ -100,14 +97,14 @@ M.get_selections = function(char, pattern)
     end
 
     -- Narrow the "parent selection" down to the left and right surrounds.
+    local selections
     if pattern then
         -- If the pattern exists, use pattern-based methods to narrow down the selection
-        local selections = patterns.get_selections(
+        selections = patterns.get_selections(
             patterns.pos_to_index(selection.first_pos),
             M.join(buffer.get_text(selection)),
             pattern
         )
-        return selections
     else
         -- Get the corresponding delimiter pair for the character
         local delimiters = M.get_delimiters(char)
@@ -115,20 +112,13 @@ M.get_selections = function(char, pattern)
             return nil
         end
 
-        local open_first, open_last, close_first, close_last
-        local curpos = buffer.get_curpos()
-        open_first = buffer.get_mark("[")
-        close_last = buffer.get_mark("]")
-
-        -- If the operatorfunc "fails", return no selection found
-        if not open_first or not close_last then
-            return nil
-        end
-
+        local open_first = selection.first_pos
+        local close_last = selection.last_pos
         -- Use the length of the pair to find the proper selection boundaries
-        open_last = { open_first[1], open_first[2] + #delimiters[1][1] - 1 }
-        close_first = { close_last[1], close_last[2] - #delimiters[2][1] + 1 }
-        local selections = {
+        local open_last = { open_first[1], open_first[2] + #delimiters[1][#delimiters[1]] - 1 }
+        local close_first = { close_last[1], close_last[2] - #delimiters[2][#delimiters[2]] + 1 }
+
+        selections = {
             left = {
                 first_pos = open_first,
                 last_pos = open_last,
@@ -138,9 +128,8 @@ M.get_selections = function(char, pattern)
                 last_pos = close_last,
             },
         }
-        buffer.set_curpos(curpos)
-        return selections
     end
+    return selections
 end
 
 -- Gets the nearest two selections for the left and right surrounding pair.
