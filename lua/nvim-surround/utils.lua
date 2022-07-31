@@ -1,7 +1,6 @@
 local buffer = require("nvim-surround.buffer")
 local config = require("nvim-surround.config")
 local patterns = require("nvim-surround.patterns")
-local textobjects = require("nvim-surround.textobjects")
 
 local M = {}
 
