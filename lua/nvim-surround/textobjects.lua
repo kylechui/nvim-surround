@@ -2,9 +2,12 @@ local buffer = require("nvim-surround.buffer")
 
 local M = {}
 
-M.get_selection = function(textobject)
-    buffer.set_operator_marks(textobject)
-    -- Determine whether to use visual marks or operator marks
+-- Gets a selection based on the text-object for a given character, `a[char]`.
+---@param char string The provided character.
+---@return selection? @The selection that represents the text-object.
+M.get_selection = function(char)
+    buffer.set_operator_marks(char)
+    -- Adjust the marks to reside on non-whitespace characters
     buffer.adjust_mark("[")
     buffer.adjust_mark("]")
 
@@ -21,7 +24,5 @@ M.get_selection = function(textobject)
     }
     return selection
 end
-
-M.get_selections = function() end
 
 return M

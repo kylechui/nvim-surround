@@ -96,13 +96,12 @@ M.visual_surround = function(line_mode)
     local curpos = buffer.get_curpos()
     -- Get a character and selection from the user
     local ins_char = utils.get_char()
-    local selection = utils.get_user_selection(true)
     local delimiters = utils.get_delimiters(ins_char)
-    if not delimiters or not selection then
+    local first_pos, last_pos = buffer.get_mark("<"), buffer.get_mark(">")
+    if not delimiters or not first_pos or not last_pos then
         return
     end
 
-    local first_pos, last_pos = selection.first_pos, selection.last_pos
     -- Add new lines if the addition is done line-wise
     if line_mode then
         table.insert(delimiters[2], 1, "")
@@ -202,8 +201,13 @@ M.normal_callback = function(mode)
         buffer.set_mark("]", pos)
     end
 
-    local selection = utils.get_user_selection(false)
-    if not selection then
+    buffer.adjust_mark("[")
+    buffer.adjust_mark("]")
+    local selection = {
+        first_pos = buffer.get_mark("["),
+        last_pos = buffer.get_mark("]"),
+    }
+    if not selection.first_pos or not selection.last_pos then
         return
     end
     -- Highlight the range and set a timer to clear it if necessary
@@ -276,7 +280,7 @@ M.change_callback = function()
             end
         end
 
-        -- Get the new surrounding pair
+        -- Get the new surrounding pair, querying the user for more input if no replacement is provided
         local ins_char, delimiters
         if change and change.replacement then
             delimiters = change.replacement()
@@ -285,7 +289,7 @@ M.change_callback = function()
             delimiters = utils.get_delimiters(ins_char)
         end
 
-        -- Clear the highlights after potentially getting user input
+        -- Clear the highlights after getting the replacement surround
         buffer.clear_highlights()
         if not delimiters then
             return

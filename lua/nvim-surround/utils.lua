@@ -69,33 +69,6 @@ M.get_delimiters = function(char)
     return add and vim.deepcopy(add(char)) or config.get_opts().delimiters.invalid_key_behavior.add(char)
 end
 
--- Gets the coordinates of the start and end of a given selection.
----@return selection? @A table containing the start and end of the selection.
-M.get_user_selection = function(is_visual)
-    -- Determine whether to use visual marks or operator marks
-    local mark1, mark2
-    if is_visual then
-        mark1, mark2 = "<", ">"
-    else
-        mark1, mark2 = "[", "]"
-        buffer.adjust_mark("[")
-        buffer.adjust_mark("]")
-    end
-
-    -- Get the row and column of the first and last characters of the selection
-    local first_position = buffer.get_mark(mark1)
-    local last_position = buffer.get_mark(mark2)
-    if not first_position or not last_position then
-        return nil
-    end
-
-    local selection = {
-        first_pos = first_position,
-        last_pos = last_position,
-    }
-    return selection
-end
-
 -- Gets a selection that contains the left and right surrounding pair.
 ---@param char string A character representing what selection is to be found.
 ---@return selection? @The corresponding selection for the given character.
