@@ -20,7 +20,7 @@ M.default_opts = {
                 return M.get_selection({ textobject = "(" })
             end,
             delete = function()
-                return M.get_selections({ char = "(", pattern = "^(.)().-(.)()$" })
+                return M.get_selections({ char = "(", pattern = "^(. ?)().-( ?.)()$" })
             end,
             change = {
                 target = function()
@@ -48,7 +48,7 @@ M.default_opts = {
                 return M.get_selection({ textobject = "{" })
             end,
             delete = function()
-                return M.get_selections({ char = "{", pattern = "^(.)().-(.)()$" })
+                return M.get_selections({ char = "{", pattern = "^(. ?)().-( ?.)()$" })
             end,
             change = {
                 target = function()
@@ -76,7 +76,7 @@ M.default_opts = {
                 return M.get_selection({ textobject = "<" })
             end,
             delete = function()
-                return M.get_selections({ char = "<", pattern = "^(.)().-(.)()$" })
+                return M.get_selections({ char = "<", pattern = "^(. ?)().-( ?.)()$" })
             end,
             change = {
                 target = function()
@@ -104,7 +104,7 @@ M.default_opts = {
                 return M.get_selection({ textobject = "[" })
             end,
             delete = function()
-                return M.get_selections({ char = "[", pattern = "^(.)().-(.)()$" })
+                return M.get_selections({ char = "[", pattern = "^(. ?)().-( ?.)()$" })
             end,
             change = {
                 target = function()
