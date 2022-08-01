@@ -7,7 +7,7 @@ local M = {}
 M.index_to_pos = function(index)
     local buffer_text = table.concat(buffer.get_lines(1, -1), "\n")
     -- Counts the number of newline characters, plus one for the final character before the current line
-    local lnum = select(2, buffer_text:sub(1, index - 1):gsub("\n", "\n")) + 1
+    local lnum = select(2, buffer_text:sub(1, math.max(1, index - 1)):gsub("\n", "\n")) + 1
     -- Special case for first line, as there are no newline characters preceding it
     if lnum == 1 then
         return { 1, index }
