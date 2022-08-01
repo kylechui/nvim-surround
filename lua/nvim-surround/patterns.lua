@@ -106,23 +106,19 @@ end
 M.get_selections = function(offset, str, pattern)
     -- Get the surrounding pair, and the start/end indices
     local _, _, left_delimiter, first_index, right_delimiter, last_index = str:find(pattern)
-    local left, right
-    -- Validate that the match groups are non-empty, since empty match groups return indices
-    if type(left_delimiter) == "string" then
-        left = {
-            first_pos = M.index_to_pos(offset + first_index - #left_delimiter - 1),
-            last_pos = M.index_to_pos(offset + first_index - 2),
-        }
-    end
-    if type(right_delimiter) == "string" then
-        right = {
-            first_pos = M.index_to_pos(offset + last_index - #right_delimiter - 1),
-            last_pos = M.index_to_pos(offset + last_index - 2),
-        }
-    end
+    -- If delimiter does not exist, set the length to zero
+    local left_len = type(left_delimiter) == "string" and #left_delimiter or 0
+    local right_len = type(right_delimiter) == "string" and #right_delimiter or 0
+    -- If the left or right delimiters are empty, return the equivalent of an empty selection
     return {
-        left = left,
-        right = right,
+        left = {
+            first_pos = M.index_to_pos(offset + first_index - left_len - 1),
+            last_pos = M.index_to_pos(offset + first_index - 2),
+        },
+        right = {
+            first_pos = M.index_to_pos(offset + last_index - right_len - 1),
+            last_pos = M.index_to_pos(offset + last_index - 2),
+        },
     }
 end
 
