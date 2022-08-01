@@ -134,6 +134,14 @@ M.comes_before = function(pos1, pos2)
     return pos1[1] < pos2[1] or pos1[1] == pos2[1] and pos1[2] <= pos2[2]
 end
 
+-- Returns whether a position is contained within a pair of selections, inclusive.
+---@param pos integer[] The given position.
+---@selection selections selections The given selections
+---@return boolean @Whether the position is contained within the selections.
+M.is_inside = function(pos, selections)
+    return M.comes_before(selections.left.first_pos, pos) and M.comes_before(pos, selections.right.last_pos)
+end
+
 -- Gets a selection of text from the buffer.
 ---@param selection selection The selection of text to be retrieved.
 ---@return string[] @The text from the buffer.

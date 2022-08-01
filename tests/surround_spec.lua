@@ -30,7 +30,7 @@ end
 local check_lines = function(lines)
     assert.are.same(lines, vim.api.nvim_buf_get_lines(0, 0, -1, false))
 end
-
+-- TODO: Add test case for jumping to HTML tags, especially lookbehind (to test t/< case)
 describe("nvim-surround", function()
     before_each(function()
         cursor({ 1, 1 })
