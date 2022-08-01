@@ -183,17 +183,17 @@ end
 -- Highlights a given selection.
 ---@param selection selection? The selection to be highlighted.
 M.highlight_selection = function(selection)
-    if not selection or not selection.first_pos or not selection.last_pos then
+    if not selection then
         return
     end
     local namespace = vim.api.nvim_create_namespace("NvimSurround")
-    local first_pos, last_pos = selection.first_pos, selection.last_pos
+
     vim.highlight.range(
         0,
         namespace,
         "NvimSurroundHighlightTextObject",
-        { first_pos[1] - 1, first_pos[2] - 1 },
-        { last_pos[1] - 1, last_pos[2] - 1 },
+        { selection.first_pos[1] - 1, selection.first_pos[2] - 1 },
+        { selection.last_pos[1] - 1, selection.last_pos[2] - 1 },
         { inclusive = true }
     )
     -- Force the screen to highlight the text immediately

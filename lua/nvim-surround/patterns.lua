@@ -110,7 +110,7 @@ M.get_selections = function(offset, str, pattern)
     local left_len = type(left_delimiter) == "string" and #left_delimiter or 0
     local right_len = type(right_delimiter) == "string" and #right_delimiter or 0
     -- If the left or right delimiters are empty, return the equivalent of an empty selection
-    return {
+    local selections = {
         left = {
             first_pos = M.index_to_pos(offset + first_index - left_len - 1),
             last_pos = M.index_to_pos(offset + first_index - 2),
@@ -120,6 +120,16 @@ M.get_selections = function(offset, str, pattern)
             last_pos = M.index_to_pos(offset + last_index - 2),
         },
     }
+    -- Handle special case where the column is invalid
+    if selections.left.last_pos[2] > #buffer.get_line(selections.left.last_pos[1]) then
+        selections.left.last_pos[1] = selections.left.last_pos[1] + 1
+        selections.left.last_pos[2] = 0
+    end
+    if selections.right.last_pos[2] > #buffer.get_line(selections.right.last_pos[1]) then
+        selections.right.last_pos[1] = selections.right.last_pos[1] + 1
+        selections.right.last_pos[2] = 0
+    end
+    return selections
 end
 
 return M
