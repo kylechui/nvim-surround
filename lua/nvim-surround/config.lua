@@ -24,7 +24,7 @@ M.default_opts = {
             end,
             change = {
                 target = function()
-                    return M.get_selections({ char = "(", pattern = "^(.)().-(.)()$" })
+                    return M.get_selections({ char = "(", pattern = "^(. ?)().-( ?.)()$" })
                 end,
             },
         },
@@ -52,7 +52,7 @@ M.default_opts = {
             end,
             change = {
                 target = function()
-                    return M.get_selections({ char = "{", pattern = "^(.)().-(.)()$" })
+                    return M.get_selections({ char = "{", pattern = "^(. ?)().-( ?.)()$" })
                 end,
             },
         },
@@ -80,7 +80,7 @@ M.default_opts = {
             end,
             change = {
                 target = function()
-                    return M.get_selections({ char = "<", pattern = "^(.)().-(.)()$" })
+                    return M.get_selections({ char = "<", pattern = "^(. ?)().-( ?.)()$" })
                 end,
             },
         },
@@ -108,7 +108,7 @@ M.default_opts = {
             end,
             change = {
                 target = function()
-                    return M.get_selections({ char = "[", pattern = "^(.)().-(.)()$" })
+                    return M.get_selections({ char = "[", pattern = "^(. ?)().-( ?.)()$" })
                 end,
             },
         },
@@ -327,8 +327,7 @@ M.get_selection = function(args)
     if args.pattern then
         return require("nvim-surround.patterns").get_selection(args.pattern)
     elseif args.textobject then
-        require("nvim-surround.buffer").set_operator_marks(args.textobject)
-        return require("nvim-surround.utils").get_user_selection(false)
+        return require("nvim-surround.textobjects").get_selection(args.textobject)
     end
 end
 
@@ -358,7 +357,8 @@ end
 ---@return function? @The function to get the delimiters to be added.
 M.get_add = function(char)
     char = require("nvim-surround.utils").get_alias(char)
-    return M.get_opts().delimiters[char] and M.get_opts().delimiters[char].add
+    local key = M.get_opts().delimiters[char] or M.get_opts().delimiters.invalid_key_behavior
+    return key.add
 end
 
 -- Returns the delete key for the surround associated with a given character, if one exists.
@@ -366,7 +366,8 @@ end
 ---@return function? @The function to get the selections to be deleted.
 M.get_delete = function(char)
     char = require("nvim-surround.utils").get_alias(char)
-    return M.get_opts().delimiters[char] and M.get_opts().delimiters[char].delete
+    local key = M.get_opts().delimiters[char] or M.get_opts().delimiters.invalid_key_behavior
+    return key.delete
 end
 
 -- Returns the change key for the surround associated with a given character, if one exists.
@@ -374,7 +375,8 @@ end
 ---@return { target: function, replacement: function? }? @A table holding the target/replacment functions.
 M.get_change = function(char)
     char = require("nvim-surround.utils").get_alias(char)
-    return M.get_opts().delimiters[char] and M.get_opts().delimiters[char].change
+    local key = M.get_opts().delimiters[char] or M.get_opts().delimiters.invalid_key_behavior
+    return key.change
 end
 
 -- Translates the user-provided configuration into the internal form.

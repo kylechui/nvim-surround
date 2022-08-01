@@ -7,10 +7,6 @@ local M = {}
 -- Do nothing.
 M.NOOP = function() end
 
-M.is_quote = function(char)
-    return char == "'" or char == '"' or char == "`"
-end
-
 -- Splits an input string apart by newline characters.
 ---@param input string The input string.
 ---@return string[] @A table that contains the lines, split by the newline character.
@@ -68,54 +64,14 @@ M.get_delimiters = function(char)
     return add and vim.deepcopy(add(char)) or config.get_opts().delimiters.invalid_key_behavior.add(char)
 end
 
--- Gets the coordinates of the start and end of a given selection.
----@return selection? @A table containing the start and end of the selection.
-M.get_user_selection = function(is_visual)
-    -- Determine whether to use visual marks or operator marks
-    local mark1, mark2
-    if is_visual then
-        mark1, mark2 = "<", ">"
-    else
-        mark1, mark2 = "[", "]"
-        buffer.adjust_mark("[")
-        buffer.adjust_mark("]")
-    end
-
-    -- Get the row and column of the first and last characters of the selection
-    local first_position = buffer.get_mark(mark1)
-    local last_position = buffer.get_mark(mark2)
-    if not first_position or not last_position then
-        return nil
-    end
-
-    local selection = {
-        first_pos = first_position,
-        last_pos = last_position,
-    }
-    return selection
-end
-
 -- Gets a selection that contains the left and right surrounding pair.
 ---@param char string A character representing what selection is to be found.
 ---@return selection? @The corresponding selection for the given character.
 M.get_selection = function(char)
-    local selection
-    if not config.get_opts().delimiters[char] then
-        return config.get_opts().delimiters.invalid_key_behavior.find(char)
-    elseif config.get_opts().delimiters[char].find then
+    if config.get_opts().delimiters[char] then
         return config.get_opts().delimiters[char].find(char)
-    else
-        -- Use the correct quotes to surround the arguments for setting the marks
-        local args
-        if char == "'" then
-            args = [["'"]]
-        else
-            args = "'" .. char .. "'"
-        end
-        vim.cmd("silent call v:lua.require'nvim-surround.buffer'.set_operator_marks(" .. args .. ")")
-        selection = M.get_user_selection(false)
     end
-    return selection
+    return config.get_opts().delimiters.invalid_key_behavior.find(char)
 end
 
 -- Gets two selections for the left and right surrounding pair.
@@ -136,14 +92,14 @@ M.get_selections = function(char, pattern)
     end
 
     -- Narrow the "parent selection" down to the left and right surrounds.
+    local selections
     if pattern then
         -- If the pattern exists, use pattern-based methods to narrow down the selection
-        local selections = patterns.get_selections(
+        selections = patterns.get_selections(
             patterns.pos_to_index(selection.first_pos),
             M.join(buffer.get_text(selection)),
             pattern
         )
-        return selections
     else
         -- Get the corresponding delimiter pair for the character
         local delimiters = M.get_delimiters(char)
@@ -151,41 +107,13 @@ M.get_selections = function(char, pattern)
             return nil
         end
 
-        local open_first, open_last, close_first, close_last
-        local curpos = buffer.get_curpos()
-        open_first = buffer.get_mark("[")
-        close_last = buffer.get_mark("]")
-
-        -- If the operatorfunc "fails", return no selection found
-        if not open_first or not close_last then
-            return nil
-        end
-
+        local open_first = selection.first_pos
+        local close_last = selection.last_pos
         -- Use the length of the pair to find the proper selection boundaries
-        local open_line = buffer.get_line(open_first[1])
-        local close_line = buffer.get_line(close_last[1])
-        open_last = { open_first[1], open_first[2] + #delimiters[1][1] - 1 }
-        close_first = { close_last[1], close_last[2] - #delimiters[2][1] + 1 }
-        -- Validate that the pair actually exists at the given selection
-        if
-            open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1]
-            or close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1]
-        then
-            -- If not strictly there, trim the delimiters' whitespace and try again
-            delimiters[1][1] = vim.trim(delimiters[1][1])
-            delimiters[2][1] = vim.trim(delimiters[2][1])
-            open_last = { open_first[1], open_first[2] + #delimiters[1][1] - 1 }
-            close_first = { close_last[1], close_last[2] - #delimiters[2][1] + 1 }
-            -- If still not found, return nil
-            if
-                open_line:sub(open_first[2], open_last[2]) ~= delimiters[1][1]
-                or close_line:sub(close_first[2], close_last[2]) ~= delimiters[2][1]
-            then
-                return nil
-            end
-        end
+        local open_last = { open_first[1], open_first[2] + #delimiters[1][#delimiters[1]] - 1 }
+        local close_first = { close_last[1], close_last[2] - #delimiters[2][#delimiters[2]] + 1 }
 
-        local selections = {
+        selections = {
             left = {
                 first_pos = open_first,
                 last_pos = open_last,
@@ -195,9 +123,8 @@ M.get_selections = function(char, pattern)
                 last_pos = close_last,
             },
         }
-        buffer.set_curpos(curpos)
-        return selections
     end
+    return selections
 end
 
 -- Gets the nearest two selections for the left and right surrounding pair.
@@ -210,77 +137,39 @@ M.get_nearest_selections = function(char, action)
     local chars = config.get_opts().aliases[char] or { char }
     local nearest_selections
     local curpos = buffer.get_curpos()
-    -- Iterate through all possible selections for each aliased character, and
-    -- find the pair that is closest to the cursor position (that also still
-    -- surrounds the cursor)
+    -- Iterate through all possible selections for each aliased character, and find the closest pair
     for _, c in ipairs(chars) do
-        -- If the character is a separator and the next separator is on the same line, jump to it
-        if M.is_quote(c) and vim.fn.searchpos(c, "cnW")[1] == curpos[1] then
-            vim.fn.cursor(vim.fn.searchpos(c, "cnW"))
-        end
-        local cur_selections
-        if config.get_opts().delimiters[c] then
-            cur_selections = action == "change" and config.get_change(c).target(c) or config.get_delete(c)(c)
-        else
-            if action == "change" then
-                cur_selections = config.get_opts().delimiters.invalid_key_behavior.change.target(c)
+        local cur_selections = action == "change" and config.get_change(c).target(c) or config.get_delete(c)(c)
+        if cur_selections then
+            nearest_selections = nearest_selections or cur_selections
+            if buffer.is_inside(curpos, nearest_selections) then
+                -- Handle case where the cursor is inside the nearest selections
+                if
+                    buffer.is_inside(curpos, cur_selections)
+                    and buffer.comes_before(nearest_selections.left.first_pos, cur_selections.left.first_pos)
+                then
+                    nearest_selections = cur_selections
+                end
+            elseif buffer.comes_before(curpos, nearest_selections.left.first_pos) then
+                -- Handle case where the cursor comes before the nearest selections
+                if
+                    buffer.is_inside(curpos, cur_selections)
+                    or buffer.comes_before(cur_selections.left.first_pos, nearest_selections.left.first_pos)
+                then
+                    nearest_selections = cur_selections
+                end
             else
-                cur_selections = config.get_opts().delimiters.invalid_key_behavior.delete(c)
-            end
-        end
-        local n_first = nearest_selections and nearest_selections.left.first_pos
-        local c_first = cur_selections and cur_selections.left.first_pos
-        if c_first then
-            if not n_first then
-                nearest_selections = cur_selections
-            else
-                -- If the cursor is inside in the "nearest" selections, use the right-most selections
-                if buffer.comes_before(c_first, curpos) then
-                    if buffer.comes_before(curpos, n_first) or buffer.comes_before(n_first, c_first) then
-                        nearest_selections = cur_selections
-                    end
-                else -- If the cursor precedes the "nearest" selections, use the left-most selections
-                    if buffer.comes_before(curpos, n_first) and buffer.comes_before(c_first, n_first) then
-                        nearest_selections = cur_selections
-                    end
+                -- Handle case where the cursor comes after the nearest selections
+                if
+                    buffer.is_inside(curpos, cur_selections)
+                    or buffer.comes_before(nearest_selections.right.last_pos, cur_selections.right.last_pos)
+                then
+                    nearest_selections = cur_selections
                 end
             end
         end
         -- Reset the cursor position
         buffer.set_curpos(curpos)
-    end
-    -- If nothing is found, search backwards for the selections that end the latest
-    if not nearest_selections then
-        for _, c in ipairs(chars) do
-            -- Jump to the previous instance of this delimiter
-            vim.fn.searchpos(vim.trim(c), "bW")
-            local cur_selections
-            if config.get_opts().delimiters[c] then
-                cur_selections = action == "change" and config.get_change(c).target(c) or config.get_delete(c)(c)
-            else
-                if action == "change" then
-                    cur_selections = config.get_opts().delimiters.invalid_key_behavior.change.target(c)
-                else
-                    cur_selections = config.get_opts().delimiters.invalid_key_behavior.delete(c)
-                end
-            end
-            local n_last = nearest_selections and nearest_selections.right.last_pos
-            local c_last = cur_selections and cur_selections.right.last_pos
-            if c_last then
-                -- If the current selections is for a quote character and not on the same line, ignore it
-                if not (M.is_quote(c) and c_last[1] ~= curpos[1]) then
-                    if not n_last then
-                        nearest_selections = cur_selections
-                    else
-                        if buffer.comes_before(n_last, c_last) then
-                            nearest_selections = cur_selections
-                        end
-                    end
-                end
-            end
-            -- Reset the cursor position
-            buffer.set_curpos(curpos)
-        end
     end
     -- If a pair of selections is found, jump to the beginning of the left one
     if nearest_selections then
