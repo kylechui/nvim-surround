@@ -44,7 +44,7 @@ M.get_selection = function(find)
         local cur_text = table.concat(buffer.get_lines(1, lnum - 1), "\n")
         -- Find the character positions of the pattern in the file (before the cursor)
         b_first, b_last = buffer_text:find(find, #cur_text + 1)
-        if b_first and b_first < cursor_index then
+        if b_first and b_first <= cursor_index then
             break
         end
     end
