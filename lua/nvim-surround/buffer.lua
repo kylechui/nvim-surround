@@ -155,6 +155,7 @@ end
 ---@param pos integer[] The position to be inserted at.
 ---@param text string[] The text to be added.
 M.insert_text = function(pos, text)
+    pos[2] = math.min(pos[2], #M.get_line(pos[1]) + 1)
     vim.api.nvim_buf_set_text(0, pos[1] - 1, pos[2] - 1, pos[1] - 1, pos[2] - 1, text)
 end
 
