@@ -136,7 +136,7 @@ end
 
 -- Returns whether a position is contained within a pair of selections, inclusive.
 ---@param pos integer[] The given position.
----@selection selections selections The given selections
+---@param selections selections The given selections
 ---@return boolean @Whether the position is contained within the selections.
 M.is_inside = function(pos, selections)
     return M.comes_before(selections.left.first_pos, pos) and M.comes_before(pos, selections.right.last_pos)

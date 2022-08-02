@@ -233,7 +233,7 @@ M.default_opts = {
                 end
             end,
             find = function()
-                M.get_selection({ textobject = "t" })
+                return M.get_selection({ textobject = "t" })
             end,
             delete = function()
                 return M.get_selections({ char = "T", pattern = "^(%b<>)().-(%b<>)()$" })
