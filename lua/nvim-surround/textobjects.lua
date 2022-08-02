@@ -13,7 +13,7 @@ M.get_selection = function(char)
     -- Smart quotes feature; jump to the next quote if it is on the same line
     local curpos = buffer.get_curpos()
     if M.is_quote(char) and vim.fn.searchpos(char, "cnW")[1] == curpos[1] then
-        vim.fn.cursor(vim.fn.searchpos(char, "cnW"))
+        vim.fn.searchpos(char, "cW")
     end
 
     buffer.set_operator_marks(char)

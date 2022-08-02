@@ -144,7 +144,7 @@ M.delete_surround = function(args)
     end
 
     -- Get the selections to delete
-    local selections = utils.get_nearest_selections(args.del_char, "delete")
+    local selections = config.get_delete(args.del_char)(args.del_char)
 
     if selections then
         -- Delete the right selection first to ensure selection positions are correct
@@ -154,6 +154,7 @@ M.delete_surround = function(args)
             selections.left.first_pos[1],
             selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
         )
+        buffer.set_curpos(selections.left.first_pos)
     end
 
     buffer.reset_curpos(args.curpos)
@@ -173,12 +174,13 @@ M.change_surround = function(args)
     end
 
     -- Get the selections to change
-    local selections = utils.get_nearest_selections(args.del_char, "change")
+    local selections = config.get_change(args.del_char).target(args.del_char)
     if selections then
         local delimiters = args.add_delimiters()
         -- Change the right selection first to ensure selection positions are correct
         buffer.change_selection(selections.right, delimiters[2])
         buffer.change_selection(selections.left, delimiters[1])
+        buffer.set_curpos(selections.left.first_pos)
     end
 
     buffer.reset_curpos(args.curpos)
@@ -265,7 +267,7 @@ M.change_callback = function()
         local del_char = utils.get_alias(utils.get_char())
         local change = config.get_change(del_char)
         -- Get the selections to change
-        local selections = utils.get_nearest_selections(del_char, "change")
+        local selections = config.get_change(del_char).target(del_char)
         if not selections then
             return
         end

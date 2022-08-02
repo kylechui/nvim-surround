@@ -168,7 +168,7 @@ M.default_opts = {
                 end,
             },
         },
-        ["i"] = {
+        ["i"] = { -- TODO: Add find/delete/change functions
             add = function()
                 local left_delimiter = M.get_input("Enter the left delimiter: ")
                 if left_delimiter then
@@ -354,7 +354,7 @@ end
 
 -- Returns the add key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
----@return function? @The function to get the delimiters to be added.
+---@return fun(): string[][]? @The function to get the delimiters to be added.
 M.get_add = function(char)
     char = require("nvim-surround.utils").get_alias(char)
     local key = M.get_opts().delimiters[char] or M.get_opts().delimiters.invalid_key_behavior
@@ -363,7 +363,7 @@ end
 
 -- Returns the delete key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
----@return function? @The function to get the selections to be deleted.
+---@return fun(string?): selections? @The function to get the selections to be deleted.
 M.get_delete = function(char)
     char = require("nvim-surround.utils").get_alias(char)
     local key = M.get_opts().delimiters[char] or M.get_opts().delimiters.invalid_key_behavior
