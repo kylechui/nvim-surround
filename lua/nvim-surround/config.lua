@@ -334,7 +334,7 @@ end
 -- Gets a pair of selections from the buffer based on some heuristic.
 ---@param args { char: string?, pattern: string? }
 M.get_selections = function(args)
-    if args.pattern then
+    if args.char and args.pattern then
         return require("nvim-surround.utils").get_selections(args.char, args.pattern)
     end
 end
@@ -354,7 +354,7 @@ end
 
 -- Returns the add key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
----@return fun(): string[][]? @The function to get the delimiters to be added.
+---@return fun(string?): string[][]? @The function to get the delimiters to be added.
 M.get_add = function(char)
     char = require("nvim-surround.utils").get_alias(char)
     local key = M.get_opts().delimiters[char] or M.get_opts().delimiters.invalid_key_behavior
