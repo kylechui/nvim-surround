@@ -11,9 +11,16 @@ CONTENTS                                              *nvim-surround.contents*
         2.1. Adding delimiter pairs ..................... |nvim-surround.add|
         2.2. Deleting delimiter pairs ................ |nvim-surround.delete|
         2.3. Changing delimiter pairs ................ |nvim-surround.change|
-        2.4. More mappings ......................... |nvim-surround.mappings|
-        2.5. Default pairs ............................ |nvim-surround.pairs|
-        2.6. Aliases ................................ |nvim-surround.aliases|
+        2.4. More mappings .................... |nvim-surround.more_mappings|
+        2.5. Default pairs .................... |nvim-surround.default_pairs|
+        2.6. Aliasing .............................. |nvim-surround.aliasing|
+        2.7. Jumps .................................... |nvim-surround.jumps|
+    3. Configuration .......................... |nvim-surround.configuration|
+        3.1. keymaps ................................ |nvim-surround.keymaps|
+        3.2. delimiters .......................... |nvim-surround.delimiters|
+        3.3. aliases ................................ |nvim-surround.aliases|
+        3.4. highlight_motion .............. |nvim-surround.highlight_motion|
+        3.5. move_cursor ........................ |nvim-surround.move_cursor|
 
 ================================================================================
 1. Introduction                                   *nvim-surround.introduction*
@@ -86,7 +93,7 @@ example, `cs'"` means "change the surrounding single quotes to double quotes".
     `some text*`                cs`}            {some text}
 
 --------------------------------------------------------------------------------
-2.4. Additional mappings                              *nvim-surround.mappings*
+2.4. More mappings                               *nvim-surround.more_mappings*
 
 For each of the additive mappings, there are a few variants:
 
@@ -98,13 +105,15 @@ new lines.
 The *<C-g>S* insert-mode operator is analogous to |<C-g>s|, but adds the
 delimiter pair on new lines.
 
-For visual-mode mappings, the type of visual mode determines how the surround
-behaves. If you are in |linewise-visual| mode, then the delimiter pair is
-added to the buffer on new lines. If you are in |charwise-visual| mode, then
-the delimiter pair is added around the visual block, once per line.
+If the cursor is in |charwise-visual| mode, there is an extra mapping *gS* for
+adding the delimiters on new lines. For other visual-mode mappings, the type
+of visual mode determines how the surround behaves. If you are in
+|linewise-visual| mode, then the delimiter pair is added to the buffer on new
+lines. If you are in |blockwise-visual| mode, then the delimiter pair is added
+around the visual block, once per line.
 
 --------------------------------------------------------------------------------
-2.5. Default pairs                                       *nvim-surround.pairs*
+2.5. Default pairs                               *nvim-surround.default_pairs*
 
 We've looked at a few of the built-in surround actions, but here we'll go a
 bit more in-depth. For all open/close pairs, e.g. `()`, adding a surround
@@ -173,7 +182,7 @@ changing (via `csf`).
 TODO: Document usage for `i` key
 
 --------------------------------------------------------------------------------
-2.6. Aliases                                           *nvim-surround.aliases*
+2.6. Aliasing                                         *nvim-surround.aliasing*
 
 In |nvim-surround|, one can alias a character to "stand in for" one or more
 other characters. If the alias is just a single character, then they can be
@@ -208,6 +217,119 @@ aliases modify the nearest such pair.
 
 Note: Tabular aliases cannot be used to add surrounding pairs, e.g. `ysa)q` is
 invalid, since it's ambiguous which pair should be added.
+
+--------------------------------------------------------------------------------
+2.7. Jumps                                               *nvim-surround.jumps*
+
+If the cursor is not located inside a surrounding pair, it can jump to the
+"nearest" pair. When jumping, |nvim-surround| always prefers
+* pairs that surround the cursor, before
+* pairs that occur after the cursor, before
+* pairs that occur before the cursor.
+
+    Old text                    Command         New text ~
+    "hello"* 'world'            dsq             "hello" world
+    "hello" world*              csqB            {hello} world
+    *some "'nested' quotes"     dsq             some 'nested' quotes
+    "'nested' quotes" t*ext     dsq             'nested' quotes text
+
+Note: |nvim-surround| jumps across lines to find the next/previous surrounding
+pair, except for quote characters. This is done to match existing behavior for
+the `a"` text-object.
+
+================================================================================
+3. Configuration                                 *nvim-surround.configuration*
+
+To configure this plugin, call `require("nvim-surround").setup()` or
+`require("nvim-surround").buffer_setup()`. The former configures "global"
+options that are present in every buffer, while the latter configures
+buffer-local options that override the global options. This is particularly
+useful for setting up language-specific surrounds, i.e. by calling
+`require("nvim-surround").buffer_setup()` in a `ftplugin/` file.
+
+The setup functions are strictly additive, so only the keys that are to be
+modified need to be provided. However, to disable any default behavior, the
+corresponding value needs to explicitly be set to `false`.
+
+Both functions take a table as an argument, full of configuration options.
+>
+    require("nvim-surround").setup({
+        keymaps =           -- Defines plugin keymaps,
+        delimiters =        -- Defines delimiter keys and behavior,
+        aliases =           -- Defines aliases,
+        highlight_motion =  -- Defines highlight behavior,
+        move_cursor =       -- Defines cursor behavior,
+    })
+<
+--------------------------------------------------------------------------------
+3.1. keymaps                                           *nvim-surround.keymaps*
+
+The `keymaps` table defines the keymaps used to perform surround actions. The
+general rule is that if the key ends in "_line", the delimiter pair is added
+on new lines. If the key ends in "_cur", the surround is performed around the
+current line.
+
+The default configuration is as follows:
+>
+    keymaps = {
+        insert = "<C-g>s",
+        insert_line = "<C-g>S",
+        normal = "ys",
+        normal_cur = "yss",
+        normal_line = "yS",
+        normal_cur_line = "ySS",
+        visual = "S",
+        visual_line = "gS",
+        delete = "ds",
+        change = "cs",
+    },
+<
+--------------------------------------------------------------------------------
+3.2. delimiters                                     *nvim-surround.delimiters*
+
+First, a few notes about |nvim-surround|:
+* Multi-line strings  tables of strings, where
+  each element of the table is a line of the multi-line string.
+* D
+
+
+
+The `delimiters` table associates character keys with "delimiter tables", each
+of which contain the following keys:
+
+    add:~
+        A function that returns the delimiter pair to be added to the buffer.
+        For example, consider the function for adding parentheses:
+>
+        [")"] = {
+            add = function()
+                return { { "(" }, { ")" } }
+            end,
+        }
+<
+        The function must return a pair of lists of strings. Anything can be
+        called in the functions; consider the default for `f`:
+>
+        local config = require("nvim-surround.config")
+        add = function()
+            local result = config.get_input("Enter the function name: ")
+            if result then
+                return { { result .. "(" }, { ")" } }
+            end
+        end,
+<
+        The user is queried for the function name, and that is used to create
+        the surrounding pair at runtime. For "static" surrounds that are not
+        evaluated at runtime, the function can be omitted and the `add` key
+        can directly take on the value of the delimiter pair. Furthermore,
+        tables with just one string can be replaced by the string itself. For
+        example, the following configuration also adds parentheses:
+>
+        [")"] = {
+            add = { "(", ")" },
+        }
+<
+--------------------------------------------------------------------------------
 
                                                        *nvim-surround.setup()*
 nvim-surround.setup({opts})
