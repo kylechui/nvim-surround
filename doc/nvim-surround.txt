@@ -179,7 +179,13 @@ pair of parentheses.
 Note: Just like with HTML tags, a replacement character is unnecessary when
 changing (via `csf`).
 
-TODO: Document usage for `i` key
+Finally, we have a "insert" key, denoted by `i`. It queries the user for what
+should go on the left and right hand sides of a selection, and adds the
+delimiter pair to the buffer. Currently, deletions and changes are not
+supported.
+
+    Old text                    Command         New text ~
+    inner text                  yssi/<CR>\      /inner text\
 
 --------------------------------------------------------------------------------
 2.6. Aliasing                                         *nvim-surround.aliasing*
@@ -293,9 +299,9 @@ First, a few notes about |nvim-surround|:
   a line of the multi-line string
 * Delimiters are pairs of multi-line strings
 * A "position" in the buffer is a pair of integers representing { lnum, col }
-* A "selection" is a table of positions, assigned to the keys `first_pos` and
+* A "selection" is a pair of positions, assigned to the keys `first_pos` and
   `last_pos`
-* A pair of "selections" is a table of selections, assigned to the keys `left`
+* A pair of "selections" is a pair of selections, assigned to the keys `left`
   and `right`
 
 For example, the HTML tag for the buffer
@@ -356,7 +362,7 @@ of which contain the following keys:
     find: ~
         A function that returns the "parent selection" for a surrounding pair.
         The selection returned should contain the surrounding pair and little
-        more, as it is used by the `delete` and `change` keys to determine
+        else, as it is used by the `delete` and `change` keys to determine
         what to modify.
 
     delete: ~
