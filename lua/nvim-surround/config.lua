@@ -283,11 +283,27 @@ M.default_opts = {
             },
         },
         invalid_key_behavior = {
-            add = function() end,
-            find = function() end,
-            delete = function() end,
+            add = function(char)
+                return { { char }, { char } }
+            end,
+            find = function(char)
+                return M.get_selection({
+                    pattern = vim.pesc(char) .. ".-" .. vim.pesc(char),
+                })
+            end,
+            delete = function(char)
+                return M.get_selections({
+                    char = char,
+                    pattern = "^(.)().-(.)()$",
+                })
+            end,
             change = {
-                target = function() end,
+                target = function(char)
+                    return M.get_selections({
+                        char = char,
+                        pattern = "^(.)().-(.)()$",
+                    })
+                end,
             },
         },
     },

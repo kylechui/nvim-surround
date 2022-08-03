@@ -388,14 +388,31 @@ of which contain the following keys:
 There is a special key in the `delimiters` table, `invalid_key_behavior`, that
 defines how |nvim-surround| behaves when a given key in the delimiter table is
 omitted. It takes the same form as all other delimiter tables. The default
-behavior is to do nothing:
+behavior is to treat the character literally, and add/modify the surrounding
+pair:
 >
     invalid_key_behavior = {
-        add = function() end,
-        find = function() end,
-        delete = function() end,
+        add = function(char)
+            return { { char }, { char } }
+        end,
+        find = function(char)
+            return M.get_selection({
+                pattern = vim.pesc(char) .. ".-" .. vim.pesc(char),
+            })
+        end,
+        delete = function(char)
+            return M.get_selections({
+                char = char,
+                pattern = "^(.)().-(.)()$",
+            })
+        end,
         change = {
-            target = function() end,
+            target = function(char)
+                return M.get_selections({
+                    char = char,
+                    pattern = "^(.)().-(.)()$",
+                })
+            end,
         },
     },
 <
