@@ -20,7 +20,7 @@ CONTENTS                                              *nvim-surround.contents*
         3.2. Delimiters ................... |nvim-surround.config.delimiters|
         3.3. Helper Functions ................ |nvim-surround.config.helpers|
         3.4. Aliases ......................... |nvim-surround.config.aliases|
-        3.5. Highlights ............. |nvim-surround.config.highlight_motion|
+        3.5. Highlights .................... |nvim-surround.config.highlight|
         3.6. Cursor ...................... |nvim-surround.config.move_cursor|
 
 ================================================================================
@@ -260,11 +260,11 @@ corresponding value needs to explicitly be set to `false`.
 Both functions take a table as an argument, full of configuration options.
 >
     require("nvim-surround").setup({
-        keymaps =           -- Defines plugin keymaps,
-        delimiters =        -- Defines delimiter keys and behavior,
-        aliases =           -- Defines aliases,
-        highlight_motion =  -- Defines highlight behavior,
-        move_cursor =       -- Defines cursor behavior,
+        keymaps =       -- Defines plugin keymaps,
+        delimiters =    -- Defines delimiter keys and behavior,
+        aliases =       -- Defines aliases,
+        highlight =     -- Defines highlight behavior,
+        move_cursor =   -- Defines cursor behavior,
     })
 <
 --------------------------------------------------------------------------------
@@ -512,12 +512,12 @@ configuration is
 <
 
 --------------------------------------------------------------------------------
-3.5. Highlights                        *nvim-surround.config.highlight_motion*
+3.5. Highlights                               *nvim-surround.config.highlight*
 
 When adding a new delimiter pair to the buffer in normal mode, one can
 optionally highlight the selection to be surrounded. Similarly, when changing
 a surrounding pair, one can optionally highlight the pair to be replaced. The
-`highlight_motion` table takes the following keys:
+`highlight` table takes the following keys:
 
     duration: ~
         The amount of time (in ms) to highlight the selection(s) before

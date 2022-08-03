@@ -16,7 +16,7 @@
 ---@field keymaps table<string, boolean|string>
 ---@field delimiters table<string, delimiters>
 ---@field aliases table<string, boolean|string|string[]>
----@field highlight_motion { duration: boolean|integer }
+---@field highlight { duration: boolean|integer }
 ---@field move_cursor boolean|string
 
 local buffer = require("nvim-surround.buffer")
@@ -213,11 +213,11 @@ M.normal_callback = function(mode)
         return
     end
     -- Highlight the range and set a timer to clear it if necessary
-    local highlight_motion = config.get_opts().highlight_motion
-    if highlight_motion.duration then
+    local highlight = config.get_opts().highlight
+    if highlight.duration then
         buffer.highlight_selection(selection)
-        if highlight_motion.duration > 0 then
-            vim.defer_fn(buffer.clear_highlights, highlight_motion.duration)
+        if highlight.duration > 0 then
+            vim.defer_fn(buffer.clear_highlights, highlight.duration)
         end
     end
     -- Get a character input and the delimiters (if not cached)
@@ -273,12 +273,12 @@ M.change_callback = function()
         end
 
         -- Highlight the range and set a timer to clear it if necessary
-        local highlight_motion = config.get_opts().highlight_motion
-        if highlight_motion.duration then
+        local highlight = config.get_opts().highlight
+        if highlight.duration then
             buffer.highlight_selection(selections.left)
             buffer.highlight_selection(selections.right)
-            if highlight_motion.duration > 0 then
-                vim.defer_fn(buffer.clear_highlights, highlight_motion.duration)
+            if highlight.duration > 0 then
+                vim.defer_fn(buffer.clear_highlights, highlight.duration)
             end
         end
 

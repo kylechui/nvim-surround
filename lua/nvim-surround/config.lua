@@ -315,7 +315,7 @@ M.default_opts = {
         ["q"] = { '"', "'", "`" },
         ["s"] = { "}", "]", ")", ">", '"', "'", "`" },
     },
-    highlight_motion = {
+    highlight = {
         duration = 0,
     },
     move_cursor = "begin",
@@ -396,6 +396,15 @@ end
 -- Translates the user-provided configuration into the internal form.
 ---@param opts options? The user-provided options.
 M.translate_opts = function(opts)
+    -- SOFT DEPRECATION WARNINGS
+    ---@diagnostic disable-next-line: undefined-field
+    if opts and opts.highlight_motion then
+        local highlight_warning = {
+            "The `highlight_motion` table has been renamed to `highlight`.",
+            "See :h nvim-surround.config.highlight for details",
+        }
+        vim.notify_once(table.concat(highlight_warning, "\n"), vim.log.levels.ERROR)
+    end
     if not (opts and opts.delimiters) then
         return opts
     end
@@ -655,7 +664,7 @@ M.setup = function(user_opts)
     -- Configure global keymaps
     M.set_keymaps(false)
     -- Configure highlight group, if necessary
-    if M.user_opts.highlight_motion.duration then
+    if M.user_opts.highlight.duration then
         vim.cmd([[
             highlight default link NvimSurroundHighlightTextObject Visual
         ]])
