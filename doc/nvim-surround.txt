@@ -165,8 +165,7 @@ change the surrouding tag's type (leaving the attributes alone), while `csT`
 will change the entirety of the surrounding tag's contents.
 
 Note: When changing surrounding tags via `cst` or `csT`, a second replacement
-character is unnecessary. This is explained later in [TODO: link to
-change.replacement]
+character is unnecessary. See |nvim-surround.config.delimiters|.
 
 Next are function calls, denoted by the key `f`. By default, they match a Lua
 pattern consisting of some non-whitespace characters, followed by a balanced
