@@ -171,11 +171,9 @@ M.default_opts = {
         ["i"] = { -- TODO: Add find/delete/change functions
             add = function()
                 local left_delimiter = M.get_input("Enter the left delimiter: ")
-                if left_delimiter then
-                    local right_delimiter = M.get_input("Enter the right delimiter: ")
-                    if right_delimiter then
-                        return { { left_delimiter }, { right_delimiter } }
-                    end
+                local right_delimiter = left_delimiter and M.get_input("Enter the right delimiter: ")
+                if right_delimiter then
+                    return { { left_delimiter }, { right_delimiter } }
                 end
             end,
             find = function() end,
@@ -387,6 +385,22 @@ M.translate_opts = function(opts)
     end
     local invalid = opts.delimiters.invalid_key_behavior or M.default_opts.delimiters.invalid_key_behavior
     for char, val in pairs(opts.delimiters) do
+        -- SOFT DEPRECATION WARNINGS
+        if char == "pairs" or char == "separators" then
+            local delimiter_warning = {
+                "The `pairs` and `separators` tables have been deprecated; store surrounds",
+                "directly in `delimiters`. See :h nvim-surround.config.delimiters for details.",
+            }
+            vim.notify_once(table.concat(delimiter_warning, "\n"), vim.log.levels.ERROR)
+        end
+        if vim.tbl_islist(val) then
+            local add_warning = {
+                "The old configuration for defining surrounds has been deprecated; see",
+                ":h nvim-surround.config.delimiters for details.",
+            }
+            vim.notify_once(table.concat(add_warning, "\n"), vim.log.levels.ERROR)
+        end
+
         -- Validate that the delimiter has not been disabled
         if val then
             local add, find, delete, change = val.add, val.find, val.delete, val.change
