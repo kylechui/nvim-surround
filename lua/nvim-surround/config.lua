@@ -265,10 +265,10 @@ M.default_opts = {
                 end
             end,
             find = function()
-                return M.get_selection({ pattern = "[%w_:.->]+%b()" })
+                return M.get_selection({ pattern = "[%w%-_:.>]+%b()" })
             end,
             delete = function()
-                return M.get_selections({ char = "f", pattern = "^([%w_:.->]+%()().-(%))()$" })
+                return M.get_selections({ char = "f", pattern = "^([%w%-_:.>]+%()().-(%))()$" })
             end,
             change = {
                 target = function()
