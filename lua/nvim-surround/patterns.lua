@@ -119,7 +119,7 @@ M.get_selections = function(offset, str, pattern)
         return nil
     end
     -- Validate that the second and fourth match groups are empty
-    if type(first_index) ~= "integer" or type(last_index) ~= "integer" then
+    if type(first_index) ~= "number" or type(last_index) ~= "number" then
         vim.notify(
             "The second and last capture groups must be empty, see :h nvim-surround.config.get_selections().",
             vim.log.levels.ERROR
@@ -132,6 +132,8 @@ M.get_selections = function(offset, str, pattern)
     local right_len = type(right_delimiter) == "string" and #right_delimiter or 0
     -- If the left or right delimiters are empty, return the equivalent of an empty selection
     local selections = {
+        ---@cast first_index integer
+        ---@cast last_index integer
         left = {
             first_pos = M.index_to_pos(offset + first_index - left_len - 1),
             last_pos = M.index_to_pos(offset + first_index - 2),

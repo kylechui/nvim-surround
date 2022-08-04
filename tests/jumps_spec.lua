@@ -196,7 +196,7 @@ describe("jumps", function()
 
     it("has intended behavior for single-character delimiter pairs", function()
         require("nvim-surround").buffer_setup({
-            delimiters = {
+            surrounds = {
                 ["*"] = {
                     find = "%*.-%*",
                     delete = "^(.)().-(.)()$",
