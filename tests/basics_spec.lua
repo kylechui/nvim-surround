@@ -117,6 +117,34 @@ describe("nvim-surround", function()
         check_lines({ "()" })
     end)
 
+    it("properly handles whitespace for open/close pairs", function()
+        set_lines({ "sample_text" })
+        vim.cmd("normal ysiw}")
+        set_lines({ "{sample_text}" })
+
+        set_lines({ "sample_text" })
+        vim.cmd("normal ysiw{")
+        set_lines({ "{ sample_text }" })
+
+        set_lines({ "({ sample_text })" })
+        vim.cmd("normal ds{")
+        check_lines({ "(sample_text)" })
+
+        set_lines({ "({sample_text})" })
+        vim.cmd("normal ds{")
+        check_lines({ "(sample_text)" })
+
+        set_lines({ "({sample_text })" })
+        vim.cmd("normal ds{")
+        check_lines({ "(sample_text)" })
+
+        set_lines({ "({ sample_text })" })
+        vim.cmd("normal ds}")
+        check_lines({ "( sample_text )" })
+        vim.cmd("normal cs()")
+        check_lines({ "(sample_text)" })
+    end)
+
     it("can surround charwise visual selections", function()
         set_lines({ "this is", "a full", "sentence" })
         set_curpos({ 1, 2 })
