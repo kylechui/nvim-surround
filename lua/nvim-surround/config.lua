@@ -13,7 +13,7 @@ M.default_opts = {
         delete = "ds",
         change = "cs",
     },
-    delimiters = {
+    surrounds = {
         ["("] = {
             add = { "( ", " )" },
             find = function()
@@ -371,7 +371,7 @@ end
 ---@return fun(string?): string[][]? @The function to get the delimiters to be added.
 M.get_add = function(char)
     char = require("nvim-surround.utils").get_alias(char)
-    local key = M.get_opts().delimiters[char] or M.get_opts().delimiters.invalid_key_behavior
+    local key = M.get_opts().surrounds[char] or M.get_opts().surrounds.invalid_key_behavior
     return key.add
 end
 
@@ -380,7 +380,7 @@ end
 ---@return fun(string?): selections? @The function to get the selections to be deleted.
 M.get_delete = function(char)
     char = require("nvim-surround.utils").get_alias(char)
-    local key = M.get_opts().delimiters[char] or M.get_opts().delimiters.invalid_key_behavior
+    local key = M.get_opts().surrounds[char] or M.get_opts().surrounds.invalid_key_behavior
     return key.delete
 end
 
@@ -389,7 +389,7 @@ end
 ---@return { target: function, replacement: function? }? @A table holding the target/replacment functions.
 M.get_change = function(char)
     char = require("nvim-surround.utils").get_alias(char)
-    local key = M.get_opts().delimiters[char] or M.get_opts().delimiters.invalid_key_behavior
+    local key = M.get_opts().surrounds[char] or M.get_opts().surrounds.invalid_key_behavior
     return key.change
 end
 
@@ -405,16 +405,16 @@ M.translate_opts = function(opts)
         }
         vim.notify_once(table.concat(highlight_warning, "\n"), vim.log.levels.ERROR)
     end
-    if not (opts and opts.delimiters) then
+    if not (opts and opts.surrounds) then
         return opts
     end
-    local invalid = opts.delimiters.invalid_key_behavior or M.default_opts.delimiters.invalid_key_behavior
-    for char, val in pairs(opts.delimiters) do
+    local invalid = opts.surrounds.invalid_key_behavior or M.default_opts.surrounds.invalid_key_behavior
+    for char, val in pairs(opts.surrounds) do
         -- SOFT DEPRECATION WARNINGS
         if char == "pairs" or char == "separators" then
             local delimiter_warning = {
-                "The `pairs` and `separators` tables have been deprecated; store surrounds",
-                "directly in `delimiters`. See :h nvim-surround.config.delimiters for details.",
+                "The `pairs` and `separators` tables have been deprecated; configuration for surrounds",
+                "goes in `surrounds`. See :h nvim-surround.config.delimiters for details.",
             }
             vim.notify_once(table.concat(delimiter_warning, "\n"), vim.log.levels.ERROR)
         end
@@ -431,16 +431,16 @@ M.translate_opts = function(opts)
             local add, find, delete, change = val.add, val.find, val.delete, val.change
             -- Ensure that all necessary keys are present
             if not add then
-                opts.delimiters[char].add = invalid.add
+                opts.surrounds[char].add = invalid.add
             end
             if not find then
-                opts.delimiters[char].find = invalid.find
+                opts.surrounds[char].find = invalid.find
             end
             if not delete then
-                opts.delimiters[char].delete = invalid.delete
+                opts.surrounds[char].delete = invalid.delete
             end
             if not (change and change.target) then
-                opts.delimiters[char].change = { target = invalid.change.target }
+                opts.surrounds[char].change = { target = invalid.change.target }
             end
 
             -- Handle `add` key translation
@@ -453,7 +453,7 @@ M.translate_opts = function(opts)
                     add[2] = { add[2] }
                 end
                 -- Wrap the delimiter pair in a function
-                opts.delimiters[char].add = function()
+                opts.surrounds[char].add = function()
                     return add
                 end
             end
@@ -461,7 +461,7 @@ M.translate_opts = function(opts)
             -- Handle `find` key translation
             if type(find) == "string" then
                 -- Treat the string as a Lua pattern, and find the selection
-                opts.delimiters[char].find = function()
+                opts.surrounds[char].find = function()
                     return require("nvim-surround.patterns").get_selection(find)
                 end
             end
@@ -469,7 +469,7 @@ M.translate_opts = function(opts)
             -- Handle `delete` key translation
             if type(delete) == "string" then
                 -- Wrap delete in a function
-                opts.delimiters[char].delete = function()
+                opts.surrounds[char].delete = function()
                     return require("nvim-surround.utils").get_selections(char, delete)
                 end
             end
@@ -478,7 +478,7 @@ M.translate_opts = function(opts)
             local target, replacement = change and change.target, change and change.replacement
             -- Wrap target in a function
             if type(target) == "string" then
-                opts.delimiters[char].change.target = function()
+                opts.surrounds[char].change.target = function()
                     return require("nvim-surround.utils").get_selections(char, target)
                 end
             end
@@ -492,7 +492,7 @@ M.translate_opts = function(opts)
                     replacement[2] = { replacement[2] }
                 end
                 -- Wrap the delimiter pair in a function
-                opts.delimiters[char].change.replacement = function()
+                opts.surrounds[char].change.replacement = function()
                     return replacement
                 end
             end

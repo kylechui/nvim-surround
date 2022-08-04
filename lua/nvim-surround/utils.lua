@@ -61,17 +61,17 @@ M.get_delimiters = function(char)
     -- Get the function for adding the delimiters, if it exists
     local add = config.get_add(char)
 
-    return add and vim.deepcopy(add(char)) or config.get_opts().delimiters.invalid_key_behavior.add(char)
+    return add and vim.deepcopy(add(char)) or config.get_opts().surrounds.invalid_key_behavior.add(char)
 end
 
 -- Gets a selection that contains the left and right surrounding pair.
 ---@param char string A character representing what selection is to be found.
 ---@return selection? @The corresponding selection for the given character.
 M.get_selection = function(char)
-    if config.get_opts().delimiters[char] then
-        return config.get_opts().delimiters[char].find(char)
+    if config.get_opts().surrounds[char] then
+        return config.get_opts().surrounds[char].find(char)
     end
-    return config.get_opts().delimiters.invalid_key_behavior.find(char)
+    return config.get_opts().surrounds.invalid_key_behavior.find(char)
 end
 
 -- Gets two selections for the left and right surrounding pair.

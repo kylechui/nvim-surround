@@ -6,7 +6,7 @@
 ---@field left selection?
 ---@field right selection?
 
----@class delimiters
+---@class surround
 ---@field add function
 ---@field find function
 ---@field delete function
@@ -14,7 +14,7 @@
 
 ---@class options
 ---@field keymaps table<string, boolean|string>
----@field delimiters table<string, delimiters>
+---@field surrounds table<string, surround>
 ---@field aliases table<string, boolean|string|string[]>
 ---@field highlight { duration: boolean|integer }
 ---@field move_cursor boolean|string

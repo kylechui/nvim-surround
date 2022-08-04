@@ -17,7 +17,7 @@ CONTENTS                                              *nvim-surround.contents*
         2.7. Jumps .................................... |nvim-surround.jumps|
     3. Configuration .......................... |nvim-surround.configuration|
         3.1. Keymaps ......................... |nvim-surround.config.keymaps|
-        3.2. Delimiters ................... |nvim-surround.config.delimiters|
+        3.2. Surrounds ..................... |nvim-surround.config.surrounds|
         3.3. Helper Functions ................ |nvim-surround.config.helpers|
         3.4. Aliases ......................... |nvim-surround.config.aliases|
         3.5. Highlights .................... |nvim-surround.config.highlight|
@@ -148,10 +148,10 @@ Changing surrounding pairs exhibits similar behaviors.
     (sa*mple_text)              cs((            ( sample_text )
     (sa*mple_text)              cs(]            [sample_text]
 
-There are also a handful of built-in delimiter pairs that are more complex.
-First up we have HTML tags, which use the key `t` or `T`. The user is then
-queried for the tag type/attributes, after which they hit <CR> to create the
-surrounding pair.
+There are also a handful of built-in surrounds that are more complex. First up
+we have HTML tags, which use the key `t` or `T`. The user is then queried for
+the tag type/attributes, after which they hit <CR> to create the surrounding
+pair.
 
     Old text                    Command         New text ~
     div cont*ents               ysstdiv         <div>div contents</div>
@@ -291,7 +291,7 @@ The default configuration is as follows:
     },
 <
 --------------------------------------------------------------------------------
-3.2. Delimiters                              *nvim-surround.config.delimiters*
+3.2. Surrounds                                *nvim-surround.config.surrounds*
 
 First, a few notes about |nvim-surround|:
 * All indices are inclusive
@@ -324,8 +324,8 @@ would have the corresponding selections
         }
     }
 <
-The `delimiters` table associates character keys with "delimiter tables", each
-of which contain the following keys:
+The `surrounds` table associates character keys with "surrounds", each of
+which is a table containing the following keys:
 
     add: ~
         A function that returns the delimiter pair to be added to the buffer.
@@ -385,7 +385,7 @@ of which contain the following keys:
     are directly used as the replacement pair. For example, when changing HTML
     tag types, only `cst` is needed, instead of `cstt`.
 
-There is a special key in the `delimiters` table, `invalid_key_behavior`, that
+There is a special key in the `surrounds` table, `invalid_key_behavior`, that
 defines how |nvim-surround| behaves when a given key in the delimiter table is
 omitted. It takes the same form as all other delimiter tables. The default
 behavior is to treat the character literally, and add/modify the surrounding
@@ -456,7 +456,7 @@ config.get_selections({args})
     table takes a {char} key and one other key:
 
     char: (required) ~
-        The character associated with the current delimiter table.
+        The character associated with the current surround.
     pattern: (optional) ~
         A Lua pattern that narrows down a parent selection to the left/right
         pair to be modified. It must contain four match groups:
