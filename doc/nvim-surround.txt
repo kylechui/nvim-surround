@@ -261,7 +261,7 @@ Both functions take a table as an argument, full of configuration options.
 >
     require("nvim-surround").setup({
         keymaps =       -- Defines plugin keymaps,
-        delimiters =    -- Defines delimiter keys and behavior,
+        surrounds =     -- Defines surround keys and behavior,
         aliases =       -- Defines aliases,
         highlight =     -- Defines highlight behavior,
         move_cursor =   -- Defines cursor behavior,

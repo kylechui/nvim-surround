@@ -102,10 +102,31 @@ end
 ---@param offset integer The offset of the search string into the buffer.
 ---@param str string The given string to match against.
 ---@param pattern string The given Lua pattern to extract match groups from.
----@return selections @The selections for the left and right delimiters.
+---@return selections? @The selections for the left and right delimiters.
 M.get_selections = function(offset, str, pattern)
     -- Get the surrounding pair, and the start/end indices
-    local _, _, left_delimiter, first_index, right_delimiter, last_index = str:find(pattern)
+    local ok, _, left_delimiter, first_index, right_delimiter, last_index = str:find(pattern)
+    -- Validate that a match was found
+    if not ok then
+        return nil
+    end
+    -- Validate that all four match groups are present
+    if not last_index then
+        vim.notify(
+            "Four match groups must be present in the Lua pattern, see :h nvim-surround.config.get_selections().",
+            vim.log.levels.ERROR
+        )
+        return nil
+    end
+    -- Validate that the second and fourth match groups are empty
+    if type(first_index) ~= "integer" or type(last_index) ~= "integer" then
+        vim.notify(
+            "The second and last capture groups must be empty, see :h nvim-surround.config.get_selections().",
+            vim.log.levels.ERROR
+        )
+        return nil
+    end
+
     -- If delimiter does not exist, set the length to zero
     local left_len = type(left_delimiter) == "string" and #left_delimiter or 0
     local right_len = type(right_delimiter) == "string" and #right_delimiter or 0

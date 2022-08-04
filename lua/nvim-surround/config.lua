@@ -405,6 +405,15 @@ M.translate_opts = function(opts)
         }
         vim.notify_once(table.concat(highlight_warning, "\n"), vim.log.levels.ERROR)
     end
+    ---@diagnostic disable-next-line: undefined-field
+    if opts and opts.delimiters then
+        local highlight_warning = {
+            "The `delimiters` table has been renamed to `surrounds`.",
+            "See :h nvim-surround.config.surrounds for details",
+        }
+        vim.notify_once(table.concat(highlight_warning, "\n"), vim.log.levels.ERROR)
+    end
+
     if not (opts and opts.surrounds) then
         return opts
     end
@@ -414,14 +423,14 @@ M.translate_opts = function(opts)
         if char == "pairs" or char == "separators" then
             local delimiter_warning = {
                 "The `pairs` and `separators` tables have been deprecated; configuration for surrounds",
-                "goes in `surrounds`. See :h nvim-surround.config.delimiters for details.",
+                "goes in `surrounds`. See :h nvim-surround.config.surrounds for details.",
             }
             vim.notify_once(table.concat(delimiter_warning, "\n"), vim.log.levels.ERROR)
         end
         if vim.tbl_islist(val) then
             local add_warning = {
                 "The old configuration for defining surrounds has been deprecated; see",
-                ":h nvim-surround.config.delimiters for details.",
+                ":h nvim-surround.config.surrounds for details.",
             }
             vim.notify_once(table.concat(add_warning, "\n"), vim.log.levels.ERROR)
         end
