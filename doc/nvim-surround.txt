@@ -146,12 +146,12 @@ Changing surrounding pairs exhibits similar behaviors.
     (sa*mple_text)              cs)}            {sample_text}
     (sa*mple_text)              cs(}            {sample_text}
     (sa*mple_text)              cs((            ( sample_text )
-    (sa*mple_text)              cs(]            [sample_text]
+    ( sa*mple_text )            cs()            (sample_text)
 
 There are also a handful of built-in surrounds that are more complex. First up
-we have HTML tags, which use the key `t` or `T`. The user is then queried for
-the tag type/attributes, after which they hit <CR> to create the surrounding
-pair.
+we have HTML tags, which are triggered with either `t` or `T`. The user is
+then queried for the tag type/attributes, after which they hit <CR> to create
+the surrounding pair.
 
     Old text                    Command         New text ~
     div cont*ents               ysstdiv         <div>div contents</div>
@@ -165,7 +165,7 @@ change the surrouding tag's type (leaving the attributes alone), while `csT`
 will change the entirety of the surrounding tag's contents.
 
 Note: When changing surrounding tags via `cst` or `csT`, a second replacement
-character is unnecessary. See |nvim-surround.config.delimiters|.
+character is unnecessary. See |nvim-surround.config.surrounds|.
 
 Next are function calls, denoted by the key `f`. By default, they match a Lua
 pattern consisting of some non-whitespace characters, followed by a balanced
@@ -209,7 +209,6 @@ operator-mode maps:
     vim.keymap.set("o", "ia", "i<")
     vim.keymap.set("o", "aa", "a<")
 <
-
 The other type of alias is a "tabular alias", where each alias character
 represents some set of characters. Tabular aliases are only used when
 modifying existing delimiter pairs. For example, the default configuration
@@ -324,8 +323,8 @@ would have the corresponding selections
         }
     }
 <
-The `surrounds` table associates character keys with "surrounds", each of
-which is a table containing the following keys:
+The `surrounds` table associates each key with a "surround", which is a table
+containing the following keys:
 
     add: ~
         A function that returns the delimiter pair to be added to the buffer.
@@ -365,9 +364,17 @@ which is a table containing the following keys:
         else, as it is used by the `delete` and `change` keys to determine
         what to modify.
 
+        For simplicity, this key can also take a string as a value, which is
+        then interpreted as a Lua pattern that represents the selection.
+
     delete: ~
         A function that returns the pair of selections to remove from the
         buffer when deleting the surrounding pair.
+
+        For simplicity, this key can also take a string as a value, which is
+        then interpreted as a Lua pattern whose match groups represent the
+        left/right delimiter pair. See |nvim-surround.config.get_selections()|
+        for more information.
 
     change: ~
         A table of two keys: `target` and `replacement`.
@@ -376,6 +383,12 @@ which is a table containing the following keys:
             A function that returns the pair of selections to be replaced in
             the buffer when changing the surrounding pair. Similar to the
             `delete` key.
+
+            For simplicity, this key can also take a string as a value, which
+            is then interpreted as a Lua pattern whose match groups represent
+            the left/right delimiter pair. See
+            |nvim-surround.config.get_selections()| for more information.
+
         replacement: ~
             A function that returns the surrounding pair to replace the target
             selections. Similar to the `add` key.
@@ -387,9 +400,8 @@ which is a table containing the following keys:
 
 There is a special key in the `surrounds` table, `invalid_key_behavior`, that
 defines how |nvim-surround| behaves when a given key in the delimiter table is
-omitted. It takes the same form as all other delimiter tables. The default
-behavior is to treat the character literally, and add/modify the surrounding
-pair:
+omitted. It takes the same form as all other surrounds. The default behavior
+is to treat the character literally, and add/modify the surrounding pair:
 >
     invalid_key_behavior = {
         add = function(char)
@@ -532,7 +544,7 @@ can be configured separately. The default higlight group used is `Visual`:
 --------------------------------------------------------------------------------
 3.6. Move Cursor                            *nvim-surround.config.move_cursor*
 
-When a surround action is performed, by default the cursor moves to the
+By default, when a surround action is performed, the cursor moves to the
 beginning of the action.
 
     Old text                    Command         New text ~

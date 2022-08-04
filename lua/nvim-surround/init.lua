@@ -14,7 +14,7 @@
 
 ---@class options
 ---@field keymaps table<string, boolean|string>
----@field surrounds table<string, surround>
+---@field surrounds table<string, boolean|surround>
 ---@field aliases table<string, boolean|string|string[]>
 ---@field highlight { duration: boolean|integer }
 ---@field move_cursor boolean|string
