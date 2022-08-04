@@ -191,12 +191,12 @@ describe("nvim-surround", function()
 
     it("can surround blockwise visual selections", function()
         set_lines({ "there happen", "to be", "quite a few lines", "in this buffer", "or so I had thought" })
-        vim.cmd("normal " .. ctrl_v)
+        vim.cmd("normal! " .. ctrl_v)
         set_curpos({ 5, 2 })
         vim.cmd("normal Sb")
         check_lines({ "(th)ere happen", "(to) be", "(qu)ite a few lines", "(in) this buffer", "(or) so I had thought" })
         set_curpos({ 5, 21 })
-        vim.cmd("normal " .. ctrl_v)
+        vim.cmd("normal! " .. ctrl_v)
         set_curpos({ 1, 1 })
         vim.cmd("normal SB")
         check_lines({
@@ -207,7 +207,7 @@ describe("nvim-surround", function()
             "{(or) so I had thought}",
         })
         set_curpos({ 4, 3 })
-        vim.cmd("normal " .. ctrl_v)
+        vim.cmd("normal! " .. ctrl_v)
         set_curpos({ 3, 7 })
         vim.cmd("normal Sa")
         check_lines({
@@ -218,7 +218,7 @@ describe("nvim-surround", function()
             "{(or) so I had thought}",
         })
         set_curpos({ 1, 16 })
-        vim.cmd("normal " .. ctrl_v)
+        vim.cmd("normal! " .. ctrl_v)
         set_curpos({ 3, 16 })
         vim.cmd("normal S'")
         check_lines({
@@ -227,6 +227,20 @@ describe("nvim-surround", function()
             "{(<qu)it>e a fe'w' lines}",
             "{(<in) t>his buffer}",
             "{(or) so I had thought}",
+        })
+
+        set_lines({ "hello world", "more text here" })
+        set_curpos({ 1, 3 })
+        vim.cmd("normal! " .. ctrl_v)
+        set_curpos({ 2, 10 })
+        vim.cmd("normal gSB")
+        check_lines({
+            "he{",
+            "llo worl",
+            "}d",
+            "mo{",
+            "re text ",
+            "}here",
         })
     end)
 

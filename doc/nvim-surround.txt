@@ -27,19 +27,19 @@ CONTENTS                                              *nvim-surround.contents*
 ================================================================================
 1. Introduction                                   *nvim-surround.introduction*
 
-|nvim-surround| is a plugin for efficiently manipulating left/right pairs of
-text called "surroundings", e.g. parentheses, quotes, HTML tags, and more.
+|nvim-surround| is a plugin for efficiently manipulating surrounding
+left/right delimiter pairs, e.g. parentheses, quotes, HTML tags, and more.
 This plugin provides keymaps for "adding" (through insert/normal/visual mode)
-and "modifying" (deleting/changing) surrounding pairs.
+and "modifying" (deleting/changing) delimiter pairs.
 
 ================================================================================
 2. Usage                                                 *nvim-surround.usage*
 
 |nvim-surround| has three main operations:
 
-* Adding a surrounding pair to the buffer
-* Deleting a surrounding pair from the buffer
-* Changing a surrounding pair to a different pair
+* Adding a delimiter pair to the buffer
+* Deleting a delimiter pair from the buffer
+* Changing a delimiter pair to a different pair
 
 --------------------------------------------------------------------------------
 2.1. Adding delimiter pairs                                *nvim-surround.add*
@@ -107,12 +107,11 @@ new lines.
 The *<C-g>S* insert-mode operator is analogous to |<C-g>s|, but adds the
 delimiter pair on new lines.
 
-If the cursor is in |charwise-visual| mode, there is an extra mapping *gS* for
-adding the delimiters on new lines. For other visual-mode mappings, the type
-of visual mode determines how the surround behaves. If you are in
-|linewise-visual| mode, then the delimiter pair is added to the buffer on new
-lines. If you are in |blockwise-visual| mode, then the delimiter pair is added
-around the visual block, once per line.
+For the visual-mode `S` map, the type of visual mode determines how the
+delimiter pair is added
+* |charwise-visual|: Adds the pair around the selection
+* |linewise-visual|: Adds the pair around the selection, on new lines
+* |blockwise-visual|: Adds the pair around the visual block, once per line
 
 --------------------------------------------------------------------------------
 2.5. Default pairs                               *nvim-surround.default_pairs*
