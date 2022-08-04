@@ -22,6 +22,7 @@ CONTENTS                                              *nvim-surround.contents*
         3.4. Aliases ......................... |nvim-surround.config.aliases|
         3.5. Highlights .................... |nvim-surround.config.highlight|
         3.6. Cursor ...................... |nvim-surround.config.move_cursor|
+    4. Resources .................................. |nvim-surround.resources|
 
 ================================================================================
 1. Introduction                                   *nvim-surround.introduction*
@@ -542,5 +543,14 @@ beginning of the action.
 
 This behavior can be disabled by setting `move_cursor = false` in one of the
 setup functions.
+
+================================================================================
+4. Resources                                         *nvim-surround.resources*
+
+Here are a few links to visit to get help/inspiration:
+* Showcase: https://github.com/kylechui/nvim-surround/discussions/53
+  * A place where people show off their configurations and custom surrounds
+* Wiki: https://github.com/kylechui/nvim-surround/wiki
+  * A repository of helpful information about |nvim-surround|
 
 vim:tw=78:ts=8:ft=help:norl:conceallevel=0:
