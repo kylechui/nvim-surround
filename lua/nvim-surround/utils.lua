@@ -60,8 +60,11 @@ M.get_delimiters = function(char)
 
     -- Get the function for adding the delimiters, if it exists
     local add = config.get_add(char)
+    if add then
+        return vim.deepcopy(add(char))
+    end
 
-    return add and vim.deepcopy(add(char)) or config.get_opts().surrounds.invalid_key_behavior.add(char)
+    config.get_opts().surrounds.invalid_key_behavior.add(char)
 end
 
 -- Gets a selection that contains the left and right surrounding pair.

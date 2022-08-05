@@ -330,8 +330,8 @@ M.default_opts = {
 ---@return string? @The user input.
 M.get_input = function(prompt)
     -- Since `vim.fn.input()` does not handle keyboard interrupts, we use a protected call to detect <C-c>
-    local ok, result = pcall(vim.fn.input, { prompt = prompt })
-    return ok and result
+    local ok, result = pcall(vim.fn.input, { prompt = prompt, cancelreturn = vim.NIL })
+    return ok and result ~= vim.NIL and result
 end
 
 -- Gets a selection from the buffer based on some heuristic.
