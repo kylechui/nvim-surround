@@ -22,15 +22,16 @@ M.get_selection = function(char)
     buffer.adjust_mark("]")
 
     -- Get the row and column of the first and last characters of the selection
-    local selection = {
-        first_pos = buffer.get_mark("["),
-        last_pos = buffer.get_mark("]"),
-    }
+    local first_pos = buffer.get_mark("[")
+    local last_pos = buffer.get_mark("]")
     -- If a selection is found surrounding the cursor or after it, then return
-    if selection.first_pos and selection.last_pos then
+    if first_pos and last_pos and buffer.comes_before(first_pos, last_pos) then
         -- Restore the cursor position
         buffer.set_curpos(curpos)
-        return selection
+        return {
+            first_pos = first_pos,
+            last_pos = last_pos,
+        }
     end
 
     -- Since no selection was found around/after the cursor, we look behind
@@ -50,15 +51,18 @@ M.get_selection = function(char)
     buffer.adjust_mark("]")
 
     -- Get the row and column of the first and last characters of the selection
-    selection = {
-        first_pos = buffer.get_mark("["),
-        last_pos = buffer.get_mark("]"),
-    }
-
+    first_pos = buffer.get_mark("[")
+    last_pos = buffer.get_mark("]")
     -- Restore the cursor position
     buffer.set_curpos(curpos)
-    -- Return nil if either endpoint of the selection do not exist
-    return selection.first_pos and selection.last_pos and selection
+    -- Return nil if either endpoint of the selection do not exist, or no match is found (marks out of order)
+    return first_pos
+        and last_pos
+        and buffer.comes_before(first_pos, last_pos)
+        and {
+            first_pos = first_pos,
+            last_pos = last_pos,
+        }
 end
 
 return M
