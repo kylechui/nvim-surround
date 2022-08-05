@@ -364,14 +364,14 @@ containing the following keys:
         else, as it is used by the `delete` and `change` keys to determine
         what to modify.
 
-        For simplicity, this key can also take a string as a value, which is
+        For convenience, this key can also take a string as a value, which is
         then interpreted as a Lua pattern that represents the selection.
 
     delete: ~
         A function that returns the pair of selections to remove from the
         buffer when deleting the surrounding pair.
 
-        For simplicity, this key can also take a string as a value, which is
+        For convenience, this key can also take a string as a value, which is
         then interpreted as a Lua pattern whose match groups represent the
         left/right delimiter pair. See |nvim-surround.config.get_selections()|
         for more information.

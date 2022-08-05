@@ -19,13 +19,9 @@ M.default_opts = {
             find = function()
                 return M.get_selection({ textobject = "(" })
             end,
-            delete = function()
-                return M.get_selections({ char = "(", pattern = "^(. ?)().-( ?.)()$" })
-            end,
+            delete = "^(. ?)().-( ?.)()$",
             change = {
-                target = function()
-                    return M.get_selections({ char = "(", pattern = "^(. ?)().-( ?.)()$" })
-                end,
+                target = "^(. ?)().-( ?.)()$",
             },
         },
         [")"] = {
@@ -33,13 +29,9 @@ M.default_opts = {
             find = function()
                 return M.get_selection({ textobject = ")" })
             end,
-            delete = function()
-                return M.get_selections({ char = ")", pattern = "^(.)().-(.)()$" })
-            end,
+            delete = "^(.)().-(.)()$",
             change = {
-                target = function()
-                    return M.get_selections({ char = ")", pattern = "^(.)().-(.)()$" })
-                end,
+                target = "^(.)().-(.)()$",
             },
         },
         ["{"] = {
@@ -47,13 +39,9 @@ M.default_opts = {
             find = function()
                 return M.get_selection({ textobject = "{" })
             end,
-            delete = function()
-                return M.get_selections({ char = "{", pattern = "^(. ?)().-( ?.)()$" })
-            end,
+            delete = "^(. ?)().-( ?.)()$",
             change = {
-                target = function()
-                    return M.get_selections({ char = "{", pattern = "^(. ?)().-( ?.)()$" })
-                end,
+                target = "^(. ?)().-( ?.)()$",
             },
         },
         ["}"] = {
@@ -61,13 +49,9 @@ M.default_opts = {
             find = function()
                 return M.get_selection({ textobject = "}" })
             end,
-            delete = function()
-                return M.get_selections({ char = "}", pattern = "^(.)().-(.)()$" })
-            end,
+            delete = "^(.)().-(.)()$",
             change = {
-                target = function()
-                    return M.get_selections({ char = "}", pattern = "^(.)().-(.)()$" })
-                end,
+                target = "^(.)().-(.)()$",
             },
         },
         ["<"] = {
@@ -75,13 +59,9 @@ M.default_opts = {
             find = function()
                 return M.get_selection({ textobject = "<" })
             end,
-            delete = function()
-                return M.get_selections({ char = "<", pattern = "^(. ?)().-( ?.)()$" })
-            end,
+            delete = "^(. ?)().-( ?.)()$",
             change = {
-                target = function()
-                    return M.get_selections({ char = "<", pattern = "^(. ?)().-( ?.)()$" })
-                end,
+                target = "^(. ?)().-( ?.)()$",
             },
         },
         [">"] = {
@@ -89,13 +69,9 @@ M.default_opts = {
             find = function()
                 return M.get_selection({ textobject = ">" })
             end,
-            delete = function()
-                return M.get_selections({ char = ">", pattern = "^(.)().-(.)()$" })
-            end,
+            delete = "^(.)().-(.)()$",
             change = {
-                target = function()
-                    return M.get_selections({ char = ">", pattern = "^(.)().-(.)()$" })
-                end,
+                target = "^(.)().-(.)()$",
             },
         },
         ["["] = {
@@ -103,13 +79,9 @@ M.default_opts = {
             find = function()
                 return M.get_selection({ textobject = "[" })
             end,
-            delete = function()
-                return M.get_selections({ char = "[", pattern = "^(. ?)().-( ?.)()$" })
-            end,
+            delete = "^(. ?)().-( ?.)()$",
             change = {
-                target = function()
-                    return M.get_selections({ char = "[", pattern = "^(. ?)().-( ?.)()$" })
-                end,
+                target = "^(. ?)().-( ?.)()$",
             },
         },
         ["]"] = {
@@ -117,13 +89,9 @@ M.default_opts = {
             find = function()
                 return M.get_selection({ textobject = "]" })
             end,
-            delete = function()
-                return M.get_selections({ char = "]", pattern = "^(.)().-(.)()$" })
-            end,
+            delete = "^(.)().-(.)()$",
             change = {
-                target = function()
-                    return M.get_selections({ char = "]", pattern = "^(.)().-(.)()$" })
-                end,
+                target = "^(.)().-(.)()$",
             },
         },
         ["'"] = {
@@ -131,13 +99,9 @@ M.default_opts = {
             find = function()
                 return M.get_selection({ textobject = "'" })
             end,
-            delete = function()
-                return M.get_selections({ char = "'", pattern = "^(.)().-(.)()$" })
-            end,
+            delete = "^(.)().-(.)()$",
             change = {
-                target = function()
-                    return M.get_selections({ char = "'", pattern = "^(.)().-(.)()$" })
-                end,
+                target = "^(.)().-(.)()$",
             },
         },
         ['"'] = {
@@ -145,13 +109,9 @@ M.default_opts = {
             find = function()
                 return M.get_selection({ textobject = '"' })
             end,
-            delete = function()
-                return M.get_selections({ char = '"', pattern = "^(.)().-(.)()$" })
-            end,
+            delete = "^(.)().-(.)()$",
             change = {
-                target = function()
-                    return M.get_selections({ char = '"', pattern = "^(.)().-(.)()$" })
-                end,
+                target = "^(.)().-(.)()$",
             },
         },
         ["`"] = {
@@ -159,13 +119,9 @@ M.default_opts = {
             find = function()
                 return M.get_selection({ textobject = "`" })
             end,
-            delete = function()
-                return M.get_selections({ char = "`", pattern = "^(.)().-(.)()$" })
-            end,
+            delete = "^(.)().-(.)()$",
             change = {
-                target = function()
-                    return M.get_selections({ char = "`", pattern = "^(.)().-(.)()$" })
-                end,
+                target = "^(.)().-(.)()$",
             },
         },
         ["i"] = { -- TODO: Add find/delete/change functions
@@ -199,13 +155,9 @@ M.default_opts = {
             find = function()
                 return M.get_selection({ textobject = "t" })
             end,
-            delete = function()
-                return M.get_selections({ char = "t", pattern = "^(%b<>)().-(%b<>)()$" })
-            end,
+            delete = "^(%b<>)().-(%b<>)()$",
             change = {
-                target = function()
-                    return M.get_selections({ char = "t", pattern = "^<([%w-]*)().-([^/]*)()>$" })
-                end,
+                target = "^<([%w-]*)().-([^/]*)()>$",
                 replacement = function()
                     local element = M.get_input("Enter the HTML element: ")
                     if element then
@@ -233,13 +185,9 @@ M.default_opts = {
             find = function()
                 return M.get_selection({ textobject = "t" })
             end,
-            delete = function()
-                return M.get_selections({ char = "T", pattern = "^(%b<>)().-(%b<>)()$" })
-            end,
+            delete = "^(%b<>)().-(%b<>)()$",
             change = {
-                target = function()
-                    return M.get_selections({ char = "T", pattern = "^<([^>]*)().-([^%/]*)()>$" })
-                end,
+                target = "^<([^>]*)().-([^%/]*)()>$",
                 replacement = function()
                     local input = M.get_input("Enter the HTML tag: ")
                     if input then
@@ -264,16 +212,10 @@ M.default_opts = {
                     return { { result .. "(" }, { ")" } }
                 end
             end,
-            find = function()
-                return M.get_selection({ pattern = "[%w%-_:.>]+%b()" })
-            end,
-            delete = function()
-                return M.get_selections({ char = "f", pattern = "^([%w%-_:.>]+%()().-(%))()$" })
-            end,
+            find = "[%w%-_:.>]+%b()",
+            delete = "^([%w%-_:.>]+%()().-(%))()$",
             change = {
-                target = function()
-                    return M.get_selections({ char = "f", pattern = "^.-([%w_]+)()%b()()()$" })
-                end,
+                target = "^.-([%w_]+)()%b()()()$",
                 replacement = function()
                     local result = M.get_input("Enter the function name: ")
                     if result then
@@ -331,7 +273,9 @@ M.default_opts = {
 M.get_input = function(prompt)
     -- Since `vim.fn.input()` does not handle keyboard interrupts, we use a protected call to detect <C-c>
     local ok, result = pcall(vim.fn.input, { prompt = prompt, cancelreturn = vim.NIL })
-    return ok and result ~= vim.NIL and result
+    if ok and result ~= vim.NIL then
+        return result
+    end
 end
 
 -- Gets a selection from the buffer based on some heuristic.
