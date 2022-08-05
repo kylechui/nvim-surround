@@ -58,7 +58,7 @@ M.get_selection = function(find)
             }
     end
     -- Adjust the selection character-wise
-    local start_col, end_col = math.min(b_last, cursor_index), b_first
+    local start_col, end_col = cursor_index, b_first
     b_first, b_last = nil, nil
     for index = start_col, end_col, -1 do
         local c_first, c_last = buffer_text:find(find, index)

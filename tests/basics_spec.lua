@@ -345,4 +345,47 @@ describe("nvim-surround", function()
         vim.cmd("normal csBr")
         check_lines({ "[", "", "]" })
     end)
+
+    it("can handle invalid key behavior", function()
+        set_lines({ "sample text" })
+        vim.cmd("normal yss|")
+        check_lines({ "|sample text|" })
+        vim.cmd("normal cs|^")
+        check_lines({ "^sample text^" })
+        vim.cmd("normal ds^")
+        check_lines({ "sample text" })
+
+        set_lines({ "one|two|three|four|five" })
+        set_curpos({ 1, 2 })
+        vim.cmd("normal ds|")
+        check_lines({ "onetwothree|four|five" })
+
+        set_lines({ "one|two|three|four|five" })
+        set_curpos({ 1, 7 })
+        vim.cmd("normal ds|")
+        check_lines({ "onetwothree|four|five" })
+
+        set_lines({ "one|two|three|four|five" })
+        set_curpos({ 1, 8 })
+        vim.cmd("normal ds|")
+        check_lines({ "one|twothreefour|five" })
+
+        set_lines({ "one|two|three|four|five" })
+        set_curpos({ 1, 15 })
+        vim.cmd("normal ds|")
+        check_lines({ "one|two|threefourfive" })
+
+        set_lines({ "one|two|three|four|five" })
+        set_curpos({ 1, 23 })
+        vim.cmd("normal ds|")
+        check_lines({ "one|two|threefourfive" })
+
+        set_lines({ "some |text|", "more |text|" })
+        set_curpos({ 2, 2 })
+        vim.cmd("normal ds|")
+        check_lines({
+            "some |text",
+            "more text|",
+        })
+    end)
 end)
