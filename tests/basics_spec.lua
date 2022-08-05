@@ -1,0 +1,391 @@
+local ctrl_v = vim.api.nvim_replace_termcodes("<C-v>", true, false, true)
+local set_curpos = function(pos)
+    vim.api.nvim_win_set_cursor(0, { pos[1], pos[2] - 1 })
+end
+local set_lines = function(lines)
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
+end
+local check_lines = function(lines)
+    assert.are.same(lines, vim.api.nvim_buf_get_lines(0, 0, -1, false))
+end
+
+describe("nvim-surround", function()
+    before_each(function()
+        local bufnr = vim.api.nvim_create_buf(true, true)
+        vim.api.nvim_win_set_buf(0, bufnr)
+    end)
+
+    it("can surround text-objects (ys, yss)", function()
+        set_lines({ "local str = test" })
+        set_curpos({ 1, 13 })
+        vim.cmd('normal ysiw"')
+        check_lines({ 'local str = "test"' })
+        vim.cmd('normal ysa"b')
+        check_lines({ 'local str = ("test")' })
+
+        set_lines({ "string x = some text" })
+        set_curpos({ 1, 12 })
+        vim.cmd('normal ys$"')
+        check_lines({ 'string x = "some text"' })
+
+        set_lines({
+            "this is a",
+            "part of a paragraph",
+            "with multiple lines",
+        })
+        set_curpos({ 2, 8 })
+        vim.cmd("normal ysipB")
+        check_lines({
+            "{this is a",
+            "part of a paragraph",
+            "with multiple lines}",
+        })
+
+        set_lines({ "hello world" })
+        vim.cmd("normal yssb")
+        check_lines({ "(hello world)" })
+
+        set_curpos({ 1, 5 })
+        set_lines({ "this is the first line", "followed by the second line", "and finally the third" })
+        vim.cmd("normal 2yssB")
+        set_lines({ "{this is the first line", "followed by the second line}", "and finally the third" })
+    end)
+
+    it("can surround text-objects (yS, ySS)", function()
+        set_lines({ "local str = test" })
+        set_curpos({ 1, 13 })
+        vim.cmd("normal yS2br")
+        check_lines({ "local [", "str =", "] test" })
+        set_curpos({ 1, 1 })
+        vim.cmd("normal ySa]B")
+        check_lines({ "local {", "[", "str =", "]", "} test" })
+
+        set_lines({
+            "this is a",
+            "part of a paragraph",
+            "with multiple lines",
+        })
+        set_curpos({ 2, 8 })
+        vim.cmd("normal ySipB")
+        check_lines({
+            "{",
+            "this is a",
+            "part of a paragraph",
+            "with multiple lines",
+            "}",
+        })
+
+        set_lines({ "current line" })
+        set_curpos({ 1, 7 })
+        vim.cmd("normal ySSr")
+        check_lines({ "[", "current line", "]" })
+
+        set_lines({ "here", "we", "have", "several", "lines" })
+        set_curpos({ 2, 2 })
+        vim.cmd("normal 3ySS`")
+        check_lines({ "here", "`", "we", "have", "several", "`", "lines" })
+    end)
+
+    it("can surround empty lines", function()
+        set_lines({ "" })
+        vim.cmd("normal ysla")
+        check_lines({ "<>" })
+
+        set_lines({ "" })
+        set_curpos({ 1, 1 })
+        vim.cmd("normal ySla")
+        check_lines({ "<", "", ">" })
+
+        set_lines({ "" })
+        set_curpos({ 1, 1 })
+        vim.cmd("normal vSb")
+        check_lines({ "()" })
+
+        set_lines({ "" })
+        set_curpos({ 1, 1 })
+        vim.cmd("normal vgSB")
+        check_lines({ "{", "", "}" })
+
+        set_lines({ "" })
+        set_curpos({ 1, 1 })
+        vim.cmd("normal VSr")
+        check_lines({ "[", "", "]" })
+
+        set_lines({ "" })
+        set_curpos({ 1, 1 })
+        vim.cmd("normal " .. ctrl_v .. "Sb")
+        check_lines({ "()" })
+    end)
+
+    it("properly handles whitespace for open/close pairs", function()
+        set_lines({ "sample_text" })
+        vim.cmd("normal ysiw}")
+        set_lines({ "{sample_text}" })
+
+        set_lines({ "sample_text" })
+        vim.cmd("normal ysiw{")
+        set_lines({ "{ sample_text }" })
+
+        set_lines({ "({ sample_text })" })
+        vim.cmd("normal ds{")
+        check_lines({ "(sample_text)" })
+
+        set_lines({ "({sample_text})" })
+        vim.cmd("normal ds{")
+        check_lines({ "(sample_text)" })
+
+        set_lines({ "({sample_text })" })
+        vim.cmd("normal ds{")
+        check_lines({ "(sample_text)" })
+
+        set_lines({ "({ sample_text })" })
+        vim.cmd("normal ds}")
+        check_lines({ "( sample_text )" })
+        vim.cmd("normal cs()")
+        check_lines({ "(sample_text)" })
+    end)
+
+    it("can surround charwise visual selections", function()
+        set_lines({ "this is", "a full", "sentence" })
+        set_curpos({ 1, 2 })
+        vim.cmd("normal! v")
+        set_curpos({ 3, 5 })
+        vim.cmd("normal SB")
+        check_lines({ "t{his is", "a full", "sente}nce" })
+        set_curpos({ 3, 7 })
+        vim.cmd("normal! v")
+        set_curpos({ 2, 2 })
+        vim.cmd("normal Sa")
+        check_lines({ "t{his is", "a< full", "sente}n>ce" })
+
+        set_lines({ "this is", "a full", "sentence" })
+        set_curpos({ 1, 1 })
+        vim.cmd("normal! v")
+        set_curpos({ 3, 8 })
+        vim.cmd("normal gS'")
+        check_lines({ "'", "this is", "a full", "sentence", "'" })
+    end)
+
+    it("can surround linewise visual selections", function()
+        set_lines({ "current line" })
+        vim.cmd("normal VSB")
+        check_lines({ "{", "current line", "}" })
+
+        set_lines({ "multiple", "lines" })
+        set_curpos({ 2, 2 })
+        vim.cmd("normal! V")
+        set_curpos({ 1, 3 })
+        vim.cmd("normal Sb")
+        check_lines({ "(", "multiple", "lines", ")" })
+
+        set_curpos({ 1, 1 })
+        set_lines({
+            "'hello',",
+            "'hello',",
+            "'hello',",
+        })
+        vim.cmd("normal VSB")
+        check_lines({
+            "{",
+            "'hello',",
+            "}",
+            "'hello',",
+            "'hello',",
+        })
+        set_curpos({ 5, 1 })
+        vim.cmd("normal VSB")
+        check_lines({
+            "{",
+            "'hello',",
+            "}",
+            "'hello',",
+            "{",
+            "'hello',",
+            "}",
+        })
+        vim.cmd("normal ggVGSb")
+        check_lines({
+            "(",
+            "{",
+            "'hello',",
+            "}",
+            "'hello',",
+            "{",
+            "'hello',",
+            "}",
+            ")",
+        })
+    end)
+
+    it("can surround blockwise visual selections", function()
+        set_lines({ "there happen", "to be", "quite a few lines", "in this buffer", "or so I had thought" })
+        vim.cmd("normal! " .. ctrl_v)
+        set_curpos({ 5, 2 })
+        vim.cmd("normal Sb")
+        check_lines({ "(th)ere happen", "(to) be", "(qu)ite a few lines", "(in) this buffer", "(or) so I had thought" })
+        set_curpos({ 5, 21 })
+        vim.cmd("normal! " .. ctrl_v)
+        set_curpos({ 1, 1 })
+        vim.cmd("normal SB")
+        check_lines({
+            "{(th)ere happen}",
+            "{(to) be}",
+            "{(qu)ite a few lines}",
+            "{(in) this buffer}",
+            "{(or) so I had thought}",
+        })
+        set_curpos({ 4, 3 })
+        vim.cmd("normal! " .. ctrl_v)
+        set_curpos({ 3, 7 })
+        vim.cmd("normal Sa")
+        check_lines({
+            "{(th)ere happen}",
+            "{(to) be}",
+            "{(<qu)it>e a few lines}",
+            "{(<in) t>his buffer}",
+            "{(or) so I had thought}",
+        })
+        set_curpos({ 1, 16 })
+        vim.cmd("normal! " .. ctrl_v)
+        set_curpos({ 3, 16 })
+        vim.cmd("normal S'")
+        check_lines({
+            "{(th)ere happen'}'",
+            "{(to) be}''",
+            "{(<qu)it>e a fe'w' lines}",
+            "{(<in) t>his buffer}",
+            "{(or) so I had thought}",
+        })
+
+        set_lines({ "hello world", "more text here" })
+        set_curpos({ 1, 3 })
+        vim.cmd("normal! " .. ctrl_v)
+        set_curpos({ 2, 10 })
+        vim.cmd("normal gSB")
+        check_lines({
+            "he{",
+            "llo worl",
+            "}d",
+            "mo{",
+            "re text ",
+            "}here",
+        })
+    end)
+
+    it("can delete delimiter pairs", function()
+        set_lines({
+            "local func = function()",
+            "    local config = require('nvim-surround.config')",
+            "    local tab = {",
+            "        `weird stuff`,",
+            "    },",
+            "end",
+        })
+        vim.cmd("normal dsb")
+        check_lines({
+            "local func = function",
+            "    local config = require('nvim-surround.config')",
+            "    local tab = {",
+            "        `weird stuff`,",
+            "    },",
+            "end",
+        })
+        vim.cmd("normal dsf")
+        check_lines({
+            "local func = function",
+            "    local config = 'nvim-surround.config'",
+            "    local tab = {",
+            "        `weird stuff`,",
+            "    },",
+            "end",
+        })
+        vim.cmd("normal dsB")
+        check_lines({
+            "local func = function",
+            "    local config = 'nvim-surround.config'",
+            "    local tab = ",
+            "        `weird stuff`,",
+            "    ,",
+            "end",
+        })
+
+        set_lines({ "()" })
+        vim.cmd("normal dsb")
+        check_lines({ "" })
+
+        set_lines({ "{", "", "}" })
+        vim.cmd("normal dsB")
+        check_lines({ "", "", "" })
+    end)
+
+    it("can change delimiter pairs", function()
+        set_lines({
+            "require'nvim-surround'.setup(",
+            "",
+            ")",
+        })
+        set_curpos({ 1, 8 })
+        vim.cmd("normal ysa'b")
+        set_curpos({ 1, 9 })
+        vim.cmd([[normal cs'"]])
+        set_curpos({ 2, 1 })
+        vim.cmd("normal csbB")
+        vim.cmd("normal ysaBb")
+        check_lines({
+            'require("nvim-surround").setup({',
+            "",
+            "})",
+        })
+
+        set_lines({ "()" })
+        vim.cmd("normal csba")
+        check_lines({ "<>" })
+
+        set_lines({ "{", "", "}" })
+        vim.cmd("normal csBr")
+        check_lines({ "[", "", "]" })
+    end)
+
+    it("can handle invalid key behavior", function()
+        set_lines({ "sample text" })
+        vim.cmd("normal yss|")
+        check_lines({ "|sample text|" })
+        vim.cmd("normal cs|^")
+        check_lines({ "^sample text^" })
+        vim.cmd("normal ds^")
+        check_lines({ "sample text" })
+
+        set_lines({ "one|two|three|four|five" })
+        set_curpos({ 1, 2 })
+        vim.cmd("normal ds|")
+        check_lines({ "onetwothree|four|five" })
+
+        set_lines({ "one|two|three|four|five" })
+        set_curpos({ 1, 7 })
+        vim.cmd("normal ds|")
+        check_lines({ "onetwothree|four|five" })
+
+        set_lines({ "one|two|three|four|five" })
+        set_curpos({ 1, 8 })
+        vim.cmd("normal ds|")
+        check_lines({ "one|twothreefour|five" })
+
+        set_lines({ "one|two|three|four|five" })
+        set_curpos({ 1, 15 })
+        vim.cmd("normal ds|")
+        check_lines({ "one|two|threefourfive" })
+
+        set_lines({ "one|two|three|four|five" })
+        set_curpos({ 1, 23 })
+        vim.cmd("normal ds|")
+        check_lines({ "one|two|threefourfive" })
+
+        set_lines({ "some |text|", "more |text|" })
+        set_curpos({ 2, 2 })
+        vim.cmd("normal ds|")
+        check_lines({
+            "some |text",
+            "more text|",
+        })
+    end)
+end)

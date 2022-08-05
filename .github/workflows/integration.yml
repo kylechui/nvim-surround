@@ -50,4 +50,4 @@ jobs:
           ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
 
       - name: Run tests
-        run: nvim --headless --noplugin -c 'packadd plenary.nvim' -c "PlenaryBustedDirectory tests/"
+        run: nvim --headless --noplugin -c 'packadd plenary.nvim' -c "PlenaryBustedDirectory tests/ { minimal_init = 'tests/minimal_init.lua' }"

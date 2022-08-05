@@ -8,17 +8,18 @@ Surround selections, stylishly :sunglasses:
 
 ## :sparkles: Features
 
-* Add/change/remove surrounding pairs and HTML tags
-  * Change *only* the surrounding HTML tag's element type, and leave its
-    attributes
+* Add/delete/change surrounding pairs
+  * Function calls and HTML tags out-of-the-box
 * Dot-repeat previous actions
 * Set buffer-local mappings and surrounds
-* Surround using powerful pairs that depend on user input
 * Jump to the *nearest* surrounding pair for modification
 * Use a single character as an alias for several text-objects
   * E.g. `q` is aliased to <code>\`,',"</code>, so <code>csqb</code> replaces
     the *nearest* set of quotes with parentheses
-* Highlight the section that you are about to surround, as a visual indicator
+* Surround using powerful pairs that depend on user input
+* Modify custom surrounds
+  * First-class support for text-objects and Lua patterns
+* Highlight selections for visual feedback
 
 For more information, see [`:h
 nvim-surround`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt).
@@ -40,64 +41,34 @@ use({
 
 ## :rocket: Usage
 
-Information on how to use this plugin can be found in [the
-wiki](https://github.com/kylechui/nvim-surround/wiki).
+The three "core" operations of `add`/`delete`/`change` can be done with the
+keymaps `ys{motion}{char}`, `ds{char}`, and `cs{target}{replacement}`,
+respectively. For the following examples, `*` will denote the cursor position:
+
+```help
+    Old text                    Command         New text
+--------------------------------------------------------------------------------
+    surr*ound_words             ysiw)           (surround_words)
+    *make strings               ys$"            "make strings"
+    [delete ar*ound me!]        ds]             delete around me!
+    remove <b>HTML t*ags</b>    dst             remove HTML tags
+    'change quot*es'            cs'"            "change quotes"
+    <b>or tag* types</b>        csth1<CR>       <h1>or tag types</h1>
+    delete(functi*on calls)     dsf             function calls
+```
+
+Detailed information on how to use this plugin can be found in [`:h
+nvim-surround.usage`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt).
 
 ## :gear: Configuration
 
-### The Basics
+The default configuration is found
+[here](https://github.com/kylechui/nvim-surround/blob/main/lua/nvim-surround/config.lua).
+Simply call `require("nvim-surround").setup` or
+`require("nvim-surround").buffer_setup` with the desired options.
 
-All delimiter keys should be one character *exactly*, and *unique*. In the
-`delimiters` table, each value is either a pair of strings, representing the
-left and right surrounding pair, or a function returning a pair of strings.
-Multi-line strings are represented by tables of strings, with each string
-representing a new line.
-
-> Looking for inspiration/examples? Want to share some cool surrounds that
-> you've made? You can visit the [surrounds
-> showcase](https://github.com/kylechui/nvim-surround/discussions/53) to see a
-> community-made list of custom surrounds!
-
-### Modifying Defaults
-
-To change a preset, give the corresponding key a new value. To disable any
-functionality, simply set the corresponding key's value to `false`. For example,
-
-```lua
-require("nvim-surround").setup({
-    delimiters = {
-        pairs = { -- Remaps "a" and "b"
-            ["a"] = {
-                { "this", "has", "several", "lines" },
-                "single line",
-            },
-            ["b"] = function()
-                return {
-                    "hello",
-                    "world",
-                }
-            end,
-        },
-        HTML = { -- Disables HTML-style mappings
-            ["t"] = false,
-            ["T"] = false,
-        },
-    },
-    highlight_motion = { -- Disables highlights
-        duration = false,
-    },
-})
-```
-
-For buffer-local configurations, just call
-`require("nvim-surround").buffer_setup` for any buffer that you would like to
-configure. This can be especially useful for setting filetype-specific surrounds
-by calling `buffer_setup` inside `ftplugin/[filetype].lua`.
-
-For more information, see [`:h
-nvim-surround`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt),
-or the [default
-configuration](https://github.com/kylechui/nvim-surround/blob/main/lua/nvim-surround/config.lua).
+More information on how to configure this plugin can be found in [`:h
+nvim-surround.configuration`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt).
 
 ## Contributing
 

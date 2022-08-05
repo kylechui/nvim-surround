@@ -1,23 +1,27 @@
----@alias delimiters string[]|string[][]
-
 ---@class selection
 ---@field first_pos integer[]
 ---@field last_pos integer[]
 
 ---@class selections
----@field left selection
----@field right selection
+---@field left selection?
+---@field right selection?
+
+---@class surround
+---@field add function
+---@field find function
+---@field delete function
+---@field change { target: function, replacement: function? }
 
 ---@class options
----@field keymaps table<string, string>
----@field delimiters table<string, table|function>
----@field highlight_motion { duration: boolean|integer }
+---@field keymaps table<string, boolean|string>
+---@field surrounds table<string, boolean|surround>
+---@field aliases table<string, boolean|string|string[]>
+---@field highlight { duration: boolean|integer }
 ---@field move_cursor boolean|string
 
 local buffer = require("nvim-surround.buffer")
 local cache = require("nvim-surround.cache")
 local config = require("nvim-surround.config")
-local html = require("nvim-surround.html")
 local utils = require("nvim-surround.utils")
 
 local M = {}
@@ -37,11 +41,11 @@ end
 -- Add delimiters around the cursor, in insert mode.
 M.insert_surround = function(line_mode)
     local char = utils.get_char()
+    local curpos = buffer.get_curpos()
     local delimiters = utils.get_delimiters(char)
     if not delimiters then
         return
     end
-    local curpos = buffer.get_curpos()
 
     -- Add new lines if the addition is done line-wise
     if line_mode then
@@ -92,22 +96,12 @@ M.visual_surround = function(line_mode)
     local curpos = buffer.get_curpos()
     -- Get a character and selection from the user
     local ins_char = utils.get_char()
-    local selection = utils.get_selection(true)
-    if not selection then
+    local delimiters = utils.get_delimiters(ins_char)
+    local first_pos, last_pos = buffer.get_mark("<"), buffer.get_mark(">")
+    if not delimiters or not first_pos or not last_pos then
         return
     end
 
-    local delim_args = {
-        bufnr = vim.fn.bufnr(),
-        selection = selection,
-        text = buffer.get_text(selection),
-    }
-    local delimiters = utils.get_delimiters(ins_char, delim_args)
-    if not delimiters or not selection then
-        return
-    end
-
-    local first_pos, last_pos = selection.first_pos, selection.last_pos
     -- Add new lines if the addition is done line-wise
     if line_mode then
         table.insert(delimiters[2], 1, "")
@@ -123,7 +117,7 @@ M.visual_surround = function(line_mode)
     elseif vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
         local mn_lnum, mn_col = math.min(first_pos[1], last_pos[1]), math.min(first_pos[2], last_pos[2])
         local mx_lnum, mx_col = math.max(first_pos[1], last_pos[1]), math.max(first_pos[2], last_pos[2])
-        for line_num = mn_lnum, mx_lnum do
+        for line_num = mx_lnum, mn_lnum, -1 do
             buffer.insert_text({ line_num, mx_col + 1 }, delimiters[2])
             buffer.insert_text({ line_num, mn_col }, delimiters[1])
         end
@@ -149,7 +143,9 @@ M.delete_surround = function(args)
         return "g@l"
     end
 
-    local selections = utils.get_nearest_selections(args.del_char)
+    -- Get the selections to delete
+    local selections = utils.get_nearest_selections(args.del_char, "delete")
+
     if selections then
         -- Delete the right selection first to ensure selection positions are correct
         buffer.delete_selection(selections.right)
@@ -158,6 +154,7 @@ M.delete_surround = function(args)
             selections.left.first_pos[1],
             selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
         )
+        buffer.set_curpos(selections.left.first_pos)
     end
 
     buffer.reset_curpos(args.curpos)
@@ -165,7 +162,7 @@ M.delete_surround = function(args)
 end
 
 -- Change a surrounding delimiter pair, if it exists.
----@param args? { del_char: string, selections: selections, ins_delimiters: string[][], curpos: integer[] }
+---@param args? table
 M.change_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args then
@@ -176,16 +173,14 @@ M.change_surround = function(args)
         return "g@l"
     end
 
-    local selections = utils.get_nearest_selections(args.del_char)
-    -- Adjust the selections for changing if we are changing a HTML tag
-    if html.get_type(args.del_char) then
-        selections = html.adjust_selections(selections, html.get_type(args.del_char))
-    end
-
+    -- Get the selections to change
+    local selections = utils.get_nearest_selections(args.del_char, "change")
     if selections then
+        local delimiters = args.add_delimiters()
         -- Change the right selection first to ensure selection positions are correct
-        buffer.change_selection(selections.right, args.ins_delimiters[2])
-        buffer.change_selection(selections.left, args.ins_delimiters[1])
+        buffer.change_selection(selections.right, delimiters[2])
+        buffer.change_selection(selections.left, delimiters[1])
+        buffer.set_curpos(selections.left.first_pos)
     end
 
     buffer.reset_curpos(args.curpos)
@@ -208,28 +203,28 @@ M.normal_callback = function(mode)
         buffer.set_mark("]", pos)
     end
 
-    local selection = utils.get_selection(false)
-    if not selection then
+    buffer.adjust_mark("[")
+    buffer.adjust_mark("]")
+    local selection = {
+        first_pos = buffer.get_mark("["),
+        last_pos = buffer.get_mark("]"),
+    }
+    if not selection.first_pos or not selection.last_pos then
         return
     end
     -- Highlight the range and set a timer to clear it if necessary
-    local highlight_motion = config.get_opts().highlight_motion
-    if highlight_motion.duration then
+    local highlight = config.get_opts().highlight
+    if highlight.duration then
         buffer.highlight_selection(selection)
-        if highlight_motion.duration > 0 then
-            vim.defer_fn(buffer.clear_highlights, highlight_motion.duration)
+        if highlight.duration > 0 then
+            vim.defer_fn(buffer.clear_highlights, highlight.duration)
         end
     end
     -- Get a character input and the delimiters (if not cached)
     if not cache.normal.delimiters then
         local char = utils.get_char()
-        local args = {
-            bufnr = vim.fn.bufnr(),
-            selection = selection,
-            text = buffer.get_text(selection),
-        }
         -- Get the delimiter pair based on the input character
-        cache.normal.delimiters = cache.normal.delimiters or utils.get_delimiters(char, args)
+        cache.normal.delimiters = cache.normal.delimiters or utils.get_delimiters(char)
         -- Add new lines if the addition is done line-wise
         if cache.normal.line_mode then
             table.insert(cache.normal.delimiters[2], 1, "")
@@ -258,6 +253,7 @@ M.delete_callback = function()
     if not cache.delete.char then
         return
     end
+
     M.delete_surround({
         del_char = cache.delete.char,
         curpos = curpos,
@@ -267,48 +263,48 @@ end
 M.change_callback = function()
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
-    -- Get character inputs if not cached
-    if not cache.change.del_char or not cache.change.ins_delimiters then
-        -- Get the surrounding selections to delete
-        local del_char = utils.get_char()
-        local selections = utils.get_nearest_selections(del_char)
-        -- Adjust the selections for changing if we are changing a HTML tag
-        if html.get_type(del_char) then
-            selections = html.adjust_selections(selections, html.get_type(del_char))
-        end
+    if not cache.change.del_char or not cache.change.add_delimiters then
+        local del_char = utils.get_alias(utils.get_char())
+        local change = config.get_change(del_char)
+        -- Get the selections to change
+        local selections = utils.get_nearest_selections(del_char, "change")
         if not selections then
             return
         end
 
         -- Highlight the range and set a timer to clear it if necessary
-        local highlight_motion = config.get_opts().highlight_motion
-        if highlight_motion.duration then
+        local highlight = config.get_opts().highlight
+        if highlight.duration then
             buffer.highlight_selection(selections.left)
             buffer.highlight_selection(selections.right)
-            if highlight_motion.duration > 0 then
-                vim.defer_fn(buffer.clear_highlights, highlight_motion.duration)
+            if highlight.duration > 0 then
+                vim.defer_fn(buffer.clear_highlights, highlight.duration)
             end
         end
-        -- Get the new surrounding pair
+
+        -- Get the new surrounding pair, querying the user for more input if no replacement is provided
         local ins_char, delimiters
-        if html.get_type(del_char) then
-            delimiters = html.get_tag()
+        if change and change.replacement then
+            delimiters = change.replacement()
         else
             ins_char = utils.get_char()
             delimiters = utils.get_delimiters(ins_char)
         end
-        buffer.clear_highlights()
 
+        -- Clear the highlights after getting the replacement surround
+        buffer.clear_highlights()
         if not delimiters then
             return
         end
+
         -- Set the cache
         cache.change = {
             del_char = del_char,
-            ins_delimiters = delimiters,
+            add_delimiters = function()
+                return delimiters
+            end,
         }
     end
-
     local args = vim.deepcopy(cache.change)
     args.curpos = curpos
     M.change_surround(args)
