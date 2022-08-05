@@ -41,11 +41,11 @@ end
 -- Add delimiters around the cursor, in insert mode.
 M.insert_surround = function(line_mode)
     local char = utils.get_char()
+    local curpos = buffer.get_curpos()
     local delimiters = utils.get_delimiters(char)
     if not delimiters then
         return
     end
-    local curpos = buffer.get_curpos()
 
     -- Add new lines if the addition is done line-wise
     if line_mode then
