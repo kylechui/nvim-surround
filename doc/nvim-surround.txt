@@ -365,7 +365,18 @@ containing the following keys:
         what to modify.
 
         For convenience, this key can also take a string as a value, which is
-        then interpreted as a Lua pattern that represents the selection.
+        then interpreted as a Lua pattern that represents the selection. For
+        example, HTML tags are found via the `at` text-object:
+>
+        local config = require("nvim-surround.config")
+        ["t"] = {
+            find = function()
+                return config.get_selection({ textobject = "t" })
+            end,
+        }
+<
+        See |nvim-surround.config.helpers| for information on how to utilize
+        the provided helper functions.
 
     delete: ~
         A function that returns the pair of selections to remove from the
@@ -373,8 +384,16 @@ containing the following keys:
 
         For convenience, this key can also take a string as a value, which is
         then interpreted as a Lua pattern whose match groups represent the
-        left/right delimiter pair. See |nvim-surround.config.get_selections()|
-        for more information.
+        left/right delimiter pair. For example, function calls are deleted
+        via
+>
+        delete = "^([%w%-_:.>]+%()().-(%))()$",
+<
+        The Lua pattern matches the function name and opening  parenthesis for
+        the left delimiter, and the closing parenthesis for the right
+        delimiter.
+
+        See |nvim-surround.config.get_selections()| for more information.
 
     change: ~
         A table of two keys: `target` and `replacement`.
@@ -386,8 +405,16 @@ containing the following keys:
 
             For simplicity, this key can also take a string as a value, which
             is then interpreted as a Lua pattern whose match groups represent
-            the left/right delimiter pair. See
-            |nvim-surround.config.get_selections()| for more information.
+            the left/right delimiter pair. For example, the default `T`
+            surround's `change.target` key:
+>
+            target = "^<([^>]*)().-([^%/]*)()>$",
+<
+            The Lua pattern matches the contents of the opening tag (including
+            attributes) for the left delimiter, and the contents of the
+            closing tag for the right delimiter.
+
+            See |nvim-surround.config.get_selections()| for more information.
 
         replacement: ~
             A function that returns the surrounding pair to replace the target
