@@ -203,7 +203,9 @@ M.default_opts = {
                     return { { result .. "(" }, { ")" } }
                 end
             end,
-            find = "[%w%-_:.>]+%b()",
+            find = function()
+                return M.get_selection({ node = "function_call" }) or M.get_selection({ pattern = "[%w%-_:.>]+%b()" })
+            end,
             delete = "^([%w%-_:.>]+%()().-(%))()$",
             change = {
                 target = "^.-([%w_]+)()%b()()()$",
@@ -270,13 +272,15 @@ M.get_input = function(prompt)
 end
 
 -- Gets a selection from the buffer based on some heuristic.
----@param args { char: string?, pattern: string?, textobject: string? }
+---@param args { char: string?, pattern: string?, textobject: string?, node: string? }
 ---@return selection? The retrieved selection.
 M.get_selection = function(args)
     if args.pattern then
         return require("nvim-surround.patterns").get_selection(args.pattern)
     elseif args.textobject then
         return require("nvim-surround.textobjects").get_selection(args.textobject)
+    elseif args.node then
+        return require("nvim-surround.treesitter").get_selection(args.node)
     end
 end
 
