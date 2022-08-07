@@ -140,11 +140,8 @@ M.default_opts = {
             add = function()
                 local input = M.get_input("Enter the HTML tag: ")
                 if input then
-                    local element = input:match("^<?([%w-]+)")
+                    local element = input:match("^<?([%w-]*)")
                     local attributes = input:match("%s+([^>]+)>?$")
-                    if not element then
-                        return nil
-                    end
 
                     local open = attributes and element .. " " .. attributes or element
                     local close = element
@@ -170,11 +167,8 @@ M.default_opts = {
             add = function()
                 local input = M.get_input("Enter the HTML tag: ")
                 if input then
-                    local element = input:match("^<?([%w-]+)")
+                    local element = input:match("^<?([%w-]*)")
                     local attributes = input:match("%s+([^>]+)>?$")
-                    if not element then
-                        return nil
-                    end
 
                     local open = attributes and element .. " " .. attributes or element
                     local close = element
@@ -191,11 +185,8 @@ M.default_opts = {
                 replacement = function()
                     local input = M.get_input("Enter the HTML tag: ")
                     if input then
-                        local element = input:match("^<?([%w-]+)")
+                        local element = input:match("^<?([%w-]*)")
                         local attributes = input:match("%s+([^>]+)>?$")
-                        if not element then
-                            return nil
-                        end
 
                         local open = attributes and element .. " " .. attributes or element
                         local close = element
