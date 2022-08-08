@@ -140,8 +140,8 @@ M.default_opts = {
             add = function()
                 local input = M.get_input("Enter the HTML tag: ")
                 if input then
-                    local element = input:match("^<?([%w-]*)")
-                    local attributes = input:match("%s+([^>]+)>?$")
+                    local element = input:match("^<?([^%s>]*)")
+                    local attributes = input:match("^<?[^%s>]*%s+(.-)>?$")
 
                     local open = attributes and element .. " " .. attributes or element
                     local close = element
@@ -154,11 +154,17 @@ M.default_opts = {
             end,
             delete = "^(%b<>)().-(%b<>)()$",
             change = {
-                target = "^<([%w-]*)().-([^/]*)()>$",
+                target = "^<([^%s>]*)().-([^/]*)()>$",
                 replacement = function()
-                    local element = M.get_input("Enter the HTML element: ")
-                    if element then
-                        return { { element }, { element } }
+                    local input = M.get_input("Enter the HTML tag: ")
+                    if input then
+                        local element = input:match("^<?([^%s>]*)")
+                        local attributes = input:match("^<?[^%s>]*%s+(.-)>?$")
+
+                        local open = attributes and element .. " " .. attributes or element
+                        local close = element
+
+                        return { { open }, { close } }
                     end
                 end,
             },
@@ -167,8 +173,8 @@ M.default_opts = {
             add = function()
                 local input = M.get_input("Enter the HTML tag: ")
                 if input then
-                    local element = input:match("^<?([%w-]*)")
-                    local attributes = input:match("%s+([^>]+)>?$")
+                    local element = input:match("^<?([^%s>]*)")
+                    local attributes = input:match("^<?[^%s>]*%s+(.-)>?$")
 
                     local open = attributes and element .. " " .. attributes or element
                     local close = element
@@ -181,12 +187,12 @@ M.default_opts = {
             end,
             delete = "^(%b<>)().-(%b<>)()$",
             change = {
-                target = "^<([^>]*)().-([^%/]*)()>$",
+                target = "^<([^>]*)().-([^/]*)()>$",
                 replacement = function()
                     local input = M.get_input("Enter the HTML tag: ")
                     if input then
-                        local element = input:match("^<?([%w-]*)")
-                        local attributes = input:match("%s+([^>]+)>?$")
+                        local element = input:match("^<?([^%s>]*)")
+                        local attributes = input:match("^<?[^%s>]*%s+(.-)>?$")
 
                         local open = attributes and element .. " " .. attributes or element
                         local close = element
@@ -203,10 +209,8 @@ M.default_opts = {
                     return { { result .. "(" }, { ")" } }
                 end
             end,
-            find = function()
-                return M.get_selection({ node = "function_call" }) or M.get_selection({ pattern = "[%w%-_:.>]+%b()" })
-            end,
-            delete = "^([%w%-_:.>]+%()().-(%))()$",
+            find = "[^=%s(]+%b()",
+            delete = "^([^=%s(]+%()().-(%))()$",
             change = {
                 target = "^.-([%w_]+)()%b()()()$",
                 replacement = function()
