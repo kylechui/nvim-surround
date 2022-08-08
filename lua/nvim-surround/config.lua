@@ -332,10 +332,13 @@ end
 ---@param opts options? The provided options.
 ---@return options? @The modified options.
 M.fill_missing_surrounds = function(opts)
+    -- If there are no surrounds, then no modification is necessary
     if not (opts and opts.surrounds) then
         return opts
     end
+
     for char, val in pairs(opts.surrounds) do
+        -- For each surround, if a key is missing, fill it in using the correspnding key from `invalid_key_behavior`
         local add, find, delete, change = val.add, val.find, val.delete, val.change
         local invalid = M.get_opts().surrounds.invalid_key_behavior
         if not add then
@@ -368,7 +371,7 @@ end
 ---@param opts options? The user-provided options.
 ---@return options? @The translated options.
 M.translate_opts = function(opts)
-    -- SOFT DEPRECATION WARNINGS
+    ---[=[ SOFT DEPRECATION WARNINGS
     ---@diagnostic disable-next-line: undefined-field
     if opts and opts.highlight_motion then
         local highlight_warning = {
@@ -385,12 +388,13 @@ M.translate_opts = function(opts)
         }
         vim.notify_once(table.concat(highlight_warning, "\n"), vim.log.levels.ERROR)
     end
+    --]=]
 
     if not (opts and opts.surrounds) then
         return opts
     end
     for char, val in pairs(opts.surrounds) do
-        -- SOFT DEPRECATION WARNINGS
+        ---[=[ SOFT DEPRECATION WARNINGS
         if char == "pairs" or char == "separators" then
             local delimiter_warning = {
                 "The `pairs` and `separators` tables have been deprecated; configuration for surrounds",
@@ -405,6 +409,7 @@ M.translate_opts = function(opts)
             }
             vim.notify_once(table.concat(add_warning, "\n"), vim.log.levels.ERROR)
         end
+        --]=]
 
         -- Validate that the delimiter has not been disabled
         if val then
