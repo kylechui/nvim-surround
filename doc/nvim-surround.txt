@@ -362,21 +362,22 @@ containing the following keys:
         A function that returns the "parent selection" for a surrounding pair.
         The selection returned should contain the surrounding pair and little
         else, as it is used by the `delete` and `change` keys to determine
-        what to modify.
-
-        For convenience, this key can also take a string as a value, which is
-        then interpreted as a Lua pattern that represents the selection. For
-        example, HTML tags are found via the `at` text-object:
+        what to modify. For example, HTML tags are found via the `at`
+        text-object:
 >
         local config = require("nvim-surround.config")
+
         ["t"] = {
             find = function()
-                return config.get_selection({ textobject = "t" })
+                return config.get_selection({ motion = "at" })
             end,
         }
 <
         See |nvim-surround.config.helpers| for information on how to utilize
         the provided helper functions.
+
+        For convenience, this key can also take a string as a value, which is
+        then interpreted as a Lua pattern that represents the selection.
 
     delete: ~
         A function that returns the pair of selections to remove from the
@@ -473,12 +474,12 @@ config.get_selection({args})
     Retrieves a selection from the buffer using {args}. The {args} table
     currently takes one of two keys:
 
-    textobject: ~
-        A single character corresponding to the `a[char]` text-object. For
-        example, the default `find` key for `(` is:
+    motion: ~
+        A string that represents any Neovim motion. For example, the default
+        `find` key for `(` is:
 >
         find = function()
-            return M.get_selection({ textobject = "(" })
+            return M.get_selection({ motion = "a(" })
         end,
 <
     pattern: ~

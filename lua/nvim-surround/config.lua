@@ -17,7 +17,7 @@ M.default_opts = {
         ["("] = {
             add = { "( ", " )" },
             find = function()
-                return M.get_selection({ textobject = "(" })
+                return M.get_selection({ motion = "a(" })
             end,
             delete = "^(. ?)().-( ?.)()$",
             change = {
@@ -27,7 +27,7 @@ M.default_opts = {
         [")"] = {
             add = { "(", ")" },
             find = function()
-                return M.get_selection({ textobject = ")" })
+                return M.get_selection({ motion = "a)" })
             end,
             delete = "^(.)().-(.)()$",
             change = {
@@ -37,7 +37,7 @@ M.default_opts = {
         ["{"] = {
             add = { "{ ", " }" },
             find = function()
-                return M.get_selection({ textobject = "{" })
+                return M.get_selection({ motion = "a{" })
             end,
             delete = "^(. ?)().-( ?.)()$",
             change = {
@@ -47,7 +47,7 @@ M.default_opts = {
         ["}"] = {
             add = { "{", "}" },
             find = function()
-                return M.get_selection({ textobject = "}" })
+                return M.get_selection({ motion = "a}" })
             end,
             delete = "^(.)().-(.)()$",
             change = {
@@ -57,7 +57,7 @@ M.default_opts = {
         ["<"] = {
             add = { "< ", " >" },
             find = function()
-                return M.get_selection({ textobject = "<" })
+                return M.get_selection({ motion = "a<" })
             end,
             delete = "^(. ?)().-( ?.)()$",
             change = {
@@ -67,7 +67,7 @@ M.default_opts = {
         [">"] = {
             add = { "<", ">" },
             find = function()
-                return M.get_selection({ textobject = ">" })
+                return M.get_selection({ motion = "a>" })
             end,
             delete = "^(.)().-(.)()$",
             change = {
@@ -77,7 +77,7 @@ M.default_opts = {
         ["["] = {
             add = { "[ ", " ]" },
             find = function()
-                return M.get_selection({ textobject = "[" })
+                return M.get_selection({ motion = "a[" })
             end,
             delete = "^(. ?)().-( ?.)()$",
             change = {
@@ -87,7 +87,7 @@ M.default_opts = {
         ["]"] = {
             add = { "[", "]" },
             find = function()
-                return M.get_selection({ textobject = "]" })
+                return M.get_selection({ motion = "a]" })
             end,
             delete = "^(.)().-(.)()$",
             change = {
@@ -97,7 +97,7 @@ M.default_opts = {
         ["'"] = {
             add = { "'", "'" },
             find = function()
-                return M.get_selection({ textobject = "'" })
+                return M.get_selection({ motion = "a'" })
             end,
             delete = "^(.)().-(.)()$",
             change = {
@@ -107,7 +107,7 @@ M.default_opts = {
         ['"'] = {
             add = { '"', '"' },
             find = function()
-                return M.get_selection({ textobject = '"' })
+                return M.get_selection({ motion = 'a"' })
             end,
             delete = "^(.)().-(.)()$",
             change = {
@@ -117,7 +117,7 @@ M.default_opts = {
         ["`"] = {
             add = { "`", "`" },
             find = function()
-                return M.get_selection({ textobject = "`" })
+                return M.get_selection({ motion = "a`" })
             end,
             delete = "^(.)().-(.)()$",
             change = {
@@ -150,7 +150,7 @@ M.default_opts = {
                 end
             end,
             find = function()
-                return M.get_selection({ textobject = "t" })
+                return M.get_selection({ motion = "at" })
             end,
             delete = "^(%b<>)().-(%b<>)()$",
             change = {
@@ -177,7 +177,7 @@ M.default_opts = {
                 end
             end,
             find = function()
-                return M.get_selection({ textobject = "t" })
+                return M.get_selection({ motion = "at" })
             end,
             delete = "^(%b<>)().-(%b<>)()$",
             change = {
@@ -270,13 +270,13 @@ M.get_input = function(prompt)
 end
 
 -- Gets a selection from the buffer based on some heuristic.
----@param args { char: string?, pattern: string?, textobject: string? }
+---@param args { char: string?, pattern: string?, motion: string? }
 ---@return selection? The retrieved selection.
 M.get_selection = function(args)
     if args.pattern then
         return require("nvim-surround.patterns").get_selection(args.pattern)
-    elseif args.textobject then
-        return require("nvim-surround.textobjects").get_selection(args.textobject)
+    elseif args.motion then
+        return require("nvim-surround.textobjects").get_selection(args.motion)
     end
 end
 
@@ -642,7 +642,7 @@ M.setup = function(user_opts)
     -- Configure highlight group, if necessary
     if M.user_opts.highlight.duration then
         vim.cmd([[
-            highlight default link NvimSurroundHighlightTextObject Visual
+            highlight default link NvimSurroundHighlightmotion Visual
         ]])
     end
 end
