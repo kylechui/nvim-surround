@@ -192,7 +192,7 @@ M.highlight_selection = function(selection)
     vim.highlight.range(
         0,
         namespace,
-        "NvimSurroundHighlightTextObject",
+        "NvimSurroundHighlight",
         { selection.first_pos[1] - 1, selection.first_pos[2] - 1 },
         { selection.last_pos[1] - 1, selection.last_pos[2] - 1 },
         { inclusive = true }

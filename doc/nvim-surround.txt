@@ -564,10 +564,10 @@ a surrounding pair, one can optionally highlight the pair to be replaced. The
         clearing them. If the value is zero, then the highlights persist
         until the surround action is completed.
 
-The relevant highlight group is `NvimSurroundHighlightTextObject`, which
-can be configured separately. The default higlight group used is `Visual`:
+The relevant highlight group is `NvimSurroundHighlight`, which can be
+configured separately. The default higlight group used is `Visual`:
 >
-    highlight default link NvimSurroundHighlightTextObject Visual
+    highlight default link NvimSurroundHighlight Visual
 <
 --------------------------------------------------------------------------------
 3.6. Move Cursor                            *nvim-surround.config.move_cursor*

@@ -642,7 +642,7 @@ M.setup = function(user_opts)
     -- Configure highlight group, if necessary
     if M.user_opts.highlight.duration then
         vim.cmd([[
-            highlight default link NvimSurroundHighlightmotion Visual
+            highlight default link NvimSurroundHighlight Visual
         ]])
     end
 end

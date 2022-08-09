@@ -43,7 +43,7 @@ M.get_selection = function(motion)
         if vim.fn.searchpos(char, "bncW")[1] == curpos[1] then
             vim.fn.searchpos(char, "bcW")
         end
-    else -- General case, jump to the character
+    elseif char then -- General case, jump to the character
         vim.fn.searchpos(char, "bcW")
     end
 
