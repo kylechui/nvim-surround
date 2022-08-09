@@ -17,7 +17,7 @@ M.default_opts = {
         ["("] = {
             add = { "( ", " )" },
             find = function()
-                return M.get_selection({ textobject = "(" })
+                return M.get_selection({ motion = "a(" })
             end,
             delete = "^(. ?)().-( ?.)()$",
             change = {
@@ -27,7 +27,7 @@ M.default_opts = {
         [")"] = {
             add = { "(", ")" },
             find = function()
-                return M.get_selection({ textobject = ")" })
+                return M.get_selection({ motion = "a)" })
             end,
             delete = "^(.)().-(.)()$",
             change = {
@@ -37,7 +37,7 @@ M.default_opts = {
         ["{"] = {
             add = { "{ ", " }" },
             find = function()
-                return M.get_selection({ textobject = "{" })
+                return M.get_selection({ motion = "a{" })
             end,
             delete = "^(. ?)().-( ?.)()$",
             change = {
@@ -47,7 +47,7 @@ M.default_opts = {
         ["}"] = {
             add = { "{", "}" },
             find = function()
-                return M.get_selection({ textobject = "}" })
+                return M.get_selection({ motion = "a}" })
             end,
             delete = "^(.)().-(.)()$",
             change = {
@@ -57,7 +57,7 @@ M.default_opts = {
         ["<"] = {
             add = { "< ", " >" },
             find = function()
-                return M.get_selection({ textobject = "<" })
+                return M.get_selection({ motion = "a<" })
             end,
             delete = "^(. ?)().-( ?.)()$",
             change = {
@@ -67,7 +67,7 @@ M.default_opts = {
         [">"] = {
             add = { "<", ">" },
             find = function()
-                return M.get_selection({ textobject = ">" })
+                return M.get_selection({ motion = "a>" })
             end,
             delete = "^(.)().-(.)()$",
             change = {
@@ -77,7 +77,7 @@ M.default_opts = {
         ["["] = {
             add = { "[ ", " ]" },
             find = function()
-                return M.get_selection({ textobject = "[" })
+                return M.get_selection({ motion = "a[" })
             end,
             delete = "^(. ?)().-( ?.)()$",
             change = {
@@ -87,7 +87,7 @@ M.default_opts = {
         ["]"] = {
             add = { "[", "]" },
             find = function()
-                return M.get_selection({ textobject = "]" })
+                return M.get_selection({ motion = "a]" })
             end,
             delete = "^(.)().-(.)()$",
             change = {
@@ -97,7 +97,7 @@ M.default_opts = {
         ["'"] = {
             add = { "'", "'" },
             find = function()
-                return M.get_selection({ textobject = "'" })
+                return M.get_selection({ motion = "a'" })
             end,
             delete = "^(.)().-(.)()$",
             change = {
@@ -107,7 +107,7 @@ M.default_opts = {
         ['"'] = {
             add = { '"', '"' },
             find = function()
-                return M.get_selection({ textobject = '"' })
+                return M.get_selection({ motion = 'a"' })
             end,
             delete = "^(.)().-(.)()$",
             change = {
@@ -117,7 +117,7 @@ M.default_opts = {
         ["`"] = {
             add = { "`", "`" },
             find = function()
-                return M.get_selection({ textobject = "`" })
+                return M.get_selection({ motion = "a`" })
             end,
             delete = "^(.)().-(.)()$",
             change = {
@@ -150,7 +150,7 @@ M.default_opts = {
                 end
             end,
             find = function()
-                return M.get_selection({ textobject = "t" })
+                return M.get_selection({ motion = "at" })
             end,
             delete = "^(%b<>)().-(%b<>)()$",
             change = {
@@ -177,7 +177,7 @@ M.default_opts = {
                 end
             end,
             find = function()
-                return M.get_selection({ textobject = "t" })
+                return M.get_selection({ motion = "at" })
             end,
             delete = "^(%b<>)().-(%b<>)()$",
             change = {
@@ -270,13 +270,13 @@ M.get_input = function(prompt)
 end
 
 -- Gets a selection from the buffer based on some heuristic.
----@param args { char: string?, pattern: string?, textobject: string? }
+---@param args { char: string?, pattern: string?, motion: string? }
 ---@return selection? The retrieved selection.
 M.get_selection = function(args)
     if args.pattern then
         return require("nvim-surround.patterns").get_selection(args.pattern)
-    elseif args.textobject then
-        return require("nvim-surround.textobjects").get_selection(args.textobject)
+    elseif args.motion then
+        return require("nvim-surround.textobjects").get_selection(args.motion)
     end
 end
 
@@ -298,7 +298,7 @@ M.user_opts = nil
 -- Returns the buffer-local options for the plugin, or global options if buffer-local does not exist.
 ---@return options @The buffer-local options.
 M.get_opts = function()
-    return vim.b[0].nvim_surround_buffer_opts or M.user_opts
+    return vim.b[0].nvim_surround_buffer_opts or M.user_opts or {}
 end
 
 -- Returns the add key for the surround associated with a given character, if one exists.
@@ -328,10 +328,50 @@ M.get_change = function(char)
     return key.change
 end
 
+-- Returns a set of opts, with missing keys filled in by the invalid_key_behavior key.
+---@param opts options? The provided options.
+---@return options? @The modified options.
+M.fill_missing_surrounds = function(opts)
+    -- If there are no surrounds, then no modification is necessary
+    if not (opts and opts.surrounds) then
+        return opts
+    end
+
+    for char, val in pairs(opts.surrounds) do
+        -- For each surround, if a key is missing, fill it in using the correspnding key from `invalid_key_behavior`
+        local add, find, delete, change = val.add, val.find, val.delete, val.change
+        local invalid = M.get_opts().surrounds.invalid_key_behavior
+        if not add then
+            opts.surrounds[char].add = function()
+                return invalid.add(char)
+            end
+        end
+        if not find then
+            opts.surrounds[char].find = function()
+                return invalid.find(char)
+            end
+        end
+        if not delete then
+            opts.surrounds[char].delete = function()
+                return invalid.delete(char)
+            end
+        end
+        if not (change and change.target) then
+            opts.surrounds[char].change = {
+                target = function()
+                    return invalid.change.target(char)
+                end,
+            }
+        end
+    end
+    return opts
+end
+
 -- Translates the user-provided configuration into the internal form.
 ---@param opts options? The user-provided options.
+---@return options? @The translated options.
 M.translate_opts = function(opts)
-    -- SOFT DEPRECATION WARNINGS
+    ---[=[ SOFT DEPRECATION WARNINGS
     ---@diagnostic disable-next-line: undefined-field
     if opts and opts.highlight_motion then
         local highlight_warning = {
@@ -348,13 +388,13 @@ M.translate_opts = function(opts)
         }
         vim.notify_once(table.concat(highlight_warning, "\n"), vim.log.levels.ERROR)
     end
+    --]=]
 
     if not (opts and opts.surrounds) then
         return opts
     end
-    local invalid = opts.surrounds.invalid_key_behavior or M.default_opts.surrounds.invalid_key_behavior
     for char, val in pairs(opts.surrounds) do
-        -- SOFT DEPRECATION WARNINGS
+        ---[=[ SOFT DEPRECATION WARNINGS
         if char == "pairs" or char == "separators" then
             local delimiter_warning = {
                 "The `pairs` and `separators` tables have been deprecated; configuration for surrounds",
@@ -369,26 +409,13 @@ M.translate_opts = function(opts)
             }
             vim.notify_once(table.concat(add_warning, "\n"), vim.log.levels.ERROR)
         end
+        --]=]
 
         -- Validate that the delimiter has not been disabled
         if val then
             local add, find, delete, change = val.add, val.find, val.delete, val.change
-            -- Ensure that all necessary keys are present
-            if not add then
-                opts.surrounds[char].add = invalid.add
-            end
-            if not find then
-                opts.surrounds[char].find = invalid.find
-            end
-            if not delete then
-                opts.surrounds[char].delete = invalid.delete
-            end
-            if not (change and change.target) then
-                opts.surrounds[char].change = { target = invalid.change.target }
-            end
-
             -- Handle `add` key translation
-            if vim.tbl_islist(add) then -- Check if the add key is a table instead of a function
+            if add and vim.tbl_islist(add) then -- Check if the add key is a table instead of a function
                 -- Wrap the left/right delimiters in a table if they are strings (single line)
                 if type(add[1]) == "string" then
                     add[1] = { add[1] }
@@ -403,7 +430,7 @@ M.translate_opts = function(opts)
             end
 
             -- Handle `find` key translation
-            if type(find) == "string" then
+            if find and type(find) == "string" then
                 -- Treat the string as a Lua pattern, and find the selection
                 opts.surrounds[char].find = function()
                     return require("nvim-surround.patterns").get_selection(find)
@@ -411,7 +438,7 @@ M.translate_opts = function(opts)
             end
 
             -- Handle `delete` key translation
-            if type(delete) == "string" then
+            if delete and type(delete) == "string" then
                 -- Wrap delete in a function
                 opts.surrounds[char].delete = function()
                     return require("nvim-surround.utils").get_selections(char, delete)
@@ -419,25 +446,27 @@ M.translate_opts = function(opts)
             end
 
             -- Handle `change` key translation
-            local target, replacement = change and change.target, change and change.replacement
-            -- Wrap target in a function
-            if type(target) == "string" then
-                opts.surrounds[char].change.target = function()
-                    return require("nvim-surround.utils").get_selections(char, target)
+            if change then
+                local target, replacement = change.target, change.replacement
+                -- Wrap target in a function
+                if target and type(target) == "string" then
+                    opts.surrounds[char].change.target = function()
+                        return require("nvim-surround.utils").get_selections(char, target)
+                    end
                 end
-            end
-            -- Check if the replacement key is a table instead of a function
-            if replacement and vim.tbl_islist(replacement) then
-                -- Wrap the left/right delimiters in a table if they are strings (single line)
-                if type(replacement[1]) == "string" then
-                    replacement[1] = { replacement[1] }
-                end
-                if type(replacement[2]) == "string" then
-                    replacement[2] = { replacement[2] }
-                end
-                -- Wrap the delimiter pair in a function
-                opts.surrounds[char].change.replacement = function()
-                    return replacement
+                -- Check if the replacement key is a table instead of a function
+                if replacement and vim.tbl_islist(replacement) then
+                    -- Wrap the left/right delimiters in a table if they are strings (single line)
+                    if type(replacement[1]) == "string" then
+                        replacement[1] = { replacement[1] }
+                    end
+                    if type(replacement[2]) == "string" then
+                        replacement[2] = { replacement[2] }
+                    end
+                    -- Wrap the delimiter pair in a function
+                    opts.surrounds[char].change.replacement = function()
+                        return replacement
+                    end
                 end
             end
         end
@@ -604,13 +633,16 @@ end
 ---@param user_opts options? The user-defined options to be merged with default_opts.
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
+    ---@diagnostic disable-next-line
     M.user_opts = M.merge_opts(M.translate_opts(M.default_opts), user_opts)
+    -- Filling in missing keys must occur after, since the user might have defined their own `invalid_key_behavior`
+    M.user_opts = M.fill_missing_surrounds(M.user_opts)
     -- Configure global keymaps
     M.set_keymaps(false)
     -- Configure highlight group, if necessary
     if M.user_opts.highlight.duration then
         vim.cmd([[
-            highlight default link NvimSurroundHighlightTextObject Visual
+            highlight default link NvimSurroundHighlight Visual
         ]])
     end
 end
@@ -620,6 +652,8 @@ end
 M.buffer_setup = function(buffer_opts)
     -- Merge the given table into the existing buffer-local options, or global options otherwise
     vim.b[0].nvim_surround_buffer_opts = M.merge_opts(M.get_opts(), buffer_opts)
+    -- Filling in missing keys must occur after, since the user might have defined their own `invalid_key_behavior`
+    vim.b[0].nvim_surround_buffer_opts = M.fill_missing_surrounds(vim.b[0].nvim_surround_buffer_opts)
     -- Configure buffer-local keymaps
     M.set_keymaps(true)
 end

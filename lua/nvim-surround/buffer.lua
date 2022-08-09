@@ -80,16 +80,16 @@ M.adjust_mark = function(mark)
     M.set_mark(mark, pos)
 end
 
--- Sets the operator marks according to a given character.
----@param char string The given character.
-M.set_operator_marks = function(char)
+-- Sets the operator marks according to a given motion.
+---@param motion string The given motion.
+M.set_operator_marks = function(motion)
     local curpos = M.get_curpos()
     -- Clear the [ and ] marks
     M.del_mark("[")
     M.del_mark("]")
     -- Set the [ and ] marks by calling an operatorfunc
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
-    vim.cmd("normal g@a" .. char)
+    vim.cmd("normal g@" .. motion)
     -- Adjust the marks to not reside on whitespace
     M.adjust_mark("[")
     M.adjust_mark("]")
@@ -192,7 +192,7 @@ M.highlight_selection = function(selection)
     vim.highlight.range(
         0,
         namespace,
-        "NvimSurroundHighlightTextObject",
+        "NvimSurroundHighlight",
         { selection.first_pos[1] - 1, selection.first_pos[2] - 1 },
         { selection.last_pos[1] - 1, selection.last_pos[2] - 1 },
         { inclusive = true }
