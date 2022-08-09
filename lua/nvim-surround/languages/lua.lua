@@ -16,7 +16,7 @@ vim.api.nvim_create_autocmd("FileType", {
                     find = function()
                         return config.get_selection({ node = "function_call" })
                     end,
-                    delete = "^([^=%s(]+%()().-(%))()$",
+                    delete = "^([^=%s]+%()().-(%))()$",
                     change = {
                         target = "^.-([%w_]+)()%b()()()$",
                         replacement = function()
