@@ -19,25 +19,27 @@ body:
         - label: Have you read through `:h nvim-surround` to see if there might be any relevant information there?
           required: true
 
-  - type: input
+  - type: textarea
     attributes:
       label: To reproduce
       description: |
         Give an example of a minimal sample buffer, cursor location, and keystroke sequence that generates the bug.
+    validations:
+      required: true
 
-  - type: input
+  - type: textarea
     attributes:
       label: Expected behavior
       description: |
         Give what the expected buffer contents should be after the keystroke sequence.
 
-  - type: input
+  - type: textarea
     attributes:
       label: Actual behavior
       description: |
         Give what the actual buffer contents are after the keystroke sequence.
 
-  - type: input
+  - type: textarea
     attributes:
       label: Additional context
       description: |
