@@ -115,13 +115,29 @@ M.visual_surround = function(line_mode)
         buffer.insert_text({ last_pos[1], #buffer.get_line(last_pos[1]) + 1 }, delimiters[2])
         buffer.insert_text(first_pos, delimiters[1])
     elseif vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
-        local mn_lnum, mn_col = math.min(first_pos[1], last_pos[1]), math.min(first_pos[2], last_pos[2])
-        local mx_lnum, mx_col = math.max(first_pos[1], last_pos[1]), math.max(first_pos[2], last_pos[2])
-        for line_num = mx_lnum, mn_lnum, -1 do
-            last_pos = buffer.get_last_byte({ line_num, mx_col })
-            first_pos = buffer.get_first_byte({ line_num, mn_col })
-            buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
-            buffer.insert_text(first_pos, delimiters[1])
+        -- Get the display index for the left/right surrounds
+        local first_disp = vim.fn.strdisplaywidth(buffer.get_line(first_pos[1]):sub(1, first_pos[2] - 1)) + 1
+        local last_disp = vim.fn.strdisplaywidth(buffer.get_line(last_pos[1]):sub(1, last_pos[2] - 1)) + 1
+        local mn_disp, mx_disp = math.min(first_disp, last_disp), math.max(first_disp, last_disp)
+        local mn_lnum, mx_lnum = math.min(first_pos[1], last_pos[1]), math.max(first_pos[1], last_pos[1])
+        for lnum = mx_lnum, mn_lnum, -1 do
+            local line = buffer.get_line(lnum)
+            local index = buffer.get_last_byte({ lnum, 1 })[2]
+            -- The current display count should be >= the desired one
+            while vim.fn.strdisplaywidth(line:sub(1, index)) < mx_disp and index <= #line do
+                index = buffer.get_last_byte({ lnum, index + 1 })[2]
+            end
+            index = buffer.get_last_byte({ lnum, index })[2]
+            buffer.insert_text({ lnum, index + 1 }, delimiters[2])
+            index = 1
+            -- The current display count should be <= the desired one
+            while vim.fn.strdisplaywidth(line:sub(1, index - 1)) + 1 < mn_disp and index <= #line do
+                index = buffer.get_last_byte({ lnum, index })[2] + 1
+            end
+            if vim.fn.strdisplaywidth(line:sub(1, index - 1)) + 1 > mn_disp then
+                index = buffer.get_first_byte({ lnum, index - 1 })[2]
+            end
+            buffer.insert_text({ lnum, index }, delimiters[1])
         end
     else -- Regular visual mode case
         last_pos = buffer.get_last_byte(last_pos)
