@@ -154,7 +154,7 @@ M.default_opts = {
             end,
             delete = "^(%b<>)().-(%b<>)()$",
             change = {
-                target = "^<([^%s>]*)().-([^/]*)()>$",
+                target = "^<([^%s<>]*)().-([^/]*)()>$",
                 replacement = function()
                     local input = M.get_input("Enter the HTML tag: ")
                     if input then
