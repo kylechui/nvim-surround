@@ -218,7 +218,13 @@ describe("nvim-surround", function()
     end)
 
     it("can surround blockwise visual selections", function()
-        set_lines({ "there happen", "to be", "quite a few lines", "in this buffer", "or so I had thought" })
+        set_lines({
+            "there happen",
+            "to be",
+            "quite a few lines",
+            "in this buffer",
+            "or so I had thought",
+        })
         vim.cmd("normal! " .. ctrl_v)
         set_curpos({ 5, 2 })
         vim.cmd("normal Sb")
@@ -386,6 +392,105 @@ describe("nvim-surround", function()
         check_lines({
             "some |text",
             "more text|",
+        })
+    end)
+
+    it("can handle multi-byte characters", function()
+        set_lines({ "。。。。" })
+        vim.cmd("normal ys3lb")
+        check_lines({ "(。。。)。" })
+        vim.cmd("normal ysibB")
+        check_lines({ "({。。。})。" })
+        set_curpos({ 1, 3 })
+        vim.cmd("normal yslr")
+        check_lines({ "({[。]。。})。" })
+        vim.cmd("normal VS|")
+        check_lines({ "|", "({[。]。。})。", "|" })
+
+        set_lines({
+            "1234567890",
+            "。。。。。",
+            "1234567890",
+        })
+        set_curpos({ 2, 4 })
+        vim.cmd("normal! v")
+        set_curpos({ 3, 7 })
+        vim.cmd("normal Sb")
+        check_lines({
+            "1234567890",
+            "。(。。。。",
+            "1234567)890",
+        })
+        set_curpos({ 2, 16 })
+        vim.cmd("normal! v")
+        set_curpos({ 2, 11 })
+        vim.cmd("normal Sr")
+        check_lines({
+            "1234567890",
+            "。(。。[。。]",
+            "1234567)890",
+        })
+
+        set_lines({
+            "1234567890",
+            "。。。。。",
+            "1234567890",
+        })
+        set_curpos({ 1, 10 })
+        vim.cmd("normal! " .. ctrl_v)
+        set_curpos({ 3, 10 })
+        vim.cmd("normal Sb")
+        check_lines({
+            "123456789(0)",
+            "。。。。(。)",
+            "123456789(0)",
+        })
+        set_curpos({ 1, 7 })
+        vim.cmd("normal! " .. ctrl_v)
+        set_curpos({ 3, 4 })
+        vim.cmd("normal Sr")
+        check_lines({
+            "123[4567]89(0)",
+            "。[。。。](。)",
+            "123[4567]89(0)",
+        })
+        set_curpos({ 3, 1 })
+        vim.cmd("normal! " .. ctrl_v)
+        set_curpos({ 1, 1 })
+        vim.cmd("normal Sa")
+        check_lines({
+            "<1>23[4567]89(0)",
+            "<。>[。。。](。)",
+            "<1>23[4567]89(0)",
+        })
+
+        set_lines({
+            "我现在在写中文字。",
+            "我不太知道应该些什么。",
+            "这样也可以练中文哈哈。",
+        })
+        set_curpos({ 1, 1 })
+        vim.cmd("normal! 3l" .. ctrl_v .. "2j2h")
+        vim.cmd("normal Sa")
+        check_lines({
+            "我<现在在>写中文字。",
+            "我<不太知>道应该些什么。",
+            "这<样也可>以练中文哈哈。",
+        })
+
+        set_lines({
+            "𐍈𐍈𐍈𐍈𐍈𐍈𐍈𐍈𐍈𐍈",
+            "。。。。。",
+            "𐍈𐍈𐍈𐍈𐍈𐍈𐍈𐍈𐍈𐍈",
+        })
+        set_curpos({ 1, 25 })
+        vim.cmd("normal! " .. ctrl_v)
+        set_curpos({ 3, 13 })
+        vim.cmd("normal Sb")
+        check_lines({
+            "𐍈𐍈𐍈(𐍈𐍈𐍈𐍈)𐍈𐍈𐍈",
+            "。(。。。)。",
+            "𐍈𐍈𐍈(𐍈𐍈𐍈𐍈)𐍈𐍈𐍈",
         })
     end)
 end)

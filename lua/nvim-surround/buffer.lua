@@ -58,6 +58,39 @@ M.del_mark = function(mark)
     vim.api.nvim_buf_del_mark(0, mark)
 end
 
+-- Gets the position of the first byte of a character, according to the UTF-8 standard.
+---@param pos integer[] The position of any byte in the character.
+---@return integer[] @The position of the first byte of the character.
+M.get_first_byte = function(pos)
+    local byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
+    if not byte then
+        return pos
+    end
+    while byte >= 0b10000000 and byte < 0b11000000 do -- See https://en.wikipedia.org/wiki/UTF-8#Encoding
+        pos[2] = pos[2] - 1
+        byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
+    end
+    return pos
+end
+
+-- Gets the position of the last byte of a character, according to the UTF-8 standard.
+---@param pos integer[] The position of the beginning of the character.
+---@return integer[] @The position of the last byte of the character.
+M.get_last_byte = function(pos)
+    local byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
+    if not byte then
+        return pos
+    end
+    if byte >= 0b11110000 then -- See https://en.wikipedia.org/wiki/UTF-8#Encoding
+        pos[2] = pos[2] + 3
+    elseif byte >= 0b11100000 then
+        pos[2] = pos[2] + 2
+    elseif byte >= 0b11000000 then
+        pos[2] = pos[2] + 1
+    end
+    return pos
+end
+
 -- Moves operator marks to not be on whitespace characters.
 ---@param mark string The mark to potentially move.
 M.adjust_mark = function(mark)
@@ -80,16 +113,16 @@ M.adjust_mark = function(mark)
     M.set_mark(mark, pos)
 end
 
--- Sets the operator marks according to a given character.
----@param char string The given character.
-M.set_operator_marks = function(char)
+-- Sets the operator marks according to a given motion.
+---@param motion string The given motion.
+M.set_operator_marks = function(motion)
     local curpos = M.get_curpos()
     -- Clear the [ and ] marks
     M.del_mark("[")
     M.del_mark("]")
     -- Set the [ and ] marks by calling an operatorfunc
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
-    vim.cmd("normal g@a" .. char)
+    vim.cmd("normal g@" .. motion)
     -- Adjust the marks to not reside on whitespace
     M.adjust_mark("[")
     M.adjust_mark("]")
@@ -192,7 +225,7 @@ M.highlight_selection = function(selection)
     vim.highlight.range(
         0,
         namespace,
-        "NvimSurroundHighlightTextObject",
+        "NvimSurroundHighlight",
         { selection.first_pos[1] - 1, selection.first_pos[2] - 1 },
         { selection.last_pos[1] - 1, selection.last_pos[2] - 1 },
         { inclusive = true }
