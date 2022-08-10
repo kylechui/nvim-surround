@@ -281,7 +281,7 @@ end
 M.get_selection = function(args)
     if args.pattern then
         return require("nvim-surround.patterns").get_selection(args.pattern)
-    elseif args.textobject then
+    elseif args.motion then
         return require("nvim-surround.textobjects").get_selection(args.motion)
     elseif args.node then
         return require("nvim-surround.treesitter").get_selection(args.node)
