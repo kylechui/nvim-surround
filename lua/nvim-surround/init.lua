@@ -118,10 +118,13 @@ M.visual_surround = function(line_mode)
         local mn_lnum, mn_col = math.min(first_pos[1], last_pos[1]), math.min(first_pos[2], last_pos[2])
         local mx_lnum, mx_col = math.max(first_pos[1], last_pos[1]), math.max(first_pos[2], last_pos[2])
         for line_num = mx_lnum, mn_lnum, -1 do
-            buffer.insert_text({ line_num, mx_col + 1 }, delimiters[2])
-            buffer.insert_text({ line_num, mn_col }, delimiters[1])
+            last_pos = buffer.get_last_byte({ line_num, mx_col })
+            first_pos = buffer.get_first_byte({ line_num, mn_col })
+            buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
+            buffer.insert_text(first_pos, delimiters[1])
         end
     else -- Regular visual mode case
+        last_pos = buffer.get_last_byte(last_pos)
         buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
         buffer.insert_text(first_pos, delimiters[1])
     end
@@ -202,6 +205,7 @@ M.normal_callback = function(mode)
         pos = { pos[1], #buffer.get_line(pos[1]) }
         buffer.set_mark("]", pos)
     end
+    buffer.set_mark("]", buffer.get_last_byte(buffer.get_mark("]")))
 
     buffer.adjust_mark("[")
     buffer.adjust_mark("]")

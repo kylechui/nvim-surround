@@ -58,6 +58,33 @@ M.del_mark = function(mark)
     vim.api.nvim_buf_del_mark(0, mark)
 end
 
+-- Gets the position of the first byte of a character, according to the UTF-8 standard.
+---@param pos integer[] The position of any byte in the character.
+---@return integer[] @The position of the first byte of the character.
+M.get_first_byte = function(pos)
+    local byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
+    while byte >= 0b10000000 and byte < 0b11000000 do -- See https://en.wikipedia.org/wiki/UTF-8#Encoding
+        pos[2] = pos[2] - 1
+        byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
+    end
+    return pos
+end
+
+-- Gets the position of the last byte of a character, according to the UTF-8 standard.
+---@param pos integer[] The position of the beginning of the character.
+---@return integer[] @The position of the last byte of the character.
+M.get_last_byte = function(pos)
+    local byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
+    if byte >= 0b11110000 then -- See https://en.wikipedia.org/wiki/UTF-8#Encoding
+        pos[2] = pos[2] + 3
+    elseif byte >= 0b11100000 then
+        pos[2] = pos[2] + 2
+    elseif byte >= 0b11000000 then
+        pos[2] = pos[2] + 1
+    end
+    return pos
+end
+
 -- Moves operator marks to not be on whitespace characters.
 ---@param mark string The mark to potentially move.
 M.adjust_mark = function(mark)
