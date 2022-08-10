@@ -63,6 +63,9 @@ end
 ---@return integer[] @The position of the first byte of the character.
 M.get_first_byte = function(pos)
     local byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
+    if not byte then
+        return pos
+    end
     while byte >= 0b10000000 and byte < 0b11000000 do -- See https://en.wikipedia.org/wiki/UTF-8#Encoding
         pos[2] = pos[2] - 1
         byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
@@ -75,6 +78,9 @@ end
 ---@return integer[] @The position of the last byte of the character.
 M.get_last_byte = function(pos)
     local byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
+    if not byte then
+        return pos
+    end
     if byte >= 0b11110000 then -- See https://en.wikipedia.org/wiki/UTF-8#Encoding
         pos[2] = pos[2] + 3
     elseif byte >= 0b11100000 then
