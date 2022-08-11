@@ -210,7 +210,7 @@ M.default_opts = {
                 end
             end,
             find = "[^=%s%(%)]+%b()",
-            delete = "^([^=%s]+%()().-(%))()$",
+            delete = "^([^=%s%(%)]+%()().-(%))()$",
             change = {
                 target = "^.-([%w_]+)()%b()()()$",
                 replacement = function()

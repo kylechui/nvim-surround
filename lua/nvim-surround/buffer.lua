@@ -66,7 +66,8 @@ M.get_first_byte = function(pos)
     if not byte then
         return pos
     end
-    while byte >= 0b10000000 and byte < 0b11000000 do -- See https://en.wikipedia.org/wiki/UTF-8#Encoding
+    -- See https://en.wikipedia.org/wiki/UTF-8#Encoding
+    while byte >= 0b10000000 and byte < 0b11000000 do
         pos[2] = pos[2] - 1
         byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
     end
@@ -81,7 +82,8 @@ M.get_last_byte = function(pos)
     if not byte then
         return pos
     end
-    if byte >= 0b11110000 then -- See https://en.wikipedia.org/wiki/UTF-8#Encoding
+    -- See https://en.wikipedia.org/wiki/UTF-8#Encoding
+    if byte >= 0b11110000 then
         pos[2] = pos[2] + 3
     elseif byte >= 0b11100000 then
         pos[2] = pos[2] + 2

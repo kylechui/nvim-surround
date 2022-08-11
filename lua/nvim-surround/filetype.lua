@@ -37,6 +37,7 @@ M.lua = {
                         find = function()
                             return config.get_selection({ node = "function_call" })
                         end,
+                        delete = "^([^=%s]+%()().-(%))()$",
                     },
                 },
             })
