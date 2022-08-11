@@ -18,6 +18,7 @@
 ---@field aliases table<string, boolean|string|string[]>
 ---@field highlight { duration: boolean|integer }
 ---@field move_cursor boolean|string
+---@field format_lines boolean|function
 
 local buffer = require("nvim-surround.buffer")
 local cache = require("nvim-surround.cache")
@@ -55,7 +56,7 @@ M.insert_surround = function(line_mode)
 
     buffer.insert_text(curpos, delimiters[2])
     buffer.insert_text(curpos, delimiters[1])
-    buffer.format_lines(curpos[1], curpos[1] + #delimiters[1] + #delimiters[2] - 2)
+    M.get_opts().format_lines(curpos[1], curpos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.set_curpos({ curpos[1] + #delimiters[1] - 1, curpos[2] + #delimiters[1][#delimiters[1]] })
     -- Indent the cursor to the correct level, if added line-wise
     if line_mode then
@@ -149,7 +150,7 @@ M.visual_surround = function(line_mode)
         buffer.insert_text(first_pos, delimiters[1])
     end
 
-    buffer.format_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
+    config.get_opts().format_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.reset_curpos(curpos)
 end
 
@@ -173,7 +174,7 @@ M.delete_surround = function(args)
         -- Delete the right selection first to ensure selection positions are correct
         buffer.delete_selection(selections.right)
         buffer.delete_selection(selections.left)
-        buffer.format_lines(
+        config.get_opts().format_lines(
             selections.left.first_pos[1],
             selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
         )

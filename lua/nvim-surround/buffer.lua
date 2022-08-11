@@ -150,17 +150,6 @@ M.get_line = function(line_num)
     return M.get_lines(line_num, line_num)[1]
 end
 
--- Formats a set of lines from the buffer, inclusive and 1-indexed.
----@param start integer The starting line.
----@param stop integer The final line.
-M.format_lines = function(start, stop)
-    local b = vim.bo
-    -- Only format if a formatter is set up already
-    if start <= stop and (b.equalprg ~= "" or b.indentexpr ~= "" or b.cindent or b.smartindent or b.lisp) then
-        vim.cmd(string.format("silent normal! %dG=%dG", start, stop))
-    end
-end
-
 -- Returns whether a position comes before another in a buffer, true if the positions are the same.
 ---@param pos1 integer[] The first position.
 ---@param pos2 integer[] The second position.

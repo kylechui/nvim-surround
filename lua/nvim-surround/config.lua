@@ -258,6 +258,13 @@ M.default_opts = {
         duration = 0,
     },
     move_cursor = "begin",
+    format_lines = function(start, stop)
+        local b = vim.bo
+        -- Only format if a formatter is set up already
+        if start <= stop and (b.equalprg ~= "" or b.indentexpr ~= "" or b.cindent or b.smartindent or b.lisp) then
+            vim.cmd(string.format("silent normal! %dG=%dG", start, stop))
+        end
+    end,
 }
 
 --[====================================================================================================================[
@@ -398,9 +405,17 @@ M.translate_opts = function(opts)
     end
     --]=]
 
-    if not (opts and opts.surrounds) then
+    if not opts then
         return opts
     end
+    if opts.format_lines == false then
+        -- If formatting is disabled, set it to a NOOP function
+        opts.format_lines = function() end
+    end
+    if not opts.surrounds then
+        return opts
+    end
+
     for char, val in pairs(opts.surrounds) do
         ---[=[ SOFT DEPRECATION WARNINGS
         if char == "pairs" or char == "separators" then
