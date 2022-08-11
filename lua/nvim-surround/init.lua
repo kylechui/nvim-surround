@@ -225,6 +225,7 @@ M.normal_callback = function(mode)
         pos = { pos[1], #buffer.get_line(pos[1]) }
         buffer.set_mark("]", pos)
     end
+    -- Move the last position to the last byte of the character, if necessary
     buffer.set_mark("]", buffer.get_last_byte(buffer.get_mark("]")))
 
     buffer.adjust_mark("[")

@@ -484,12 +484,33 @@ config.get_selection({args})
 <
     pattern: ~
         A Lua pattern to be found in the buffer. For example, the default
-        `find` key for `f` is:
+        `find` key for `invalid_key_behavior` is:
 >
-        find = function()
-            return M.get_selection({ pattern = "[%w_:.->]+%b()" })
+        find = function(char)
+            return M.get_selection({
+                pattern = vim.pesc(char) .. ".-" .. vim.pesc(char),
+            })
         end,
 <
+        The Lua pattern escapes the provided character, and |nvim-surround|
+        finds a selection that starts and ends with that character.
+
+    node: ~
+        A Tree-sitter node type to be found in the buffer. For example, the
+        default `find` key for `f` is:
+>
+        find = function()
+            return M.get_selection({
+                node = "function_call",
+            }) or M.get_selection({
+                pattern = "[%w%-_:.>]+%b()",
+            })
+        end,
+<
+        For function calls, |nvim-surround| first tries to find a selection
+        using Tree-sitter, and falls back on Lua pattern-based matching if no
+        Tree-sitter language parser is configured.
+
                                        *nvim-surround.config.get_selections()*
 config.get_selections({args})
     Retrieves a pair of selections from the buffer using {args}. The {args}
