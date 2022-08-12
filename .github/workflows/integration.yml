@@ -9,18 +9,13 @@ on:
 
 jobs:
   luacheck:
+
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup luarocks
-        shell: bash
-        run: |
-          sudo apt install -y luarocks
-          sudo luarocks install luacheck
-
-      - name: Run luacheck
-        run: luacheck lua/ tests/
+      - name: Luacheck
+        uses: lunarmodules/luacheck@v0.26.0
+        with:
+          args: lua/ tests/
 
 
   stylua:
