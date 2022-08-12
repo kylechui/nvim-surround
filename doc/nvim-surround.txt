@@ -244,12 +244,6 @@ buffer-local options that override the global options. This is particularly
 useful for setting up filetype-specific surrounds, i.e. by calling
 `require("nvim-surround").buffer_setup()` in a `ftplugin/` file.
 
-Furthermore, |nvim-surround| exposes a few filetype-specific defaults, which
-can be loaded in via `require("nvim-surround.filetype").[filetype].setup()`.
-These functions don't take any input, and just configure Tree-sitter specific
-behavior for more accurate surrounds. Exploring the `filetype.lua` file in the
-codebase is encouraged to see more examples/usage.
-
 The main setup and buffer setup functions are strictly additive, so only the
 keys that are to be modified need to be provided. However, to disable any
 default behavior, the corresponding value needs to explicitly be set to
@@ -476,8 +470,7 @@ config.get_selection({args})
         finds a selection that starts and ends with that character.
 
     node: ~
-        A Tree-sitter node type to be found in the buffer. For example, if
-        `require("nvim-surround.filetype").lua.setup()` is called, then the
+        A Tree-sitter node type to be found in the buffer. For example, the
         default `find` key for `f` in Lua files is:
 >
         find = function()
