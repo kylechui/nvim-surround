@@ -180,7 +180,8 @@ M.filter_selections_list = function(selections_list)
                 -- Handle case where the cursor comes before the nearest selections
                 if
                     buffer.is_inside(curpos, cur_selections)
-                    or buffer.comes_before(cur_selections.left.first_pos, best_selections.left.first_pos)
+                    or buffer.comes_before(curpos, cur_selections.left.first_pos)
+                        and buffer.comes_before(cur_selections.left.first_pos, best_selections.left.first_pos)
                 then
                     best_selections = cur_selections
                 end
