@@ -292,6 +292,17 @@ M.get_selection = function(args)
         return require("nvim-surround.textobjects").get_selection(args.motion)
     elseif args.node then
         return require("nvim-surround.treesitter").get_selection(args.node)
+        ---[=[ DEPRECATION WARNING
+        ---@diagnostic disable-next-line: undefined-field
+    elseif args.textobject then
+        local textobject_warning = {
+            "The `textobject` key has been deprecated in favor of the `motion` key.",
+            "Please pre-pend text-object keys with 'a'. See :h nvim-surround.config.get_selection() for details",
+        }
+        vim.notify_once(table.concat(textobject_warning, "\n"), vim.log.levels.ERROR)
+        --]=]
+    else
+        vim.notify("Invalid key provided for `:h nvim-surround.config.get_selection()`.", vim.log.levels.ERROR)
     end
 end
 
@@ -386,7 +397,7 @@ end
 ---@param opts options? The user-provided options.
 ---@return options? @The translated options.
 M.translate_opts = function(opts)
-    ---[=[ SOFT DEPRECATION WARNINGS
+    ---[=[ DEPRECATION WARNINGS
     ---@diagnostic disable-next-line: undefined-field
     if opts and opts.highlight_motion then
         local highlight_warning = {
@@ -397,11 +408,11 @@ M.translate_opts = function(opts)
     end
     ---@diagnostic disable-next-line: undefined-field
     if opts and opts.delimiters then
-        local highlight_warning = {
+        local delimiter_warning = {
             "The `delimiters` table has been renamed to `surrounds`.",
             "See :h nvim-surround.config.surrounds for details",
         }
-        vim.notify_once(table.concat(highlight_warning, "\n"), vim.log.levels.ERROR)
+        vim.notify_once(table.concat(delimiter_warning, "\n"), vim.log.levels.ERROR)
     end
     --]=]
 
@@ -409,7 +420,7 @@ M.translate_opts = function(opts)
         return opts
     end
     for char, val in pairs(opts.surrounds) do
-        ---[=[ SOFT DEPRECATION WARNINGS
+        ---[=[ DEPRECATION WARNINGS
         if char == "pairs" or char == "separators" then
             local delimiter_warning = {
                 "The `pairs` and `separators` tables have been deprecated; configuration for surrounds",
