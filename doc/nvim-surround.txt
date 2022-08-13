@@ -20,6 +20,7 @@ CONTENTS                                              *nvim-surround.contents*
         3.4. Aliases ......................... |nvim-surround.config.aliases|
         3.5. Highlights .................... |nvim-surround.config.highlight|
         3.6. Cursor ...................... |nvim-surround.config.move_cursor|
+        3.7. Indentation ................ |nvim-surround.config.indent_lines|
     4. Resources .................................. |nvim-surround.resources|
 
 ================================================================================
@@ -87,7 +88,7 @@ example, `cs'"` means "change the surrounding single quotes to double quotes".
     `some text*`                cs`}            {some text}
 
 --------------------------------------------------------------------------------
-2.4. More Mappings                               *nvim-surround.more_mappings*
+2.2. More Mappings                               *nvim-surround.more_mappings*
 
 For each of the additive mappings, there are a few variants:
 
@@ -106,7 +107,7 @@ delimiter pair is added
 * |blockwise-visual|: Adds the pair around the visual block, once per line
 
 --------------------------------------------------------------------------------
-2.5. Default Pairs                               *nvim-surround.default_pairs*
+2.3. Default Pairs                               *nvim-surround.default_pairs*
 
 We've looked at a few of the built-in surround actions, but here we'll go a
 bit more in-depth. For all open/close pairs, e.g. `()`, adding a surround
@@ -180,7 +181,7 @@ supported.
     inner text                  yssi/<CR>\      /inner text\
 
 --------------------------------------------------------------------------------
-2.6. Aliasing                                         *nvim-surround.aliasing*
+2.4. Aliasing                                         *nvim-surround.aliasing*
 
 In |nvim-surround|, one can alias a character to "stand in for" one or more
 other characters. If the alias is just a single character, then they can be
@@ -216,7 +217,7 @@ Note: Tabular aliases cannot be used to add surrounding pairs, e.g. `ysa)q` is
 invalid, since it's ambiguous which pair should be added.
 
 --------------------------------------------------------------------------------
-2.7. Jumps                                               *nvim-surround.jumps*
+2.5. Jumps                                               *nvim-surround.jumps*
 
 If the cursor is not located inside a surrounding pair, it can jump to the
 "nearest" pair. When jumping, |nvim-surround| always prefers
@@ -558,7 +559,7 @@ configured separately. The default higlight group used is `Visual`:
     highlight default link NvimSurroundHighlight Visual
 <
 --------------------------------------------------------------------------------
-3.6. Move Cursor                            *nvim-surround.config.move_cursor*
+3.6. Cursor                                 *nvim-surround.config.move_cursor*
 
 By default, when a surround action is performed, the cursor moves to the
 beginning of the action.
@@ -571,6 +572,30 @@ beginning of the action.
 This behavior can be disabled by setting `move_cursor = false` in one of the
 setup functions.
 
+--------------------------------------------------------------------------------
+3.7. Indentation                           *nvim-surround.config.indent_lines*
+
+By default, when a surround action is performed, |nvim-surround| tries to
+indent things "appropriately", i.e. when it is enabled by a Vim option. The
+`indent_lines` key corresponds to a function with parameters {start} and
+{stop}, which represent line numbers (inclusive). This indentation can be
+disabled by setting `indent_lines = false` in one of the setup functions.
+
+By default, |nvim-surround| uses the following function for indentation:
+>
+    indent_lines = function(start, stop)
+        local b = vim.bo
+        -- Only re-indent the selection if a formatter is set up already
+        if start <= stop
+            and (b.equalprg ~= ""
+            or b.indentexpr ~= ""
+            or b.cindent
+            or b.smartindent
+            or b.lisp) then
+            vim.cmd(string.format("silent normal! %dG=%dG", start, stop))
+        end
+    end,
+<
 ================================================================================
 4. Resources                                         *nvim-surround.resources*
 
