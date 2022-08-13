@@ -160,7 +160,18 @@ M.setup = function()
     vim.api.nvim_create_autocmd("FileType", {
         pattern = vim.tbl_keys(M.filetype_configurations),
         callback = function()
-            M.filetype_configurations[vim.bo.filetype]()
+            -- Check if Tree-sitter is even installed
+            local ts_installed, _ = pcall(function()
+                local _ = require("nvim-treesitter")
+            end)
+            if ts_installed then
+                -- Check if the parser for the given filetype is installed; fallback on defaults otherwise
+                local parsers = require("nvim-treesitter.parsers")
+                local lang = parsers.get_buf_lang()
+                if #vim.api.nvim_get_runtime_file("parser/" .. lang .. ".so", false) > 0 then
+                    M.filetype_configurations[vim.bo.filetype]()
+                end
+            end
         end,
         group = M.nvim_surround_filetype_setup,
     })
