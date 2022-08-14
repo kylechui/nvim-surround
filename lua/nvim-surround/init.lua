@@ -7,10 +7,10 @@
 ---@field right selection?
 
 ---@class surround
----@field add function
----@field find function
----@field delete function
----@field change { target: function, replacement: function? }
+---@field add string[]|string[][]|function
+---@field find string|function
+---@field delete string|function
+---@field change { target: string|function, replacement: function? }
 
 ---@class options
 ---@field keymaps table<string, boolean|string>
