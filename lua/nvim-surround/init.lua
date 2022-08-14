@@ -10,7 +10,7 @@
 ---@field add string[]|string[][]|function
 ---@field find string|function
 ---@field delete string|function
----@field change { target: string|function, replacement: function? }
+---@field change { target: string|function, replacement: string[]|string[][]|function? }
 
 ---@class options
 ---@field keymaps table<string, boolean|string>
