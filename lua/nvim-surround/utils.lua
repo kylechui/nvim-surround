@@ -7,17 +7,6 @@ local M = {}
 -- Do nothing.
 M.NOOP = function() end
 
--- Splits an input string apart by newline characters.
----@param input string The input string.
----@return string[] @A table that contains the lines, split by the newline character.
-M.split = function(input)
-    local lines = {}
-    for line in input:gmatch("([^\n]+)") do
-        lines[#lines + 1] = line
-    end
-    return lines
-end
-
 -- Joins together the given lines, separated by the newline character.
 ---@param lines string[] The given lines.
 ---@return string @The concatenated lines, separated by newline characters.
