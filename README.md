@@ -21,10 +21,15 @@ Surround selections, stylishly :sunglasses:
   * First-class support for Vim motions, Lua patterns, and Tree-sitter nodes
 * Highlight selections for visual feedback
 
-## :package: Installation
+## :lock: Requirements
 
-Works on Neovim 0.7+, but even better on
-[nightly](https://github.com/neovim/neovim/releases/tag/nightly).
+* [Neovim 0.7+](https://github.com/neovim/neovim/releases)
+* \[Optional] If
+  [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) is
+  installed, then Tree-sitter nodes may be surrounded and modified, in addition
+  to just Vim motions and Lua patterns
+
+## :package: Installation
 
 ### [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
