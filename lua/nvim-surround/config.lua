@@ -330,30 +330,32 @@ M.fill_missing_surrounds = function(opts)
     end
 
     for char, val in pairs(opts.surrounds) do
-        -- For each surround, if a key is missing, fill it in using the correspnding key from `invalid_key_behavior`
-        local add, find, delete, change = val.add, val.find, val.delete, val.change
-        local invalid = M.get_opts().surrounds.invalid_key_behavior
-        if not add then
-            opts.surrounds[char].add = function()
-                return invalid.add(char)
+        if val then
+            -- For each surround, if a key is missing, fill it in using the correspnding key from `invalid_key_behavior`
+            local add, find, delete, change = val.add, val.find, val.delete, val.change
+            local invalid = M.get_opts().surrounds.invalid_key_behavior
+            if not add then
+                opts.surrounds[char].add = function()
+                    return invalid.add(char)
+                end
             end
-        end
-        if not find then
-            opts.surrounds[char].find = function()
-                return invalid.find(char)
+            if not find then
+                opts.surrounds[char].find = function()
+                    return invalid.find(char)
+                end
             end
-        end
-        if not delete then
-            opts.surrounds[char].delete = function()
-                return invalid.delete(char)
+            if not delete then
+                opts.surrounds[char].delete = function()
+                    return invalid.delete(char)
+                end
             end
-        end
-        if not (change and change.target) then
-            opts.surrounds[char].change = {
-                target = function()
-                    return invalid.change.target(char)
-                end,
-            }
+            if not (change and change.target) then
+                opts.surrounds[char].change = {
+                    target = function()
+                        return invalid.change.target(char)
+                    end,
+                }
+            end
         end
     end
     return opts
