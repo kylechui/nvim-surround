@@ -20,9 +20,6 @@ M.default_opts = {
                 return M.get_selection({ motion = "a(" })
             end,
             delete = "^(. ?)().-( ?.)()$",
-            change = {
-                target = "^(. ?)().-( ?.)()$",
-            },
         },
         [")"] = {
             add = { "(", ")" },
@@ -30,9 +27,6 @@ M.default_opts = {
                 return M.get_selection({ motion = "a)" })
             end,
             delete = "^(.)().-(.)()$",
-            change = {
-                target = "^(.)().-(.)()$",
-            },
         },
         ["{"] = {
             add = { "{ ", " }" },
@@ -40,9 +34,6 @@ M.default_opts = {
                 return M.get_selection({ motion = "a{" })
             end,
             delete = "^(. ?)().-( ?.)()$",
-            change = {
-                target = "^(. ?)().-( ?.)()$",
-            },
         },
         ["}"] = {
             add = { "{", "}" },
@@ -50,9 +41,6 @@ M.default_opts = {
                 return M.get_selection({ motion = "a}" })
             end,
             delete = "^(.)().-(.)()$",
-            change = {
-                target = "^(.)().-(.)()$",
-            },
         },
         ["<"] = {
             add = { "< ", " >" },
@@ -60,9 +48,6 @@ M.default_opts = {
                 return M.get_selection({ motion = "a<" })
             end,
             delete = "^(. ?)().-( ?.)()$",
-            change = {
-                target = "^(. ?)().-( ?.)()$",
-            },
         },
         [">"] = {
             add = { "<", ">" },
@@ -70,9 +55,6 @@ M.default_opts = {
                 return M.get_selection({ motion = "a>" })
             end,
             delete = "^(.)().-(.)()$",
-            change = {
-                target = "^(.)().-(.)()$",
-            },
         },
         ["["] = {
             add = { "[ ", " ]" },
@@ -80,9 +62,6 @@ M.default_opts = {
                 return M.get_selection({ motion = "a[" })
             end,
             delete = "^(. ?)().-( ?.)()$",
-            change = {
-                target = "^(. ?)().-( ?.)()$",
-            },
         },
         ["]"] = {
             add = { "[", "]" },
@@ -90,9 +69,6 @@ M.default_opts = {
                 return M.get_selection({ motion = "a]" })
             end,
             delete = "^(.)().-(.)()$",
-            change = {
-                target = "^(.)().-(.)()$",
-            },
         },
         ["'"] = {
             add = { "'", "'" },
@@ -100,9 +76,6 @@ M.default_opts = {
                 return M.get_selection({ motion = "a'" })
             end,
             delete = "^(.)().-(.)()$",
-            change = {
-                target = "^(.)().-(.)()$",
-            },
         },
         ['"'] = {
             add = { '"', '"' },
@@ -110,9 +83,6 @@ M.default_opts = {
                 return M.get_selection({ motion = 'a"' })
             end,
             delete = "^(.)().-(.)()$",
-            change = {
-                target = "^(.)().-(.)()$",
-            },
         },
         ["`"] = {
             add = { "`", "`" },
@@ -120,9 +90,6 @@ M.default_opts = {
                 return M.get_selection({ motion = "a`" })
             end,
             delete = "^(.)().-(.)()$",
-            change = {
-                target = "^(.)().-(.)()$",
-            },
         },
         ["i"] = { -- TODO: Add find/delete/change functions
             add = function()
@@ -134,7 +101,6 @@ M.default_opts = {
             end,
             find = function() end,
             delete = function() end,
-            change = { target = function() end },
         },
         ["t"] = {
             add = function()
@@ -329,7 +295,7 @@ end
 
 -- Returns the add key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
----@return fun(string?): string[][]? @The function to get the delimiters to be added.
+---@return string|string[]|fun(string?): string[][]? @The function to get the delimiters to be added.
 M.get_add = function(char)
     char = require("nvim-surround.utils").get_alias(char)
     local key = M.get_opts().surrounds[char] or M.get_opts().surrounds.invalid_key_behavior
@@ -338,7 +304,7 @@ end
 
 -- Returns the delete key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
----@return fun(string?): selections? @The function to get the selections to be deleted.
+---@return string|fun(string?): selections? @The function to get the selections to be deleted.
 M.get_delete = function(char)
     char = require("nvim-surround.utils").get_alias(char)
     local key = M.get_opts().surrounds[char] or M.get_opts().surrounds.invalid_key_behavior
@@ -494,6 +460,10 @@ M.translate_opts = function(opts)
                         return replacement
                     end
                 end
+            else
+                opts.surrounds[char].change = {
+                    target = opts.surrounds[char].delete,
+                }
             end
         end
     end

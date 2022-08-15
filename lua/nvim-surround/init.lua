@@ -65,7 +65,6 @@ M.insert_surround = function(line_mode)
         buffer.set_curpos(curpos)
         if line_mode then
             local lnum = buffer.get_curpos()[1]
-            vim.pretty_print(lnum)
             vim.cmd(lnum .. "left " .. vim.fn.indent(lnum + 1) + vim.fn.shiftwidth())
             buffer.set_curpos({ lnum, #buffer.get_line(lnum) + 1 })
         end
