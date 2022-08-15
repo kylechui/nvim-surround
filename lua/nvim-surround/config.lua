@@ -637,8 +637,8 @@ M.setup = function(user_opts)
     M.user_opts = M.fill_missing_surrounds(M.user_opts)
     -- Configure global keymaps
     M.set_keymaps(false)
-    -- Configure filetype settings
-    require("nvim-surround.filetype").setup()
+    -- TODO: Configure filetype settings
+    -- require("nvim-surround.filetype").setup()
     -- Configure highlight group, if necessary
     if M.user_opts.highlight.duration then
         vim.cmd([[
