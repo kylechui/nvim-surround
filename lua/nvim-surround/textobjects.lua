@@ -1,4 +1,5 @@
 local buffer = require("nvim-surround.buffer")
+local utils = require("nvim-surround.utils")
 
 local M = {}
 
@@ -6,17 +7,18 @@ M.is_quote = function(char)
     return char == "'" or char == '"' or char == "`"
 end
 
--- Gets a selection based on the text-object for a given character, `a[char]`.
----@param char string The provided character.
+-- Gets a selection based on a given motion.
+---@param motion string The provided motion.
 ---@return selection? @The selection that represents the text-object.
-M.get_selection = function(char)
+M.get_selection = function(motion)
+    local char = utils.get_alias(motion:sub(2, 2))
     -- Smart quotes feature; jump to the next quote if it is on the same line
     local curpos = buffer.get_curpos()
     if M.is_quote(char) and vim.fn.searchpos(char, "cnW")[1] == curpos[1] then
         vim.fn.searchpos(char, "cW")
     end
 
-    buffer.set_operator_marks(char)
+    buffer.set_operator_marks(motion)
     -- Adjust the marks to reside on non-whitespace characters
     buffer.adjust_mark("[")
     buffer.adjust_mark("]")
@@ -41,11 +43,11 @@ M.get_selection = function(char)
         if vim.fn.searchpos(char, "bncW")[1] == curpos[1] then
             vim.fn.searchpos(char, "bcW")
         end
-    else -- General case, jump to the character
+    elseif char then -- General case, jump to the character
         vim.fn.searchpos(char, "bcW")
     end
 
-    buffer.set_operator_marks(char)
+    buffer.set_operator_marks(motion)
     -- Adjust the marks to reside on non-whitespace characters
     buffer.adjust_mark("[")
     buffer.adjust_mark("]")

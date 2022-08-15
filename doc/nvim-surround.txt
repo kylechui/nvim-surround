@@ -8,13 +8,11 @@ CONTENTS                                              *nvim-surround.contents*
 
     1. Introduction ......................................... |nvim-surround|
     2. Usage .......................................... |nvim-surround.usage|
-        2.1. Adding delimiter pairs ..................... |nvim-surround.add|
-        2.2. Deleting delimiter pairs ................ |nvim-surround.delete|
-        2.3. Changing delimiter pairs ................ |nvim-surround.change|
-        2.4. More mappings .................... |nvim-surround.more_mappings|
-        2.5. Default pairs .................... |nvim-surround.default_pairs|
-        2.6. Aliasing .............................. |nvim-surround.aliasing|
-        2.7. Jumps .................................... |nvim-surround.jumps|
+        2.1. The Basics .............................. |nvim-surround.basics|
+        2.2. More Mappings .................... |nvim-surround.more_mappings|
+        2.3. Default Pairs .................... |nvim-surround.default_pairs|
+        2.4. Aliasing .............................. |nvim-surround.aliasing|
+        2.5. Jumps .................................... |nvim-surround.jumps|
     3. Configuration .......................... |nvim-surround.configuration|
         3.1. Keymaps ......................... |nvim-surround.config.keymaps|
         3.2. Surrounds ..................... |nvim-surround.config.surrounds|
@@ -22,6 +20,7 @@ CONTENTS                                              *nvim-surround.contents*
         3.4. Aliases ......................... |nvim-surround.config.aliases|
         3.5. Highlights .................... |nvim-surround.config.highlight|
         3.6. Cursor ...................... |nvim-surround.config.move_cursor|
+        3.7. Indentation ................ |nvim-surround.config.indent_lines|
     4. Resources .................................. |nvim-surround.resources|
 
 ================================================================================
@@ -42,7 +41,7 @@ and "modifying" (deleting/changing) delimiter pairs.
 * Changing a delimiter pair to a different pair
 
 --------------------------------------------------------------------------------
-2.1. Adding delimiter pairs                                *nvim-surround.add*
+2.1. The Basics                                         *nvim-surround.basics*
 
 The primary way of adding a new pair to the buffer is via the normal-mode *ys*
 operator, which stands for "you surround". It can be used via
@@ -69,9 +68,6 @@ end of a visual selection:
     local str = |some text|     S'              local str = 'some text'
     |div id="test"|</div>       S>              <div id="test"></div>
 
---------------------------------------------------------------------------------
-2.2. Deleting delimiter pairs                           *nvim-surround.delete*
-
 To delete a delimiter pair, use the *ds* operator, which stands for "delete
 surround". It is used via `ds[char]`, deleting the surrounding pair associated
 with {char}. For example, `ds)` means "delete surrounding parentheses".
@@ -80,9 +76,6 @@ with {char}. For example, `ds)` means "delete surrounding parentheses".
     local x = ({ *32 })         ds)             local x = { 32 }
     See ':h h*elp'              ds'             See :h help
     local str = [[Hell*o]]      ds]             local str = [Hello]
-
---------------------------------------------------------------------------------
-2.3. Changing delimiter pairs                           *nvim-surround.change*
 
 To change a delimiter pair, use the *cs* operator, which stands for "change
 surround". It is used via `cs{target}{replacement}`, changing the surrounding
@@ -95,7 +88,7 @@ example, `cs'"` means "change the surrounding single quotes to double quotes".
     `some text*`                cs`}            {some text}
 
 --------------------------------------------------------------------------------
-2.4. More mappings                               *nvim-surround.more_mappings*
+2.2. More Mappings                               *nvim-surround.more_mappings*
 
 For each of the additive mappings, there are a few variants:
 
@@ -114,7 +107,7 @@ delimiter pair is added
 * |blockwise-visual|: Adds the pair around the visual block, once per line
 
 --------------------------------------------------------------------------------
-2.5. Default pairs                               *nvim-surround.default_pairs*
+2.3. Default Pairs                               *nvim-surround.default_pairs*
 
 We've looked at a few of the built-in surround actions, but here we'll go a
 bit more in-depth. For all open/close pairs, e.g. `()`, adding a surround
@@ -188,7 +181,7 @@ supported.
     inner text                  yssi/<CR>\      /inner text\
 
 --------------------------------------------------------------------------------
-2.6. Aliasing                                         *nvim-surround.aliasing*
+2.4. Aliasing                                         *nvim-surround.aliasing*
 
 In |nvim-surround|, one can alias a character to "stand in for" one or more
 other characters. If the alias is just a single character, then they can be
@@ -224,7 +217,7 @@ Note: Tabular aliases cannot be used to add surrounding pairs, e.g. `ysa)q` is
 invalid, since it's ambiguous which pair should be added.
 
 --------------------------------------------------------------------------------
-2.7. Jumps                                               *nvim-surround.jumps*
+2.5. Jumps                                               *nvim-surround.jumps*
 
 If the cursor is not located inside a surrounding pair, it can jump to the
 "nearest" pair. When jumping, |nvim-surround| always prefers
@@ -249,12 +242,13 @@ To configure this plugin, call `require("nvim-surround").setup()` or
 `require("nvim-surround").buffer_setup()`. The former configures "global"
 options that are present in every buffer, while the latter configures
 buffer-local options that override the global options. This is particularly
-useful for setting up language-specific surrounds, i.e. by calling
+useful for setting up filetype-specific surrounds, i.e. by calling
 `require("nvim-surround").buffer_setup()` in a `ftplugin/` file.
 
-The setup functions are strictly additive, so only the keys that are to be
-modified need to be provided. However, to disable any default behavior, the
-corresponding value needs to explicitly be set to `false`.
+The main setup and buffer setup functions are strictly additive, so only the
+keys that are to be modified need to be provided. However, to disable any
+default behavior, the corresponding value needs to explicitly be set to
+`false`.
 
 Both functions take a table as an argument, full of configuration options.
 >
@@ -292,40 +286,10 @@ The default configuration is as follows:
 --------------------------------------------------------------------------------
 3.2. Surrounds                                *nvim-surround.config.surrounds*
 
-First, a few notes about |nvim-surround|:
-* All indices are inclusive
-* Multi-line strings are tables of strings, where each element of the table is
-  a line of the multi-line string
-* Delimiters are pairs of multi-line strings
-* A "position" in the buffer is a pair of integers representing { lnum, col }
-* A "selection" is a pair of positions, assigned to the keys `first_pos` and
-  `last_pos`
-* A pair of "selections" is a pair of selections, assigned to the keys `left`
-  and `right`
-
-For example, the HTML tag for the buffer
->
-    <div id="id"
-         class="class">
-        Internal contents
-    </div>
-<
-would have the corresponding selections
->
-    selections = {
-        left = {
-            first_pos = { 1, 1 },
-            last_pos = { 2, 19 },
-        },
-        right = {
-            first_pos = { 4, 1 },
-            last_pos = { 4, 6 },
-        }
-    }
-<
 The `surrounds` table associates each key with a "surround", which is a table
 containing the following keys:
 
+                                                    *nvim-surround.config.add*
     add: ~
         A function that returns the delimiter pair to be added to the buffer.
         For example, consider the function for adding parentheses:
@@ -339,8 +303,8 @@ containing the following keys:
         The function must return pairs of multi-line strings. Anything can be
         called in the functions; consider the default for `f`:
 >
-        local config = require("nvim-surround.config")
         add = function()
+            local config = require("nvim-surround.config")
             local result = config.get_input("Enter the function name: ")
             if result then
                 return { { result .. "(" }, { ")" } }
@@ -348,36 +312,39 @@ containing the following keys:
         end,
 <
         The user is queried for the function name, and that is used to create
-        the surrounding pair at runtime. For "static" surrounds that are not
-        evaluated at runtime, the function can be omitted and the `add` key
-        can directly take on the value of the delimiter pair. Furthermore,
-        tables with just one string can be replaced by the string itself. For
-        example, the following configuration also adds parentheses:
+        the surrounding pair at runtime.
+
+        For "static" delimiter pairs that are not evaluated at runtime, the
+        function can be omitted and the `add` key can directly take on the
+        value of the delimiter pair. Furthermore, tables with just one string
+        can be replaced by the string itself. For example, the following
+        configuration also adds parentheses:
 >
         [")"] = {
             add = { "(", ")" },
         }
 <
+                                                   *nvim-surround.config.find*
     find: ~
         A function that returns the "parent selection" for a surrounding pair.
         The selection returned should contain the surrounding pair and little
         else, as it is used by the `delete` and `change` keys to determine
-        what to modify.
-
-        For convenience, this key can also take a string as a value, which is
-        then interpreted as a Lua pattern that represents the selection. For
-        example, HTML tags are found via the `at` text-object:
+        what to modify. For example, HTML tags are found via the `at`
+        text-object:
 >
-        local config = require("nvim-surround.config")
         ["t"] = {
             find = function()
-                return config.get_selection({ textobject = "t" })
+                local config = require("nvim-surround.config")
+                return config.get_selection({ motion = "at" })
             end,
         }
 <
-        See |nvim-surround.config.helpers| for information on how to utilize
-        the provided helper functions.
+        See |nvim-surround.config.get_selection()| for more information.
 
+        For convenience, this key can also take a string as a value, which is
+        then interpreted as a Lua pattern that represents the selection.
+
+                                                 *nvim-surround.config.delete*
     delete: ~
         A function that returns the pair of selections to remove from the
         buffer when deleting the surrounding pair.
@@ -387,7 +354,7 @@ containing the following keys:
         left/right delimiter pair. For example, function calls are deleted
         via
 >
-        delete = "^([%w%-_:.>]+%()().-(%))()$",
+        delete = "^([^=%s]+%()().-(%))()$",
 <
         The Lua pattern matches the function name and opening  parenthesis for
         the left delimiter, and the closing parenthesis for the right
@@ -395,6 +362,7 @@ containing the following keys:
 
         See |nvim-surround.config.get_selections()| for more information.
 
+                                                 *nvim-surround.config.change*
     change: ~
         A table of two keys: `target` and `replacement`.
 
@@ -418,7 +386,11 @@ containing the following keys:
 
         replacement: ~
             A function that returns the surrounding pair to replace the target
-            selections. Similar to the `add` key.
+            selections. This is kept separate from the `add` key because it is
+            often the case that replacing a delimiter pair is slightly
+            different from adding a new one. For example, when changing HTML
+            tags you only want the inner contents to be changed, without
+            including the angle brackets.
 
     Note: When the `change.replacement` key is provided, the user is not
     queried for a replacement character; the results of `change.replacement`
@@ -435,19 +407,19 @@ is to treat the character literally, and add/modify the surrounding pair:
             return { { char }, { char } }
         end,
         find = function(char)
-            return M.get_selection({
+            return config.get_selection({
                 pattern = vim.pesc(char) .. ".-" .. vim.pesc(char),
             })
         end,
         delete = function(char)
-            return M.get_selections({
+            return config.get_selections({
                 char = char,
                 pattern = "^(.)().-(.)()$",
             })
         end,
         change = {
             target = function(char)
-                return M.get_selections({
+                return config.get_selections({
                     char = char,
                     pattern = "^(.)().-(.)()$",
                 })
@@ -455,6 +427,10 @@ is to treat the character literally, and add/modify the surrounding pair:
         },
     },
 <
+For example, `ysiw*` would surround a word with asterisks, and `ds*` would
+delete those same asterisks, despite the `*` surround not being configured by
+default.
+
 --------------------------------------------------------------------------------
 3.3. Helper Functions                           *nvim-surround.config.helpers*
 
@@ -466,37 +442,51 @@ selection(s). For the sake of brevity we assume
                                             *nvim-surround.config.get_input()*
 config.get_input({prompt})
     Queries the user for input using {prompt}. Properly handles keyboard
-    interrupts.
+    interrupts and <Esc> for cancelling the input.
 
                                         *nvim-surround.config.get_selection()*
 config.get_selection({args})
     Retrieves a selection from the buffer using {args}. The {args} table
     currently takes one of two keys:
 
-    textobject: ~
-        A single character corresponding to the `a[char]` text-object. For
-        example, the default `find` key for `(` is:
+    motion: ~
+        A string that represents any Neovim motion. For example, the default
+        `find` key for `(` is:
 >
         find = function()
-            return M.get_selection({ textobject = "(" })
+            return config.get_selection({ motion = "a(" })
         end,
 <
     pattern: ~
         A Lua pattern to be found in the buffer. For example, the default
-        `find` key for `f` is:
+        `find` key for `invalid_key_behavior` is:
 >
-        find = function()
-            return M.get_selection({ pattern = "[%w_:.->]+%b()" })
+        find = function(char)
+            return config.get_selection({
+                pattern = vim.pesc(char) .. ".-" .. vim.pesc(char),
+            })
         end,
 <
+        The Lua pattern escapes the provided character, and |nvim-surround|
+        finds a selection that starts and ends with that character.
+
+    node: ~
+        A Tree-sitter node type to be found in the buffer. For example, the
+        default `find` key for `f` in Lua files is:
+>
+        find = function()
+            return config.get_selection({ node = "function_call" })
+        end,
+<
+
                                        *nvim-surround.config.get_selections()*
 config.get_selections({args})
     Retrieves a pair of selections from the buffer using {args}. The {args}
-    table takes a {char} key and one other key:
+    table takes a {char} key and {pattern} key:
 
-    char: (required) ~
+    char: ~
         The character associated with the current surround.
-    pattern: (optional) ~
+    pattern: ~
         A Lua pattern that narrows down a parent selection to the left/right
         pair to be modified. It must contain four match groups:
 
@@ -511,7 +501,7 @@ config.get_selections({args})
         For example, the default `delete` key for `t` is:
 >
         delete = function()
-            return M.get_selections({
+            return config.get_selections({
                 char = "t",
                 pattern = "^(%b<>)().-(%b<>)()$",
             })
@@ -524,9 +514,9 @@ config.get_selections({args})
         for `t`:
 >
         target = function()
-            return M.get_selections({
+            return config.get_selections({
                 char = "t",
-                pattern = "^<([%w-]*)().-([^/]*)()>$",
+                pattern = "^<([^%s<>]*)().-([^/]*)()>$",
             })
         end,
 <
@@ -563,13 +553,13 @@ a surrounding pair, one can optionally highlight the pair to be replaced. The
         clearing them. If the value is zero, then the highlights persist
         until the surround action is completed.
 
-The relevant highlight group is `NvimSurroundHighlightTextObject`, which
-can be configured separately. The default higlight group used is `Visual`:
+The relevant highlight group is `NvimSurroundHighlight`, which can be
+configured separately. The default higlight group used is `Visual`:
 >
-    highlight default link NvimSurroundHighlightTextObject Visual
+    highlight default link NvimSurroundHighlight Visual
 <
 --------------------------------------------------------------------------------
-3.6. Move Cursor                            *nvim-surround.config.move_cursor*
+3.6. Cursor                                 *nvim-surround.config.move_cursor*
 
 By default, when a surround action is performed, the cursor moves to the
 beginning of the action.
@@ -582,6 +572,30 @@ beginning of the action.
 This behavior can be disabled by setting `move_cursor = false` in one of the
 setup functions.
 
+--------------------------------------------------------------------------------
+3.7. Indentation                           *nvim-surround.config.indent_lines*
+
+By default, when a surround action is performed, |nvim-surround| tries to
+indent things "appropriately", i.e. when it is enabled by a Vim option. The
+`indent_lines` key corresponds to a function with parameters {start} and
+{stop}, which represent line numbers (inclusive). This indentation can be
+disabled by setting `indent_lines = false` in one of the setup functions.
+
+By default, |nvim-surround| uses the following function for indentation:
+>
+    indent_lines = function(start, stop)
+        local b = vim.bo
+        -- Only re-indent the selection if a formatter is set up already
+        if start <= stop
+            and (b.equalprg ~= ""
+            or b.indentexpr ~= ""
+            or b.cindent
+            or b.smartindent
+            or b.lisp) then
+            vim.cmd(string.format("silent normal! %dG=%dG", start, stop))
+        end
+    end,
+<
 ================================================================================
 4. Resources                                         *nvim-surround.resources*
 

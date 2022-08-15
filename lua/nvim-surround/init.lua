@@ -7,10 +7,10 @@
 ---@field right selection?
 
 ---@class surround
----@field add function
----@field find function
----@field delete function
----@field change { target: function, replacement: function? }
+---@field add string[]|string[][]|function
+---@field find string|function
+---@field delete string|function
+---@field change { target: string|function, replacement: string[]|string[][]|function? }
 
 ---@class options
 ---@field keymaps table<string, boolean|string>
@@ -18,6 +18,7 @@
 ---@field aliases table<string, boolean|string|string[]>
 ---@field highlight { duration: boolean|integer }
 ---@field move_cursor boolean|string
+---@field indent_lines boolean|function
 
 local buffer = require("nvim-surround.buffer")
 local cache = require("nvim-surround.cache")
@@ -40,8 +41,8 @@ end
 
 -- Add delimiters around the cursor, in insert mode.
 M.insert_surround = function(line_mode)
-    local char = utils.get_char()
     local curpos = buffer.get_curpos()
+    local char = utils.get_char()
     local delimiters = utils.get_delimiters(char)
     if not delimiters then
         return
@@ -55,14 +56,18 @@ M.insert_surround = function(line_mode)
 
     buffer.insert_text(curpos, delimiters[2])
     buffer.insert_text(curpos, delimiters[1])
-    buffer.format_lines(curpos[1], curpos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.set_curpos({ curpos[1] + #delimiters[1] - 1, curpos[2] + #delimiters[1][#delimiters[1]] })
     -- Indent the cursor to the correct level, if added line-wise
-    if line_mode then
-        local lnum = buffer.get_curpos()[1]
-
-        vim.cmd(lnum .. "left " .. vim.fn.indent(lnum + 1) + vim.fn.shiftwidth())
-        buffer.set_curpos({ lnum, #buffer.get_line(lnum) + 1 })
+    local indent_lines = config.get_opts().indent_lines
+    if indent_lines then
+        curpos = buffer.get_curpos()
+        indent_lines(curpos[1], curpos[1] + #delimiters[1] + #delimiters[2] - 2)
+        buffer.set_curpos(curpos)
+        if line_mode then
+            local lnum = buffer.get_curpos()[1]
+            vim.cmd(lnum .. "left " .. vim.fn.indent(lnum + 1) + vim.fn.shiftwidth())
+            buffer.set_curpos({ lnum, #buffer.get_line(lnum) + 1 })
+        end
     end
 end
 
@@ -115,18 +120,43 @@ M.visual_surround = function(line_mode)
         buffer.insert_text({ last_pos[1], #buffer.get_line(last_pos[1]) + 1 }, delimiters[2])
         buffer.insert_text(first_pos, delimiters[1])
     elseif vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
-        local mn_lnum, mn_col = math.min(first_pos[1], last_pos[1]), math.min(first_pos[2], last_pos[2])
-        local mx_lnum, mx_col = math.max(first_pos[1], last_pos[1]), math.max(first_pos[2], last_pos[2])
-        for line_num = mx_lnum, mn_lnum, -1 do
-            buffer.insert_text({ line_num, mx_col + 1 }, delimiters[2])
-            buffer.insert_text({ line_num, mn_col }, delimiters[1])
+        -- Get (visually) what columns the start and end are located at
+        local first_disp = vim.fn.strdisplaywidth(buffer.get_line(first_pos[1]):sub(1, first_pos[2] - 1)) + 1
+        local last_disp = vim.fn.strdisplaywidth(buffer.get_line(last_pos[1]):sub(1, last_pos[2] - 1)) + 1
+        -- Find the min/max for some variables, since visual blocks can either go diagonally or anti-diagonally
+        local mn_disp, mx_disp = math.min(first_disp, last_disp), math.max(first_disp, last_disp)
+        local mn_lnum, mx_lnum = math.min(first_pos[1], last_pos[1]), math.max(first_pos[1], last_pos[1])
+        -- Surround each line with the delimiter pair, last to first (for indexing reasons)
+        for lnum = mx_lnum, mn_lnum, -1 do
+            local line = buffer.get_line(lnum)
+            local index = buffer.get_last_byte({ lnum, 1 })[2]
+            -- The current display count should be >= the desired one
+            while vim.fn.strdisplaywidth(line:sub(1, index)) < mx_disp and index <= #line do
+                index = buffer.get_last_byte({ lnum, index + 1 })[2]
+            end
+            -- Go to the end of the current character
+            index = buffer.get_last_byte({ lnum, index })[2]
+            buffer.insert_text({ lnum, index + 1 }, delimiters[2])
+            index = 1
+            -- The current display count should be <= the desired one
+            while vim.fn.strdisplaywidth(line:sub(1, index - 1)) + 1 < mn_disp and index <= #line do
+                index = buffer.get_last_byte({ lnum, index })[2] + 1
+            end
+            if vim.fn.strdisplaywidth(line:sub(1, index - 1)) + 1 > mn_disp then
+                -- Go to the beginning of the previous character
+                index = buffer.get_first_byte({ lnum, index - 1 })[2]
+            end
+            buffer.insert_text({ lnum, index }, delimiters[1])
         end
     else -- Regular visual mode case
+        last_pos = buffer.get_last_byte(last_pos)
         buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
         buffer.insert_text(first_pos, delimiters[1])
     end
 
-    buffer.format_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
+    if config.get_opts().indent_lines then
+        config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
+    end
     buffer.reset_curpos(curpos)
 end
 
@@ -150,10 +180,12 @@ M.delete_surround = function(args)
         -- Delete the right selection first to ensure selection positions are correct
         buffer.delete_selection(selections.right)
         buffer.delete_selection(selections.left)
-        buffer.format_lines(
-            selections.left.first_pos[1],
-            selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
-        )
+        if config.get_opts().indent_lines then
+            config.get_opts().indent_lines(
+                selections.left.first_pos[1],
+                selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
+            )
+        end
         buffer.set_curpos(selections.left.first_pos)
     end
 
@@ -202,6 +234,8 @@ M.normal_callback = function(mode)
         pos = { pos[1], #buffer.get_line(pos[1]) }
         buffer.set_mark("]", pos)
     end
+    -- Move the last position to the last byte of the character, if necessary
+    buffer.set_mark("]", buffer.get_last_byte(buffer.get_mark("]")))
 
     buffer.adjust_mark("[")
     buffer.adjust_mark("]")

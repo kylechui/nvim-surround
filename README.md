@@ -18,11 +18,16 @@ Surround selections, stylishly :sunglasses:
     the *nearest* set of quotes with parentheses
 * Surround using powerful pairs that depend on user input
 * Modify custom surrounds
-  * First-class support for text-objects and Lua patterns
+  * First-class support for Vim motions, Lua patterns, and Tree-sitter nodes
 * Highlight selections for visual feedback
 
-For more information, see [`:h
-nvim-surround`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt).
+## :lock: Requirements
+
+* [Neovim 0.7+](https://github.com/neovim/neovim/releases)
+* \[Optional] If
+  [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) is
+  installed, then Tree-sitter nodes may be surrounded and modified, in addition
+  to just Vim motions and Lua patterns
 
 ## :package: Installation
 
@@ -31,6 +36,7 @@ nvim-surround`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-sur
 ```lua
 use({
     "kylechui/nvim-surround",
+    tag = "*", -- Use for stability; omit for the latest features
     config = function()
         require("nvim-surround").setup({
             -- Configuration here, or leave empty to use defaults

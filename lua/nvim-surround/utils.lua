@@ -7,17 +7,6 @@ local M = {}
 -- Do nothing.
 M.NOOP = function() end
 
--- Splits an input string apart by newline characters.
----@param input string The input string.
----@return string[] @A table that contains the lines, split by the newline character.
-M.split = function(input)
-    local lines = {}
-    for line in input:gmatch("([^\n]+)") do
-        lines[#lines + 1] = line
-    end
-    return lines
-end
-
 -- Joins together the given lines, separated by the newline character.
 ---@param lines string[] The given lines.
 ---@return string @The concatenated lines, separated by newline characters.
@@ -138,48 +127,65 @@ M.get_nearest_selections = function(char, action)
     char = M.get_alias(char)
 
     local chars = config.get_opts().aliases[char] or { char }
-    local nearest_selections
     local curpos = buffer.get_curpos()
+    local selections_list = {}
     -- Iterate through all possible selections for each aliased character, and find the closest pair
     for _, c in ipairs(chars) do
         local cur_selections = action == "change" and config.get_change(c).target(c) or config.get_delete(c)(c)
+        -- If found, add the current selections to the list of all possible selections
         if cur_selections then
-            nearest_selections = nearest_selections or cur_selections
-            if buffer.is_inside(curpos, nearest_selections) then
-                -- Handle case where the cursor is inside the nearest selections
-                if
-                    buffer.is_inside(curpos, cur_selections)
-                    and buffer.comes_before(nearest_selections.left.first_pos, cur_selections.left.first_pos)
-                then
-                    nearest_selections = cur_selections
-                end
-            elseif buffer.comes_before(curpos, nearest_selections.left.first_pos) then
-                -- Handle case where the cursor comes before the nearest selections
-                if
-                    buffer.is_inside(curpos, cur_selections)
-                    or buffer.comes_before(cur_selections.left.first_pos, nearest_selections.left.first_pos)
-                then
-                    nearest_selections = cur_selections
-                end
-            else
-                -- Handle case where the cursor comes after the nearest selections
-                if
-                    buffer.is_inside(curpos, cur_selections)
-                    or buffer.comes_before(nearest_selections.right.last_pos, cur_selections.right.last_pos)
-                then
-                    nearest_selections = cur_selections
-                end
-            end
+            selections_list[#selections_list + 1] = cur_selections
         end
         -- Reset the cursor position
         buffer.set_curpos(curpos)
     end
+    local nearest_selections = M.filter_selections_list(selections_list)
     -- If a pair of selections is found, jump to the beginning of the left one
     if nearest_selections then
         buffer.set_curpos(nearest_selections.left.first_pos)
     end
 
     return nearest_selections
+end
+
+-- Filters down a list of selections to the best one, based on the jumping heuristic.
+---@param selections_list selections[] The given list of selections.
+---@return selections @The best selections from the list.
+M.filter_selections_list = function(selections_list)
+    local curpos = buffer.get_curpos()
+    local best_selections
+    for _, cur_selections in ipairs(selections_list) do
+        if cur_selections then
+            best_selections = best_selections or cur_selections
+            if buffer.is_inside(curpos, best_selections) then
+                -- Handle case where the cursor is inside the nearest selections
+                if
+                    buffer.is_inside(curpos, cur_selections)
+                    and buffer.comes_before(best_selections.left.first_pos, cur_selections.left.first_pos)
+                then
+                    best_selections = cur_selections
+                end
+            elseif buffer.comes_before(curpos, best_selections.left.first_pos) then
+                -- Handle case where the cursor comes before the nearest selections
+                if
+                    buffer.is_inside(curpos, cur_selections)
+                    or buffer.comes_before(curpos, cur_selections.left.first_pos)
+                        and buffer.comes_before(cur_selections.left.first_pos, best_selections.left.first_pos)
+                then
+                    best_selections = cur_selections
+                end
+            else
+                -- Handle case where the cursor comes after the nearest selections
+                if
+                    buffer.is_inside(curpos, cur_selections)
+                    or buffer.comes_before(best_selections.right.last_pos, cur_selections.right.last_pos)
+                then
+                    best_selections = cur_selections
+                end
+            end
+        end
+    end
+    return best_selections
 end
 
 return M
