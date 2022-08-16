@@ -78,7 +78,6 @@ M.filetype_configurations = {
                     find = function()
                         return config.get_selection({ node = "function_call" })
                     end,
-                    delete = "^([^=%s]+%()().-(%))()$",
                 },
             },
         })
