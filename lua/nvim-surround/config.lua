@@ -178,7 +178,7 @@ M.default_opts = {
             find = "[^=%s%(%)]+%b()",
             delete = "^([^=%s%(%)]+%()().-(%))()$",
             change = {
-                target = "^.-([%w_]+)()%b()()()$",
+                target = "^.-([%w_]+)()%(.-%)()()$",
                 replacement = function()
                     local result = M.get_input("Enter the function name: ")
                     if result then
@@ -427,7 +427,7 @@ M.translate_opts = function(opts)
             if find and type(find) == "string" then
                 -- Treat the string as a Lua pattern, and find the selection
                 opts.surrounds[char].find = function()
-                    return require("nvim-surround.patterns").get_selection(find)
+                    return M.get_selection({ pattern = find })
                 end
             end
 
@@ -435,7 +435,7 @@ M.translate_opts = function(opts)
             if delete and type(delete) == "string" then
                 -- Wrap delete in a function
                 opts.surrounds[char].delete = function()
-                    return require("nvim-surround.utils").get_selections(char, delete)
+                    return M.get_selections({ char = char, pattern = delete })
                 end
             end
 
@@ -445,7 +445,7 @@ M.translate_opts = function(opts)
                 -- Wrap target in a function
                 if target and type(target) == "string" then
                     opts.surrounds[char].change.target = function()
-                        return require("nvim-surround.utils").get_selections(char, target)
+                        return M.get_selections({ char = char, pattern = target })
                     end
                 end
                 -- Check if the replacement key is a table instead of a function
@@ -463,9 +463,13 @@ M.translate_opts = function(opts)
                     end
                 end
             else
-                opts.surrounds[char].change = {
-                    target = opts.surrounds[char].delete,
-                }
+                if M.get_opts().surrounds and M.get_opts().surrounds[char] then
+                    opts.surrounds[char].change = M.get_opts().surrounds[char].change
+                else
+                    opts.surrounds[char].change = {
+                        target = opts.surrounds[char].delete,
+                    }
+                end
             end
         end
     end
