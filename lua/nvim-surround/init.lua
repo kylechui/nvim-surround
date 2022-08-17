@@ -51,7 +51,7 @@ M.insert_surround = function(line_mode)
     -- Add new lines if the addition is done line-wise
     if line_mode then
         table.insert(delimiters[2], 1, "")
-        table.insert(delimiters[1], #delimiters[1] + 1, "")
+        table.insert(delimiters[1], "")
     end
 
     buffer.insert_text(curpos, delimiters[2])
@@ -110,13 +110,13 @@ M.visual_surround = function(line_mode)
     -- Add new lines if the addition is done line-wise
     if line_mode then
         table.insert(delimiters[2], 1, "")
-        table.insert(delimiters[1], #delimiters[1] + 1, "")
+        table.insert(delimiters[1], "")
     end
 
     -- Add the right delimiter first to ensure correct indexing
     if vim.fn.visualmode() == "V" then -- Visual line mode case (need to create new lines)
         table.insert(delimiters[2], 1, "")
-        table.insert(delimiters[1], #delimiters[1] + 1, "")
+        table.insert(delimiters[1], "")
         buffer.insert_text({ last_pos[1], #buffer.get_line(last_pos[1]) + 1 }, delimiters[2])
         buffer.insert_text(first_pos, delimiters[1])
     elseif vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
@@ -262,7 +262,7 @@ M.normal_callback = function(mode)
         -- Add new lines if the addition is done line-wise
         if cache.normal.line_mode then
             table.insert(cache.normal.delimiters[2], 1, "")
-            table.insert(cache.normal.delimiters[1], #cache.normal.delimiters[1] + 1, "")
+            table.insert(cache.normal.delimiters[1], "")
         end
         if not cache.normal.delimiters then
             buffer.clear_highlights()

@@ -4,22 +4,17 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 
 local M = {}
 
-M.get_selection = function(capture, query)
-    local selections_list = M.get_selections_list(capture, query)
-    local best_selections = utils.filter_selections_list(selections_list)
-    return best_selections
-        and {
-            first_pos = best_selections.left.first_pos,
-            last_pos = best_selections.right.last_pos,
-        }
-end
-
-M.get_selections_list = function(capture, query)
+-- Finds the nearest selection of a given query capture.
+---@param capture string The capture to be retrieved.
+---@param type string The type of query to get the capture from.
+---@return selection? @The selection of the capture.
+M.get_selection = function(capture, type)
+    -- Get a table of all nodes that match the query
+    local table_list = queries.get_capture_matches_recursively(0, capture, type)
+    -- Convert the list of nodes into a list of selections
     local selections_list = {}
-    local table_list = queries.get_capture_matches_recursively(0, capture, query)
     for _, tab in ipairs(table_list) do
-        local node = tab.node
-        local range = { ts_utils.get_vim_range({ node:range() }) }
+        local range = { ts_utils.get_vim_range({ tab.node:range() }) }
         selections_list[#selections_list + 1] = {
             left = {
                 first_pos = { range[1], range[2] },
@@ -29,7 +24,13 @@ M.get_selections_list = function(capture, query)
             },
         }
     end
-    return selections_list
+    -- Filter out the best pair of selections from the list
+    local best_selections = utils.filter_selections_list(selections_list)
+    return best_selections
+        and {
+            first_pos = best_selections.left.first_pos,
+            last_pos = best_selections.right.last_pos,
+        }
 end
 
 return M
