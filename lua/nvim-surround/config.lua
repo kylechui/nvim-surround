@@ -176,12 +176,18 @@ M.default_opts = {
                 end
             end,
             find = function()
-                local selection = M.get_selection({
-                    query = {
-                        capture = "@call.outer",
-                        type = "textobjects",
-                    },
-                })
+                local ts_installed, _ = pcall(function()
+                    _ = require("nvim-treesitter")
+                end)
+                local selection
+                if ts_installed then
+                    selection = M.get_selection({
+                        query = {
+                            capture = "@call.outer",
+                            type = "textobjects",
+                        },
+                    })
+                end
                 if selection then
                     return selection
                 end
