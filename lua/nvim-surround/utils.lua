@@ -7,13 +7,6 @@ local M = {}
 -- Do nothing.
 M.NOOP = function() end
 
--- Joins together the given lines, separated by the newline character.
----@param lines string[] The given lines.
----@return string @The concatenated lines, separated by newline characters.
-M.join = function(lines)
-    return table.concat(lines, "\n")
-end
-
 -- Gets a character input from the user.
 ---@return string? @The input character, or nil if a control character is pressed.
 M.get_char = function()
@@ -87,11 +80,12 @@ M.get_selections = function(char, pattern)
     local selections
     if pattern then
         -- If the pattern exists, use pattern-based methods to narrow down the selection
-        selections = patterns.get_selections(
+        --[[ selections = patterns.get_selections(
             patterns.pos_to_index(selection.first_pos),
             M.join(buffer.get_text(selection)),
             pattern
-        )
+        ) ]]
+        selections = patterns.get_selections(selection, pattern)
     else
         -- Get the corresponding delimiter pair for the character
         local delimiters = M.get_delimiters(char)

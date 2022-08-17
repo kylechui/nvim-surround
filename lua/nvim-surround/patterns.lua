@@ -99,11 +99,12 @@ M.get_selection = function(find)
 end
 
 -- Finds the start and end indices for the given match groups.
----@param offset integer The offset of the search string into the buffer.
----@param str string The given string to match against.
+---@param selection selection The parent selection encompassing the delimiter pair.
 ---@param pattern string The given Lua pattern to extract match groups from.
 ---@return selections? @The selections for the left and right delimiters.
-M.get_selections = function(offset, str, pattern)
+M.get_selections = function(selection, pattern)
+    local offset = M.pos_to_index(selection.first_pos)
+    local str = table.concat(buffer.get_text(selection), "\n")
     -- Get the surrounding pair, and the start/end indices
     local ok, _, left_delimiter, first_index, right_delimiter, last_index = str:find(pattern)
     -- Validate that a match was found
