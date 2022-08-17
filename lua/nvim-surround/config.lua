@@ -176,9 +176,7 @@ M.default_opts = {
                 end
             end,
             find = function()
-                local ts_installed, _ = pcall(function()
-                    _ = require("nvim-treesitter")
-                end)
+                local ts_installed, _ = pcall(require, "nvim-treesitter")
                 local selection
                 if ts_installed then
                     selection = M.get_selection({
@@ -193,7 +191,30 @@ M.default_opts = {
                 end
                 return M.get_selection({ pattern = "[^=%s%(%)]+%b()" })
             end,
-            delete = "^([^=%s%(%)]+%()().-(%))()$",
+            delete = function()
+                local ts_installed, _ = pcall(require, "nvim-treesitter")
+                local selections
+                if ts_installed then
+                    selections = M.get_selections({
+                        char = "f",
+                        exclude = function()
+                            return M.get_selection({
+                                query = {
+                                    capture = "@call.inner",
+                                    type = "textobjects",
+                                },
+                            })
+                        end,
+                    })
+                    -- See https://github.com/nvim-treesitter/nvim-treesitter-textobjects/issues/195
+                    selections.left.last_pos[2] = selections.left.last_pos[2] + 1
+                    selections.right.first_pos[2] = selections.right.first_pos[2] - 1
+                end
+                if selections then
+                    return selections
+                end
+                return M.get_selections({ char = "f", pattern = "^([^=%s%(%)]+%()().-(%))()$" })
+            end,
             change = {
                 target = "^.-([%w_]+)()%(.-%)()()$",
                 replacement = function()
@@ -292,10 +313,24 @@ M.get_selection = function(args)
 end
 
 -- Gets a pair of selections from the buffer based on some heuristic.
----@param args { char: string?, pattern: string? }
+---@param args { char: string, pattern: string?, exclude: function? }
 M.get_selections = function(args)
-    if args.char and args.pattern then
+    if args.pattern then
         return require("nvim-surround.utils").get_selections(args.char, args.pattern)
+    elseif args.exclude then
+        local parent_selection = M.get_opts().surrounds[args.char].find()
+        local child_selection = args.exclude()
+        local selections = {
+            left = {
+                first_pos = parent_selection.first_pos,
+                last_pos = { child_selection.first_pos[1], child_selection.first_pos[2] - 1 },
+            },
+            right = {
+                first_pos = { child_selection.last_pos[1], child_selection.last_pos[2] + 1 },
+                last_pos = parent_selection.last_pos,
+            },
+        }
+        return selections
     end
 end
 
