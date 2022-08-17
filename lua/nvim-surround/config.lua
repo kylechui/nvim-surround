@@ -206,6 +206,7 @@ M.default_opts = {
                             })
                         end,
                     })
+                    -- Adjust the selections since `@call.inner` includes parentheses
                     -- See https://github.com/nvim-treesitter/nvim-treesitter-textobjects/issues/195
                     selections.left.last_pos[2] = selections.left.last_pos[2] + 1
                     selections.right.first_pos[2] = selections.right.first_pos[2] - 1
@@ -287,15 +288,17 @@ M.get_input = function(prompt)
 end
 
 -- Gets a selection from the buffer based on some heuristic.
----@param args { char: string?, pattern: string?, motion: string?, node: string?, query: { capture: string, type: string }? }
+---@param args { motion: string?, pattern: string?, node: string?, query: { capture: string, type: string }? }
 ---@return selection? The retrieved selection.
 M.get_selection = function(args)
-    if args.pattern then
-        return require("nvim-surround.patterns").get_selection(args.pattern)
-    elseif args.motion then
+    if args.motion then
         return require("nvim-surround.textobjects").get_selection(args.motion)
+    elseif args.pattern then
+        return require("nvim-surround.patterns").get_selection(args.pattern)
     elseif args.node then
         return require("nvim-surround.treesitter").get_selection(args.node)
+    elseif args.query then
+        return require("nvim-surround.queries").get_selection(args.query.capture, args.query.type)
         ---[=[ DEPRECATION WARNING
         ---@diagnostic disable-next-line: undefined-field
     elseif args.textobject then
@@ -305,8 +308,6 @@ M.get_selection = function(args)
         }
         vim.notify_once(table.concat(textobject_warning, "\n"), vim.log.levels.ERROR)
         --]=]
-    elseif args.query then
-        return require("nvim-surround.queries").get_selection(args.query.capture, args.query.type)
     else
         vim.notify("Invalid key provided for `:h nvim-surround.config.get_selection()`.", vim.log.levels.ERROR)
     end
@@ -318,19 +319,22 @@ M.get_selections = function(args)
     if args.pattern then
         return require("nvim-surround.utils").get_selections(args.char, args.pattern)
     elseif args.exclude then
-        local parent_selection = M.get_opts().surrounds[args.char].find()
-        local child_selection = args.exclude()
+        local outer_selection = M.get_opts().surrounds[args.char].find()
+        local inner_selection = args.exclude()
+        -- Properly exclude the inner selection from the outer selection
         local selections = {
             left = {
-                first_pos = parent_selection.first_pos,
-                last_pos = { child_selection.first_pos[1], child_selection.first_pos[2] - 1 },
+                first_pos = outer_selection.first_pos,
+                last_pos = { inner_selection.first_pos[1], inner_selection.first_pos[2] - 1 },
             },
             right = {
-                first_pos = { child_selection.last_pos[1], child_selection.last_pos[2] + 1 },
-                last_pos = parent_selection.last_pos,
+                first_pos = { inner_selection.last_pos[1], inner_selection.last_pos[2] + 1 },
+                last_pos = outer_selection.last_pos,
             },
         }
         return selections
+    else
+        vim.notify("Invalid key provided for `:h nvim-surround.config.get_selections()`.", vim.log.levels.ERROR)
     end
 end
 
