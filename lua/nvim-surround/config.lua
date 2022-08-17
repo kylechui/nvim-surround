@@ -175,7 +175,23 @@ M.default_opts = {
                     return { { result .. "(" }, { ")" } }
                 end
             end,
-            find = "[^=%s%(%)]+%b()",
+            find = function()
+                local ts_installed, _ = pcall(function()
+                    local _ = require("nvim-treesitter")
+                end)
+                local ts_textobjects_installed, _ = pcall(function()
+                    local _ = require("nvim-treesitter")
+                end)
+                if ts_installed and ts_textobjects_installed then
+                    return M.get_selection({
+                        query = {
+                            capture = "@call.outer",
+                            type = "textobjects",
+                        },
+                    })
+                end
+                return M.get_selection({ pattern = "[^=%s%(%)]+%b()" })
+            end,
             delete = "^([^=%s%(%)]+%()().-(%))()$",
             change = {
                 target = "^.-([%w_]+)()%(.-%)()()$",
@@ -249,7 +265,7 @@ M.get_input = function(prompt)
 end
 
 -- Gets a selection from the buffer based on some heuristic.
----@param args { char: string?, pattern: string?, motion: string?, node: string? }
+---@param args { char: string?, pattern: string?, motion: string?, node: string?, query: { capture: string, type: string }? }
 ---@return selection? The retrieved selection.
 M.get_selection = function(args)
     if args.pattern then
@@ -267,6 +283,8 @@ M.get_selection = function(args)
         }
         vim.notify_once(table.concat(textobject_warning, "\n"), vim.log.levels.ERROR)
         --]=]
+    elseif args.query then
+        return require("nvim-surround.queries").get_selection(args.query.capture, args.query.type)
     else
         vim.notify("Invalid key provided for `:h nvim-surround.config.get_selection()`.", vim.log.levels.ERROR)
     end
