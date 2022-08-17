@@ -176,19 +176,14 @@ M.default_opts = {
                 end
             end,
             find = function()
-                local ts_installed, _ = pcall(function()
-                    local _ = require("nvim-treesitter")
-                end)
-                local ts_textobjects_installed, _ = pcall(function()
-                    local _ = require("nvim-treesitter")
-                end)
-                if ts_installed and ts_textobjects_installed then
-                    return M.get_selection({
-                        query = {
-                            capture = "@call.outer",
-                            type = "textobjects",
-                        },
-                    })
+                local selection = M.get_selection({
+                    query = {
+                        capture = "@call.outer",
+                        type = "textobjects",
+                    },
+                })
+                if selection then
+                    return selection
                 end
                 return M.get_selection({ pattern = "[^=%s%(%)]+%b()" })
             end,
@@ -659,8 +654,6 @@ M.setup = function(user_opts)
     M.user_opts = M.fill_missing_surrounds(M.user_opts)
     -- Configure global keymaps
     M.set_keymaps(false)
-    -- TODO: Configure filetype settings
-    -- require("nvim-surround.filetype").setup()
     -- Configure highlight group, if necessary
     if M.user_opts.highlight.duration then
         vim.cmd([[
