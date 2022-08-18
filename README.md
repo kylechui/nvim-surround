@@ -24,10 +24,14 @@ Surround selections, stylishly :sunglasses:
 ## :lock: Requirements
 
 * [Neovim 0.7+](https://github.com/neovim/neovim/releases)
-* \[Optional] If
+* \[Recommended] If
   [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) is
   installed, then Tree-sitter nodes may be surrounded and modified, in addition
   to just Vim motions and Lua patterns
+* \[Recommended] If
+  [nvim-treesitter-textobjects](https://github.com/nvim-treesitter/nvim-treesitter-textobjects)
+  is installed, then Tree-sitter text-objects can be used to define surrounds,
+  simplifying configuration
 
 ## :package: Installation
 
@@ -36,7 +40,7 @@ Surround selections, stylishly :sunglasses:
 ```lua
 use({
     "kylechui/nvim-surround",
-    tag = "*", -- Use for stability; omit for the latest features
+    tag = "*", -- Use for stability; omit to use `main` branch for the latest features
     config = function()
         require("nvim-surround").setup({
             -- Configuration here, or leave empty to use defaults

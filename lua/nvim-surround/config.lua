@@ -320,6 +320,7 @@ M.get_selections = function(args)
         return require("nvim-surround.utils").get_selections(args.char, args.pattern)
     elseif args.exclude then
         local outer_selection = M.get_opts().surrounds[args.char].find()
+        vim.fn.cursor(outer_selection.first_pos)
         local inner_selection = args.exclude()
         if not inner_selection then
             return nil
