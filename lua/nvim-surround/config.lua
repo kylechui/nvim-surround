@@ -176,9 +176,8 @@ M.default_opts = {
                 end
             end,
             find = function()
-                local ts_installed, _ = pcall(require, "nvim-treesitter")
                 local selection
-                if ts_installed then
+                if vim.g.loaded_nvim_treesitter then
                     selection = M.get_selection({
                         query = {
                             capture = "@call.outer",
@@ -192,9 +191,8 @@ M.default_opts = {
                 return M.get_selection({ pattern = "[^=%s%(%)]+%b()" })
             end,
             delete = function()
-                local ts_installed, _ = pcall(require, "nvim-treesitter")
                 local selections
-                if ts_installed then
+                if vim.g.loaded_nvim_treesitter then
                     selections = M.get_selections({
                         char = "f",
                         exclude = function()
@@ -208,8 +206,10 @@ M.default_opts = {
                     })
                     -- Adjust the selections since `@call.inner` includes parentheses
                     -- See https://github.com/nvim-treesitter/nvim-treesitter-textobjects/issues/195
-                    selections.left.last_pos[2] = selections.left.last_pos[2] + 1
-                    selections.right.first_pos[2] = selections.right.first_pos[2] - 1
+                    if selections then
+                        selections.left.last_pos[2] = selections.left.last_pos[2] + 1
+                        selections.right.first_pos[2] = selections.right.first_pos[2] - 1
+                    end
                 end
                 if selections then
                     return selections
@@ -321,6 +321,9 @@ M.get_selections = function(args)
     elseif args.exclude then
         local outer_selection = M.get_opts().surrounds[args.char].find()
         local inner_selection = args.exclude()
+        if not inner_selection then
+            return nil
+        end
         -- Properly exclude the inner selection from the outer selection
         local selections = {
             left = {
