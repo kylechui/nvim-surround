@@ -6,11 +6,15 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 
 local M = {}
 
-M.get_selections_list = function(query)
+-- Finds the nearest selection of a given query and its associated capture.
+---@param sexpr string The S-expression representing the query.
+---@param capture string The capture to be retrieved.
+---@return selection? @The selection of the capture.
+M.get_new_capture = function(sexpr, capture)
     local lang_tree = ts_parsers.get_parser(0)
 
     local ok, parsed_query = pcall(function()
-        return vim.treesitter.parse_query(lang_tree:lang(), query)
+        return vim.treesitter.parse_query(lang_tree:lang(), sexpr)
     end)
 
     if not ok then
@@ -23,17 +27,19 @@ M.get_selections_list = function(query)
         local start_row, _, end_row, _ = root:range()
 
         for match in ts_query.iter_prepared_matches(parsed_query, root, 0, start_row, end_row) do
-            ts_locals.recurse_local_nodes(match, function(_, node, capture)
-                local range = { ts_utils.get_vim_range({ node:range() }) }
-                table.insert(selections_list, {
-                    left = {
-                        first_pos = { range[1], range[2] },
-                    },
-                    right = {
-                        last_pos = { range[3], range[4] },
-                    },
-                    capture = capture,
-                })
+            ts_locals.recurse_local_nodes(match, function(_, node, cap)
+                if capture == cap then
+                    local range = { ts_utils.get_vim_range({ node:range() }) }
+                    table.insert(selections_list, {
+                        left = {
+                            first_pos = { range[1], range[2] },
+                        },
+                        right = {
+                            last_pos = { range[3], range[4] },
+                        },
+                        capture = capture,
+                    })
+                end
             end)
         end
     end
@@ -47,11 +53,11 @@ M.get_selections_list = function(query)
         }
 end
 
--- Finds the nearest selection of a given query capture.
+-- Finds the nearest selection of a given query capture and its source.
 ---@param capture string The capture to be retrieved.
 ---@param type string The type of query to get the capture from.
 ---@return selection? @The selection of the capture.
-M.get_selection = function(capture, type)
+M.get_existing_capture = function(capture, type)
     -- Get a table of all nodes that match the query
     local table_list = ts_query.get_capture_matches_recursively(0, capture, type)
     -- Convert the list of nodes into a list of selections
