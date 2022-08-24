@@ -289,7 +289,7 @@ M.get_input = function(prompt)
 end
 
 -- Gets a selection from the buffer based on some heuristic.
----@param args { motion: string?, pattern: string?, node: string?, query: table<string, string>? }
+---@param args { motion: string?, pattern: string?, node: string?, query: { capture: string, type: string }? }
 ---@return selection? The retrieved selection.
 M.get_selection = function(args)
     if args.motion then
@@ -299,11 +299,7 @@ M.get_selection = function(args)
     elseif args.node then
         return require("nvim-surround.treesitter").get_selection(args.node)
     elseif args.query then
-        if args.query.type then
-            return require("nvim-surround.queries").get_existing_capture(args.query.capture, args.query.type)
-        elseif args.query.sexpr then
-            return require("nvim-surround.queries").get_new_capture(args.query.sexpr, args.query.capture)
-        end
+        return require("nvim-surround.queries").get_selection(args.query.capture, args.query.type)
         ---[=[ DEPRECATION WARNING
         ---@diagnostic disable-next-line: undefined-field
     elseif args.textobject then
