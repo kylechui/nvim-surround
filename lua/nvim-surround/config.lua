@@ -190,7 +190,19 @@ M.default_opts = {
                 end
                 return M.get_selection({ pattern = "[^=%s%(%)]+%b()" })
             end,
-            delete = "^(.-%()().-(%))()$",
+            delete = function()
+                return M.get_selections({
+                    char = "f",
+                    exclude = function()
+                        return M.get_selection({
+                            query = {
+                                capture = "@call.inner",
+                                type = "textobjects",
+                            },
+                        })
+                    end,
+                })
+            end,
             --[[ function()
                 local selections
                 if vim.g.loaded_nvim_treesitter then
@@ -317,8 +329,12 @@ end
 -- Gets a pair of selections from the buffer based on some heuristic.
 ---@param args { char: string, pattern: string?, exclude: function? }
 M.get_selections = function(args)
+    local selection = require("nvim-surround.utils").get_selection(args.char)
+    if not selection then
+        return nil
+    end
     if args.pattern then
-        return require("nvim-surround.utils").get_selections(args.char, args.pattern)
+        return require("nvim-surround.patterns").get_selections(selection, args.pattern)
     elseif args.exclude then
         local outer_selection = M.get_opts().surrounds[args.char].find()
         vim.fn.cursor(outer_selection.first_pos)
