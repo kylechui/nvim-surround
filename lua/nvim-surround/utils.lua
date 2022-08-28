@@ -49,16 +49,6 @@ M.get_delimiters = function(char)
     config.get_opts().surrounds.invalid_key_behavior.add(char)
 end
 
--- Gets a selection that contains the left and right surrounding pair.
----@param char string A character representing what selection is to be found.
----@return selection? @The corresponding selection for the given character.
-M.get_selection = function(char)
-    if config.get_opts().surrounds[char] then
-        return config.get_opts().surrounds[char].find(char)
-    end
-    return config.get_opts().surrounds.invalid_key_behavior.find(char)
-end
-
 -- Gets the nearest two selections for the left and right surrounding pair.
 ---@param char string? A character representing what kind of surrounding pair is to be selected.
 ---@param action "delete"|"change" A string representing what action is being performed.

@@ -289,15 +289,20 @@ M.get_input = function(prompt)
 end
 
 -- Gets a selection from the buffer based on some heuristic.
----@param args { motion: string?, pattern: string?, node: string?, query: { capture: string, type: string }? }
+---@param args { char: string?, motion: string?, pattern: string?, node: string?, query: { capture: string, type: string }? }
 ---@return selection? The retrieved selection.
 M.get_selection = function(args)
-    if args.motion then
+    if args.char then
+        if M.get_opts().surrounds[args.char] then
+            return M.get_opts().surrounds[args.char].find(args.char)
+        end
+        return M.get_opts().surrounds.invalid_key_behavior.find(args.char)
+    elseif args.motion then
         return require("nvim-surround.textobjects").get_selection(args.motion)
-    elseif args.pattern then
-        return require("nvim-surround.patterns").get_selection(args.pattern)
     elseif args.node then
         return require("nvim-surround.treesitter").get_selection(args.node)
+    elseif args.pattern then
+        return require("nvim-surround.patterns").get_selection(args.pattern)
     elseif args.query then
         return require("nvim-surround.queries").get_selection(args.query.capture, args.query.type)
         ---[=[ DEPRECATION WARNING
@@ -317,7 +322,7 @@ end
 -- Gets a pair of selections from the buffer based on some heuristic.
 ---@param args { char: string, pattern: string?, exclude: function? }
 M.get_selections = function(args)
-    local selection = require("nvim-surround.utils").get_selection(args.char)
+    local selection = M.get_selection({ char = args.char })
     if not selection then
         return nil
     end
