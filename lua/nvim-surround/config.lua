@@ -205,12 +205,6 @@ M.default_opts = {
                             })
                         end,
                     })
-                    -- Adjust the selections since `@call.inner` includes parentheses
-                    -- See https://github.com/nvim-treesitter/nvim-treesitter-textobjects/issues/195
-                    if selections then
-                        selections.left.last_pos[2] = selections.left.last_pos[2] + 1
-                        selections.right.first_pos[2] = selections.right.first_pos[2] - 1
-                    end
                 end
                 if selections then
                     return selections
@@ -298,7 +292,7 @@ M.get_selection = function(args)
         end
         return M.get_opts().surrounds.invalid_key_behavior.find(args.char)
     elseif args.motion then
-        return require("nvim-surround.textobjects").get_selection(args.motion)
+        return require("nvim-surround.motions").get_selection(args.motion)
     elseif args.node then
         return require("nvim-surround.treesitter").get_selection(args.node)
     elseif args.pattern then
