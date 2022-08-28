@@ -190,19 +190,7 @@ M.default_opts = {
                 end
                 return M.get_selection({ pattern = "[^=%s%(%)]+%b()" })
             end,
-            delete = function()
-                return M.get_selections({
-                    char = "f",
-                    exclude = function()
-                        return M.get_selection({
-                            query = {
-                                capture = "@call.inner",
-                                type = "textobjects",
-                            },
-                        })
-                    end,
-                })
-            end,
+            delete = "^(.-%()().-(%))()$",
             --[[ function()
                 local selections
                 if vim.g.loaded_nvim_treesitter then
