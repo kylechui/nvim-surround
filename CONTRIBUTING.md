@@ -40,8 +40,9 @@ There are a few main ways to help out:
   you would like to see)
   * Get confirmation from @kylechui that the issue is something that would be
     merged into `main`
-  * TODO: Add "For Developers" page to the wiki to help people get started with
-    understanding the code structure
+  * Check out the [For
+    Developers](https://github.com/kylechui/nvim-surround/wiki/for-developers)
+    page in the wiki, to help you understand the code structure.
 
 Feel free to tag @kylechui at any time for clarification! Thanks again for
 stopping by and helping out :sparkling\_heart:
