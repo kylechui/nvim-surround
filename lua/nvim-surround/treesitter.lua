@@ -1,12 +1,14 @@
-local utils = require("nvim-surround.utils")
-local ts_utils = require("nvim-treesitter.ts_utils")
-
 local M = {}
 
 -- Finds the nearest selection of a given Tree-sitter node type.
 ---@param type string The Tree-sitter node type to be retrieved.
 ---@return selection? @The selection of the node.
 M.get_selection = function(type)
+    local utils = require("nvim-surround.utils")
+    local ok, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
+    if not ok then
+        return nil
+    end
     -- Find the root node of the given buffer
     local root = ts_utils.get_node_at_cursor()
     if not root then

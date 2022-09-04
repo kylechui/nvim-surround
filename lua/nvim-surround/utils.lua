@@ -97,6 +97,7 @@ M.filter_selections_list = function(selections_list)
                 if
                     buffer.is_inside(curpos, cur_selections)
                     and buffer.comes_before(best_selections.left.first_pos, cur_selections.left.first_pos)
+                    and buffer.comes_before(cur_selections.right.last_pos, best_selections.right.last_pos)
                 then
                     best_selections = cur_selections
                 end
