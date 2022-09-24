@@ -122,9 +122,22 @@ M.set_operator_marks = function(motion)
     -- Clear the [ and ] marks
     M.del_mark("[")
     M.del_mark("]")
+
+    -- Operatorfunc may change the < and > marks, so save them here
+    local cur_visual_marks = { M.get_mark("<"), M.get_mark(">") }
+
     -- Set the [ and ] marks by calling an operatorfunc
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
     vim.cmd("normal g@" .. motion)
+
+    -- Restore the visual selection marks
+    if cur_visual_marks[1] then
+        M.set_mark("<", cur_visual_marks[1])
+    end
+    if cur_visual_marks[2] then
+        M.set_mark(">", cur_visual_marks[2])
+    end
+
     -- Adjust the marks to not reside on whitespace
     M.adjust_mark("[")
     M.adjust_mark("]")
