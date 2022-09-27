@@ -47,15 +47,25 @@ end
 
 -- Sets the position of a mark, 1-indexed.
 ---@param mark string The mark whose position will be returned.
----@param position integer[] The position that the mark should be set to.
+---@param position? integer[] The position that the mark should be set to.
 M.set_mark = function(mark, position)
-    vim.api.nvim_buf_set_mark(0, mark, position[1], position[2] - 1, {})
+    if position then
+        vim.api.nvim_buf_set_mark(0, mark, position[1], position[2] - 1, {})
+    end
 end
 
 -- Deletes a mark from the buffer.
 ---@param mark string The mark to be deleted.
 M.del_mark = function(mark)
     vim.api.nvim_buf_del_mark(0, mark)
+end
+
+-- Deletes multiple marks from the buffer.
+---@param marks string[] The mark to be deleted.
+M.del_marks = function(marks)
+    for _, mark in ipairs(marks) do
+        M.del_mark(mark)
+    end
 end
 
 -- Gets the position of the first byte of a character, according to the UTF-8 standard.
@@ -118,30 +128,23 @@ end
 -- Sets the operator marks according to a given motion.
 ---@param motion string The given motion.
 M.set_operator_marks = function(motion)
+    -- Calling operatorfunc may change some variables; cache them here
     local curpos = M.get_curpos()
+    local visual_marks = { M.get_mark("<"), M.get_mark(">") }
+
     -- Clear the [ and ] marks
-    M.del_mark("[")
-    M.del_mark("]")
-
-    -- Operatorfunc may change the < and > marks, so save them here
-    local cur_visual_marks = { M.get_mark("<"), M.get_mark(">") }
-
+    M.del_marks({ "[", "]" })
     -- Set the [ and ] marks by calling an operatorfunc
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
     vim.cmd("normal g@" .. motion)
-
-    -- Restore the visual selection marks
-    if cur_visual_marks[1] then
-        M.set_mark("<", cur_visual_marks[1])
-    end
-    if cur_visual_marks[2] then
-        M.set_mark(">", cur_visual_marks[2])
-    end
-
     -- Adjust the marks to not reside on whitespace
     M.adjust_mark("[")
     M.adjust_mark("]")
+
+    -- Restore the cached variables
     M.set_curpos(curpos)
+    M.set_mark("<", visual_marks[1])
+    M.set_mark(">", visual_marks[2])
 end
 
 --[====================================================================================================================[
