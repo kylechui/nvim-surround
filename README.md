@@ -23,7 +23,7 @@ Surround selections, stylishly :sunglasses:
 
 ## :lock: Requirements
 
-* [Neovim 0.7+](https://github.com/neovim/neovim/releases)
+* [Neovim 0.8+](https://github.com/neovim/neovim/releases)
 * \[Recommended] If
   [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) is
   installed, then Tree-sitter nodes may be surrounded and modified, in addition
