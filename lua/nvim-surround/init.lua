@@ -149,6 +149,10 @@ M.visual_surround = function(line_mode)
             buffer.insert_text({ lnum, index }, delimiters[1])
         end
     else -- Regular visual mode case
+        if vim.o.selection == "exclusive" then
+            last_pos[2] = last_pos[2] - 1
+        end
+
         last_pos = buffer.get_last_byte(last_pos)
         buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
         buffer.insert_text(first_pos, delimiters[1])
