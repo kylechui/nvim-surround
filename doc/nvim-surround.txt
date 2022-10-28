@@ -154,7 +154,7 @@ the surrounding pair.
     <h1 id="head">text*</h1>    csTdiv          <div>text</div>
 
 The keys `t` and `T` are identical, except for the fact that `cst` will only
-change the surrouding tag's type (leaving the attributes alone), while `csT`
+change the surrounding tag's type (leaving the attributes alone), while `csT`
 will change the entirety of the surrounding tag's contents.
 
 Note: When changing surrounding tags via `cst` or `csT`, a second replacement
@@ -554,7 +554,7 @@ a surrounding pair, one can optionally highlight the pair to be replaced. The
         until the surround action is completed.
 
 The relevant highlight group is `NvimSurroundHighlight`, which can be
-configured separately. The default higlight group used is `Visual`:
+configured separately. The default highlight group used is `Visual`:
 >
     highlight default link NvimSurroundHighlight Visual
 <
