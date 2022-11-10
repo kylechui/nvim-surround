@@ -41,13 +41,13 @@ describe("jumps", function()
         vim.cmd("normal! ..")
         assert.are.same(get_curpos(), { 1, 27 })
         check_lines({
-            [[And jump "forwards" and backwards to the nearest surround.]],
+            [[And jump forwards and backwards to the "nearest" surround.]],
         })
 
         vim.cmd("normal csqb")
         assert.are.same(get_curpos(), { 1, 27 })
         check_lines({
-            [[And jump (forwards) and backwards to the nearest surround.]],
+            [[And jump forwards and backwards to the (nearest) surround.]],
         })
     end)
 
@@ -73,13 +73,13 @@ describe("jumps", function()
         vim.cmd("normal! ..")
         assert.are_not.same(get_curpos(), { 1, 27 })
         check_lines({
-            [[And jump "forwards" and backwards to the nearest surround.]],
+            [[And jump "forwards and backwards to the nearest" surround.]],
         })
 
         vim.cmd("normal csqb")
         assert.are_not.same(get_curpos(), { 1, 27 })
         check_lines({
-            [[And jump (forwards) and backwards to the nearest surround.]],
+            [[And jump (forwards and backwards to the nearest) surround.]],
         })
     end)
 
@@ -101,30 +101,6 @@ describe("jumps", function()
             [[This 'line' has quotes]],
             [[While this does not]],
             [[This `one` does as well]],
-        })
-    end)
-
-    it("can handle smart quotes", function()
-        set_lines({
-            [[This "sentence" has "many quotes" in "it", like "this"]],
-        })
-        set_curpos({ 1, 35 })
-        vim.cmd('normal ds"')
-        check_lines({
-            [[This "sentence" has "many quotes" in it, like "this"]],
-        })
-        set_curpos({ 1, 27 })
-        vim.cmd("normal! .")
-        check_lines({
-            [[This "sentence" has many quotes in it, like "this"]],
-        })
-        vim.cmd("normal! .")
-        check_lines({
-            [[This "sentence" has many quotes in it, like this]],
-        })
-        vim.cmd("normal! .")
-        check_lines({
-            [[This sentence has many quotes in it, like this]],
         })
     end)
 
