@@ -12,7 +12,7 @@ M.NOOP = function() end
 M.get_char = function()
     local ret_val, char_num = pcall(vim.fn.getchar)
     -- Return nil if error (e.g. <C-c>) or for control characters
-    if not ret_val or char_num < 32 then
+    if not ret_val or type(char_num) ~= "number" or char_num < 32 then
         return nil
     end
     local char = vim.fn.nr2char(char_num)
