@@ -209,6 +209,7 @@ M.change_surround = function(args)
         return "g@l"
     end
 
+    buffer.set_curpos(args.curpos)
     -- Get the selections to change
     local selections = utils.get_nearest_selections(args.del_char, "change")
     if selections then

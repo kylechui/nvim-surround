@@ -3,12 +3,18 @@ local utils = require("nvim-surround.utils")
 
 local M = {}
 
+-- Determines whether the input character is a quote character.
+---@param char string The input character.
+---@return boolean @Whether or not char is a quote character.
+M.is_quote = function(char)
+    return char == "'" or char == '"' or char == "`"
+end
+
 -- Gets a selection based on a given motion.
 ---@param motion string The provided motion.
 ---@return selection? @The selection that represents the text-object.
 M.get_selection = function(motion)
     local char = utils.get_alias(motion:sub(2, 2))
-    -- Smart quotes feature; jump to the next quote if it is on the same line
     local curpos = buffer.get_curpos()
 
     buffer.set_operator_marks(motion)
@@ -32,6 +38,10 @@ M.get_selection = function(motion)
     -- Since no selection was found around/after the cursor, we look behind
     if char == "t" then -- Handle special case with lookbehind for HTML tags (search for `>` instead of `t`)
         vim.fn.searchpos(">", "bcW")
+    --[[ elseif M.is_quote(char) then -- Handle special case with lookbehind for quote characters (stay in current line)
+        if vim.fn.searchpos(char, "bncW")[1] == curpos[1] then
+            vim.fn.searchpos(char, "bcW")
+        end ]]
     elseif char then -- General case, jump to the character
         vim.fn.searchpos(char, "bcW")
     end

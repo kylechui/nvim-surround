@@ -83,6 +83,27 @@ describe("jumps", function()
         })
     end)
 
+    it("can handle multiple quotes on a line", function()
+        set_lines({
+            [["hello "world""]],
+        })
+        set_curpos({ 1, 10 })
+        vim.cmd("normal cs\"'")
+        check_lines({
+            [["hello 'world'"]],
+        })
+        set_curpos({ 1, 8 })
+        vim.cmd("normal cs'\"")
+        check_lines({
+            [["hello "world""]],
+        })
+        set_curpos({ 1, 14 })
+        vim.cmd("normal cs\"'")
+        check_lines({
+            [["hello "world'']],
+        })
+    end)
+
     it("for quotes only target the current line", function()
         set_lines({
             [[This 'line' has quotes]],
