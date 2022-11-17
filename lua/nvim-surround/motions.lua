@@ -38,10 +38,10 @@ M.get_selection = function(motion)
     -- Since no selection was found around/after the cursor, we look behind
     if char == "t" then -- Handle special case with lookbehind for HTML tags (search for `>` instead of `t`)
         vim.fn.searchpos(">", "bcW")
-    --[[ elseif M.is_quote(char) then -- Handle special case with lookbehind for quote characters (stay in current line)
+    elseif M.is_quote(char) then -- Handle special case with lookbehind for quote characters (stay in current line)
         if vim.fn.searchpos(char, "bncW")[1] == curpos[1] then
             vim.fn.searchpos(char, "bcW")
-        end ]]
+        end
     elseif char then -- General case, jump to the character
         vim.fn.searchpos(char, "bcW")
     end
@@ -57,7 +57,7 @@ M.get_selection = function(motion)
     -- Restore the cursor position
     buffer.set_curpos(curpos)
     -- Return nil if either endpoint of the selection do not exist, or no match is found (marks out of order)
-    if not first_pos or not last_pos or buffer.comes_before(first_pos, last_pos) then
+    if not first_pos or not last_pos or not buffer.comes_before(first_pos, last_pos) then
         return nil
     end
     return {

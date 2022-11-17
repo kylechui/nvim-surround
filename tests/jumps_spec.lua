@@ -83,7 +83,7 @@ describe("jumps", function()
         })
     end)
 
-    it("can handle multiple quotes on a line", function()
+    it("can change multiple quotes on a line", function()
         set_lines({
             [["hello "world""]],
         })
@@ -118,6 +118,13 @@ describe("jumps", function()
             [[This `one` does as well]],
         })
         vim.cmd("normal! .")
+        check_lines({
+            [[This 'line' has quotes]],
+            [[While this does not]],
+            [[This `one` does as well]],
+        })
+        vim.cmd("normal cs'`")
+        vim.cmd("normal cs`'")
         check_lines({
             [[This 'line' has quotes]],
             [[While this does not]],
