@@ -58,7 +58,7 @@ M.filter_selection = function(sexpr, capture, parent_selection)
     for id, node in parsed_query:iter_captures(parent_node, 0, 0, -1) do
         local name = parsed_query.captures[id]
         if name == capture then
-            local range = { ts_utils.get_vim_range({ node:range() }) }
+            range = { ts_utils.get_vim_range({ node:range() }) }
             return {
                 first_pos = { range[1], range[2] },
                 last_pos = { range[3], range[4] },

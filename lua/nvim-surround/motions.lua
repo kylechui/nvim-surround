@@ -4,7 +4,7 @@ local utils = require("nvim-surround.utils")
 local M = {}
 
 -- Determines whether the input character is a quote character.
----@param char string The input character.
+---@param char string? The input character.
 ---@return boolean @Whether or not char is a quote character.
 M.is_quote = function(char)
     return char == "'" or char == '"' or char == "`"

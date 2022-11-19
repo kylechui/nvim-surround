@@ -154,6 +154,9 @@ M.visual_surround = function(line_mode)
         end
 
         last_pos = buffer.get_last_byte(last_pos)
+        if not last_pos then
+            return nil
+        end
         buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
         buffer.insert_text(first_pos, delimiters[1])
     end

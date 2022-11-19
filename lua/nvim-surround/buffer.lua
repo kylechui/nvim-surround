@@ -47,7 +47,7 @@ end
 
 -- Sets the position of a mark, 1-indexed.
 ---@param mark string The mark whose position will be returned.
----@param position? integer[] The position that the mark should be set to.
+---@param position integer[]? The position that the mark should be set to.
 M.set_mark = function(mark, position)
     if position then
         vim.api.nvim_buf_set_mark(0, mark, position[1], position[2] - 1, {})
@@ -85,9 +85,13 @@ M.get_first_byte = function(pos)
 end
 
 -- Gets the position of the last byte of a character, according to the UTF-8 standard.
----@param pos integer[] The position of the beginning of the character.
----@return integer[] @The position of the last byte of the character.
+---@param pos integer[]? The position of the beginning of the character.
+---@return integer[]? @The position of the last byte of the character.
 M.get_last_byte = function(pos)
+    if not pos then
+        return nil
+    end
+
     local byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
     if not byte then
         return pos
