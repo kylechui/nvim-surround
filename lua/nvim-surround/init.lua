@@ -13,12 +13,12 @@
 ---@field change { target: string|function, replacement: string[]|string[][]|function? }
 
 ---@class options
----@field keymaps table<string, boolean|string>
----@field surrounds table<string, boolean|surround>
----@field aliases table<string, boolean|string|string[]>
----@field highlight { duration: boolean|integer }
----@field move_cursor boolean|string
----@field indent_lines boolean|function
+---@field keymaps table<string, false|string>
+---@field surrounds table<string, false|surround>
+---@field aliases table<string, false|string|string[]>
+---@field highlight { duration: false|integer }
+---@field move_cursor false|string
+---@field indent_lines false|function
 
 local buffer = require("nvim-surround.buffer")
 local cache = require("nvim-surround.cache")
