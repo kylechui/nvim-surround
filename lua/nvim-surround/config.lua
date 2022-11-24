@@ -571,7 +571,7 @@ end
 M.set_keymaps = function(buffer)
     -- Set up <Plug> keymaps
     M.set_keymap({
-        mode = "n",
+        mode = "i",
         lhs = "<Plug>(nvim-surround-insert)",
         rhs = require("nvim-surround").insert_surround,
         opts = {
