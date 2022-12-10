@@ -93,6 +93,10 @@ M.normal_surround = function(args, line_mode)
     buffer.insert_text(last_pos, args.delimiters[2])
     buffer.insert_text(first_pos, args.delimiters[1])
     buffer.reset_curpos(M.normal_curpos)
+
+    if line_mode and config.get_opts().indent_lines then
+        config.get_opts().indent_lines(first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
+    end
 end
 
 -- Add delimiters around a visual selection.
