@@ -1,8 +1,12 @@
 local M = {}
 
-local function find_match(string, list_of_strings)
-    for _, element in ipairs(list_of_strings) do
-        if string == element then
+-- Returns whether or not a target node type is found in a list of types.
+---@param target string The target type to be found.
+---@param types string[] The list of types to search through.
+---@return boolean @Whether or not the target type is found.
+local function is_any_of(target, types)
+    for _, type in ipairs(types) do
+        if target == type then
             return true
         end
     end
@@ -10,12 +14,13 @@ local function find_match(string, list_of_strings)
 end
 
 -- Finds the nearest selection of a given Tree-sitter node type or types.
----@param node_type string|string[] The Tree-sitter node types to be retrieved.
+---@param node_types string|string[] The Tree-sitter node type(s) to be retrieved.
 ---@return selection? @The selection of the node.
-M.get_selection = function(node_type)
-    if type(node_type) == "string" then
-        node_type = { node_type }
+M.get_selection = function(node_types)
+    if type(node_types) == "string" then
+        node_types = { node_types }
     end
+
     local utils = require("nvim-surround.utils")
     local ok, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
     if not ok then
@@ -35,7 +40,7 @@ M.get_selection = function(node_type)
     while #stack > 0 do
         local cur = stack[#stack]
         -- If the current node's type matches the target type, process it
-        if find_match(cur:type(), node_type) then
+        if is_any_of(cur:type(), node_types) then
             -- Add the current node to the stack
             nodes[#nodes + 1] = cur
             -- Compute the node's selection and add it to the list
