@@ -1,9 +1,21 @@
 local M = {}
 
--- Finds the nearest selection of a given Tree-sitter node type.
----@param type string The Tree-sitter node type to be retrieved.
+local function find_match(string, list_of_strings)
+    for _, element in ipairs(list_of_strings) do
+        if string == element then
+            return true
+        end
+    end
+    return false
+end
+
+-- Finds the nearest selection of a given Tree-sitter node type or types.
+---@param node_type string|string[] The Tree-sitter node types to be retrieved.
 ---@return selection? @The selection of the node.
-M.get_selection = function(type)
+M.get_selection = function(node_type)
+    if type(node_type) == "string" then
+        node_type = { node_type }
+    end
     local utils = require("nvim-surround.utils")
     local ok, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
     if not ok then
@@ -23,7 +35,7 @@ M.get_selection = function(type)
     while #stack > 0 do
         local cur = stack[#stack]
         -- If the current node's type matches the target type, process it
-        if cur:type() == type then
+        if find_match(cur:type(), node_type) then
             -- Add the current node to the stack
             nodes[#nodes + 1] = cur
             -- Compute the node's selection and add it to the list
