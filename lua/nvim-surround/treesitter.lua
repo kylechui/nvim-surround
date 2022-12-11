@@ -2,7 +2,9 @@ local M = {}
 
 local function find_match(string, list_of_strings)
     for _, element in ipairs(list_of_strings) do
-        if string == element then return true end
+        if string == element then
+            return true
+        end
     end
     return false
 end
