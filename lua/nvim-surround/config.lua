@@ -299,15 +299,8 @@ M.get_selection = function(args)
         return require("nvim-surround.patterns").get_selection(args.pattern)
     elseif args.query then
         return require("nvim-surround.queries").get_selection(args.query.capture, args.query.type)
-        ---[=[ DEPRECATION WARNING
-        ---@diagnostic disable-next-line: undefined-field
     elseif args.textobject then
-        local textobject_warning = {
-            "The `textobject` key has been deprecated in favor of the `motion` key.",
-            "Please pre-pend text-object keys with 'a'. See :h nvim-surround.config.get_selection() for details",
-        }
-        vim.notify_once(table.concat(textobject_warning, "\n"), vim.log.levels.ERROR)
-        --]=]
+        vim.deprecate("The `textobject` key for `config.get_selection`", "`motion`", "v2.0.0", "nvim-surround")
     else
         vim.notify("Invalid key provided for `:h nvim-surround.config.get_selection()`.", vim.log.levels.ERROR)
     end
@@ -431,45 +424,25 @@ end
 ---@param opts options? The user-provided options.
 ---@return options? @The translated options.
 M.translate_opts = function(opts)
-    ---[=[ DEPRECATION WARNINGS
-    ---@diagnostic disable-next-line: undefined-field
     if opts and opts.highlight_motion then
-        local highlight_warning = {
-            "The `highlight_motion` table has been renamed to `highlight`.",
-            "See :h nvim-surround.config.highlight for details",
-        }
-        vim.notify_once(table.concat(highlight_warning, "\n"), vim.log.levels.ERROR)
+        vim.deprecate("`config.highlight_motion`", "`config.highlight`", "v2.0.0", "nvim-surround")
     end
-    ---@diagnostic disable-next-line: undefined-field
     if opts and opts.delimiters then
-        local delimiter_warning = {
-            "The `delimiters` table has been renamed to `surrounds`.",
-            "See :h nvim-surround.config.surrounds for details",
-        }
-        vim.notify_once(table.concat(delimiter_warning, "\n"), vim.log.levels.ERROR)
+        vim.deprecate("`config.delimiters`", "`config.surrounds`", "v2.0.0", "nvim-surround")
     end
-    --]=]
 
     if not (opts and opts.surrounds) then
         return opts
     end
     for char, val in pairs(opts.surrounds) do
-        ---[=[ DEPRECATION WARNINGS
         if char == "pairs" or char == "separators" then
-            local delimiter_warning = {
-                "The `pairs` and `separators` tables have been deprecated; configuration for surrounds",
-                "goes in `surrounds`. See :h nvim-surround.config.surrounds for details.",
-            }
-            vim.notify_once(table.concat(delimiter_warning, "\n"), vim.log.levels.ERROR)
+            vim.deprecate(
+                "`config.surrounds.pairs` and `config.surrounds.separators`",
+                "`config.surrounds`",
+                "v2.0.0",
+                "nvim-surround"
+            )
         end
-        if vim.tbl_islist(val) then
-            local add_warning = {
-                "The old configuration for defining surrounds has been deprecated; see",
-                ":h nvim-surround.config.surrounds for details.",
-            }
-            vim.notify_once(table.concat(add_warning, "\n"), vim.log.levels.ERROR)
-        end
-        --]=]
 
         -- Validate that the delimiter has not been disabled
         if val then
@@ -576,7 +549,6 @@ M.set_keymaps = function(buffer)
         rhs = require("nvim-surround").insert_surround,
         opts = {
             buffer = buffer,
-            desc = "Add a surrounding pair around the cursor (insert mode).",
             remap = true,
             silent = true,
         },
@@ -589,7 +561,6 @@ M.set_keymaps = function(buffer)
         end,
         opts = {
             buffer = buffer,
-            desc = "Add a surrounding pair around the cursor, on new lines (insert mode).",
             remap = true,
             silent = true,
         },
@@ -600,7 +571,6 @@ M.set_keymaps = function(buffer)
         rhs = require("nvim-surround").normal_surround,
         opts = {
             buffer = buffer,
-            desc = "Add a surrounding pair around a motion (normal mode).",
             expr = true,
             remap = true,
             silent = true,
@@ -614,7 +584,6 @@ M.set_keymaps = function(buffer)
         end,
         opts = {
             buffer = buffer,
-            desc = "Add a surrounding pair around the current line (normal mode).",
             expr = true,
             remap = true,
             silent = true,
@@ -628,7 +597,6 @@ M.set_keymaps = function(buffer)
         end,
         opts = {
             buffer = buffer,
-            desc = "Add a surrounding pair around a motion, on new lines (normal mode).",
             expr = true,
             remap = true,
             silent = true,
@@ -642,7 +610,6 @@ M.set_keymaps = function(buffer)
         end,
         opts = {
             buffer = buffer,
-            desc = "Add a surrounding pair around the current line, on new lines (normal mode).",
             expr = true,
             remap = true,
             silent = true,
@@ -654,7 +621,6 @@ M.set_keymaps = function(buffer)
         rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround()<CR>",
         opts = {
             buffer = buffer,
-            desc = "Add a surrounding pair around a visual selection.",
             remap = true,
             silent = true,
         },
@@ -665,7 +631,6 @@ M.set_keymaps = function(buffer)
         rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround(true)<CR>",
         opts = {
             buffer = buffer,
-            desc = "Add a surrounding pair around a visual selection, on new lines.",
             remap = true,
             silent = true,
         },
@@ -676,7 +641,6 @@ M.set_keymaps = function(buffer)
         rhs = require("nvim-surround").delete_surround,
         opts = {
             buffer = buffer,
-            desc = "Delete a surrounding pair.",
             expr = true,
             remap = true,
             silent = true,
@@ -688,7 +652,6 @@ M.set_keymaps = function(buffer)
         rhs = require("nvim-surround").change_surround,
         opts = {
             buffer = buffer,
-            desc = "Change a surrounding pair.",
             expr = true,
             remap = true,
             silent = true,
@@ -701,60 +664,90 @@ M.set_keymaps = function(buffer)
         mode = "i",
         lhs = M.get_opts().keymaps.insert,
         rhs = "<Plug>(nvim-surround-insert)",
+        opts = {
+            desc = "Add a surrounding pair around the cursor (insert mode)",
+        },
     })
     M.set_keymap({
         name = "insert_line",
         mode = "i",
         lhs = M.get_opts().keymaps.insert_line,
         rhs = "<Plug>(nvim-surround-insert-line)",
+        opts = {
+            desc = "Add a surrounding pair around the cursor, on new lines (insert mode)",
+        },
     })
     M.set_keymap({
         name = "normal",
         mode = "n",
         lhs = M.get_opts().keymaps.normal,
         rhs = "<Plug>(nvim-surround-normal)",
+        opts = {
+            desc = "Add a surrounding pair around a motion (normal mode)",
+        },
     })
     M.set_keymap({
         name = "normal_cur",
         mode = "n",
         lhs = M.get_opts().keymaps.normal_cur,
         rhs = "<Plug>(nvim-surround-normal-cur)",
+        opts = {
+            desc = "Add a surrounding pair around the current line (normal mode)",
+        },
     })
     M.set_keymap({
         name = "normal_line",
         mode = "n",
         lhs = M.get_opts().keymaps.normal_line,
         rhs = "<Plug>(nvim-surround-normal-line)",
+        opts = {
+            desc = "Add a surrounding pair around a motion, on new lines (normal mode)",
+        },
     })
     M.set_keymap({
         name = "normal_cur_line",
         mode = "n",
         lhs = M.get_opts().keymaps.normal_cur_line,
         rhs = "<Plug>(nvim-surround-normal-cur-line)",
+        opts = {
+            desc = "Add a surrounding pair around the current line, on new lines (normal mode)",
+        },
     })
     M.set_keymap({
         name = "visual",
         mode = "x",
         lhs = M.get_opts().keymaps.visual,
         rhs = "<Plug>(nvim-surround-visual)",
+        opts = {
+            desc = "Add a surrounding pair around a visual selection",
+        },
     })
     M.set_keymap({
         name = "visual_line",
         mode = "x",
         lhs = M.get_opts().keymaps.visual_line,
         rhs = "<Plug>(nvim-surround-visual-line)",
+        opts = {
+            desc = "Add a surrounding pair around a visual selection, on new lines",
+        },
     })
     M.set_keymap({
         name = "delete",
         mode = "n",
         lhs = M.get_opts().keymaps.delete,
         rhs = "<Plug>(nvim-surround-delete)",
+        opts = {
+            desc = "Delete a surrounding pair",
+        },
     })
     M.set_keymap({
         name = "change",
         mode = "n",
         lhs = M.get_opts().keymaps.change,
         rhs = "<Plug>(nvim-surround-change)",
+        opts = {
+            desc = "Change a surrounding pair",
+        },
     })
 end
 
