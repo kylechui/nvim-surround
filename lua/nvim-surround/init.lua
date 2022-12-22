@@ -1,25 +1,3 @@
----@class selection
----@field first_pos integer[]
----@field last_pos integer[]
-
----@class selections
----@field left selection?
----@field right selection?
-
----@class surround
----@field add string[]|string[][]|function
----@field find string|function
----@field delete string|function
----@field change { target: string|function, replacement: string[]|string[][]|function? }
-
----@class options
----@field keymaps table<string, false|string>
----@field surrounds table<string, false|surround>
----@field aliases table<string, false|string|string[]>
----@field highlight { duration: false|integer }
----@field move_cursor false|string
----@field indent_lines false|function
-
 local buffer = require("nvim-surround.buffer")
 local cache = require("nvim-surround.cache")
 local config = require("nvim-surround.config")
@@ -28,13 +6,13 @@ local utils = require("nvim-surround.utils")
 local M = {}
 
 -- Setup the plugin with user-defined options.
----@param user_opts options? The user options.
+---@param user_opts Options? The user options.
 M.setup = function(user_opts)
     config.setup(user_opts)
 end
 
 -- Configure the plugin on a per-buffer basis.
----@param buffer_opts options? The buffer-local options.
+---@param buffer_opts Options? The buffer-local options.
 M.buffer_setup = function(buffer_opts)
     config.buffer_setup(buffer_opts)
 end
@@ -74,7 +52,7 @@ end
 -- Holds the current position of the cursor, since calling opfunc will erase it.
 M.normal_curpos = nil
 -- Add delimiters around a text object.
----@param args { selection: selection, delimiters: string[][], curpos: integer[] }
+---@param args { selection: Selection, delimiters: string[][], curpos: integer[] }
 ---@return string?
 M.normal_surround = function(args, line_mode)
     -- Call the operatorfunc if it has not been called yet

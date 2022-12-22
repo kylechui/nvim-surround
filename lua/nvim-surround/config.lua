@@ -284,7 +284,7 @@ end
 
 -- Gets a selection from the buffer based on some heuristic.
 ---@param args { char: string?, motion: string?, pattern: string?, node: string?, query: { capture: string, type: string }? }
----@return selection? The retrieved selection.
+---@return Selection? The retrieved selection.
 M.get_selection = function(args)
     if args.char then
         if M.get_opts().surrounds[args.char] then
@@ -347,7 +347,7 @@ end
 M.user_opts = nil
 
 -- Returns the buffer-local options for the plugin, or global options if buffer-local does not exist.
----@return options @The buffer-local options.
+---@return Options @The buffer-local options.
 M.get_opts = function()
     return vim.b[0].nvim_surround_buffer_opts or M.user_opts or {}
 end
@@ -363,7 +363,7 @@ end
 
 -- Returns the delete key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
----@return string|fun(string?): selections? @The function to get the selections to be deleted.
+---@return string|fun(string?): Selections? @The function to get the selections to be deleted.
 M.get_delete = function(char)
     char = require("nvim-surround.utils").get_alias(char)
     local key = M.get_opts().surrounds[char] or M.get_opts().surrounds.invalid_key_behavior
@@ -380,8 +380,8 @@ M.get_change = function(char)
 end
 
 -- Returns a set of opts, with missing keys filled in by the invalid_key_behavior key.
----@param opts options? The provided options.
----@return options? @The modified options.
+---@param opts Options? The provided options.
+---@return Options? @The modified options.
 M.fill_missing_surrounds = function(opts)
     -- If there are no surrounds, then no modification is necessary
     if not (opts and opts.surrounds) then
@@ -421,8 +421,8 @@ M.fill_missing_surrounds = function(opts)
 end
 
 -- Translates the user-provided configuration into the internal form.
----@param opts options? The user-provided options.
----@return options? @The translated options.
+---@param opts Options? The user-provided options.
+---@return Options? @The translated options.
 M.translate_opts = function(opts)
     if opts and opts.highlight_motion then
         vim.deprecate("`config.highlight_motion`", "`config.highlight`", "v2.0.0", "nvim-surround")
@@ -516,9 +516,9 @@ M.translate_opts = function(opts)
 end
 
 -- Updates the buffer-local options for the plugin based on the input.
----@param base_opts options The base options that will be used for configuration.
----@param new_opts options? The new options to potentially override the base options.
----@return options The merged options.
+---@param base_opts Options The base options that will be used for configuration.
+---@param new_opts Options? The new options to potentially override the base options.
+---@return Options The merged options.
 M.merge_opts = function(base_opts, new_opts)
     return new_opts and vim.tbl_deep_extend("force", base_opts, M.translate_opts(new_opts)) or base_opts
 end
@@ -549,6 +549,7 @@ M.set_keymaps = function(buffer)
         rhs = require("nvim-surround").insert_surround,
         opts = {
             buffer = buffer,
+            desc = "Add a surrounding pair around the cursor (insert mode)",
             remap = true,
             silent = true,
         },
@@ -561,6 +562,7 @@ M.set_keymaps = function(buffer)
         end,
         opts = {
             buffer = buffer,
+            desc = "Add a surrounding pair around the cursor, on new lines (insert mode)",
             remap = true,
             silent = true,
         },
@@ -571,6 +573,7 @@ M.set_keymaps = function(buffer)
         rhs = require("nvim-surround").normal_surround,
         opts = {
             buffer = buffer,
+            desc = "Add a surrounding pair around a motion (normal mode)",
             expr = true,
             remap = true,
             silent = true,
@@ -584,6 +587,7 @@ M.set_keymaps = function(buffer)
         end,
         opts = {
             buffer = buffer,
+            desc = "Add a surrounding pair around the current line (normal mode)",
             expr = true,
             remap = true,
             silent = true,
@@ -597,6 +601,7 @@ M.set_keymaps = function(buffer)
         end,
         opts = {
             buffer = buffer,
+            desc = "Add a surrounding pair around a motion, on new lines (normal mode)",
             expr = true,
             remap = true,
             silent = true,
@@ -610,6 +615,7 @@ M.set_keymaps = function(buffer)
         end,
         opts = {
             buffer = buffer,
+            desc = "Add a surrounding pair around the current line, on new lines (normal mode)",
             expr = true,
             remap = true,
             silent = true,
@@ -621,6 +627,7 @@ M.set_keymaps = function(buffer)
         rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround()<CR>",
         opts = {
             buffer = buffer,
+            desc = "Add a surrounding pair around a visual selection",
             remap = true,
             silent = true,
         },
@@ -631,6 +638,7 @@ M.set_keymaps = function(buffer)
         rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround(true)<CR>",
         opts = {
             buffer = buffer,
+            desc = "Add a surrounding pair around a visual selection, on new lines",
             remap = true,
             silent = true,
         },
@@ -641,6 +649,7 @@ M.set_keymaps = function(buffer)
         rhs = require("nvim-surround").delete_surround,
         opts = {
             buffer = buffer,
+            desc = "Delete a surrounding pair",
             expr = true,
             remap = true,
             silent = true,
@@ -652,6 +661,7 @@ M.set_keymaps = function(buffer)
         rhs = require("nvim-surround").change_surround,
         opts = {
             buffer = buffer,
+            desc = "Change a surrounding pair",
             expr = true,
             remap = true,
             silent = true,
@@ -752,7 +762,7 @@ M.set_keymaps = function(buffer)
 end
 
 -- Setup the global user options for all files.
----@param user_opts options? The user-defined options to be merged with default_opts.
+---@param user_opts Options? The user-defined options to be merged with default_opts.
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
     ---@diagnostic disable-next-line

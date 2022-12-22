@@ -12,7 +12,7 @@ end
 
 -- Gets a selection based on a given motion.
 ---@param motion string The provided motion.
----@return selection? @The selection that represents the text-object.
+---@return Selection? @The selection that represents the text-object.
 M.get_selection = function(motion)
     local char = utils.get_alias(motion:sub(2, 2))
     local curpos = buffer.get_curpos()

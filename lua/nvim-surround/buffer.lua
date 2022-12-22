@@ -180,14 +180,14 @@ end
 
 -- Returns whether a position is contained within a pair of selections, inclusive.
 ---@param pos integer[] The given position.
----@param selections selections The given selections
+---@param selections Selections The given selections
 ---@return boolean @Whether the position is contained within the selections.
 M.is_inside = function(pos, selections)
     return M.comes_before(selections.left.first_pos, pos) and M.comes_before(pos, selections.right.last_pos)
 end
 
 -- Gets a selection of text from the buffer.
----@param selection selection The selection of text to be retrieved.
+---@param selection Selection The selection of text to be retrieved.
 ---@return string[] @The text from the buffer.
 M.get_text = function(selection)
     local first_pos, last_pos = selection.first_pos, selection.last_pos
@@ -204,14 +204,14 @@ M.insert_text = function(pos, text)
 end
 
 -- Deletes a given selection from the buffer.
----@param selection selection The given selection.
+---@param selection Selection The given selection.
 M.delete_selection = function(selection)
     local first_pos, last_pos = selection.first_pos, selection.last_pos
     vim.api.nvim_buf_set_text(0, first_pos[1] - 1, first_pos[2] - 1, last_pos[1] - 1, last_pos[2], {})
 end
 
 -- Replaces a given selection with a set of lines.
----@param selection? selection The given selection.
+---@param selection? Selection The given selection.
 ---@param text string[] The given text to replace the selection.
 M.change_selection = function(selection, text)
     if not selection then
@@ -226,7 +226,7 @@ end
 --]====================================================================================================================]
 
 -- Highlights a given selection.
----@param selection selection? The selection to be highlighted.
+---@param selection Selection? The selection to be highlighted.
 M.highlight_selection = function(selection)
     if not selection then
         return

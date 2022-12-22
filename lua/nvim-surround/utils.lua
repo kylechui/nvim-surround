@@ -51,7 +51,7 @@ end
 -- Gets the nearest two selections for the left and right surrounding pair.
 ---@param char string? A character representing what kind of surrounding pair is to be selected.
 ---@param action "delete"|"change" A string representing what action is being performed.
----@return selections? @A table containing the start and end positions of the delimiters.
+---@return Selections? @A table containing the start and end positions of the delimiters.
 M.get_nearest_selections = function(char, action)
     char = M.get_alias(char)
 
@@ -83,8 +83,8 @@ M.get_nearest_selections = function(char, action)
 end
 
 -- Filters down a list of selections to the best one, based on the jumping heuristic.
----@param selections_list selections[] The given list of selections.
----@return selections @The best selections from the list.
+---@param selections_list Selections[] The given list of selections.
+---@return Selections @The best selections from the list.
 M.filter_selections_list = function(selections_list)
     local curpos = buffer.get_curpos()
     local best_selections
