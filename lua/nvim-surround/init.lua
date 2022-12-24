@@ -6,13 +6,13 @@ local utils = require("nvim-surround.utils")
 local M = {}
 
 -- Setup the plugin with user-defined options.
----@param user_opts Options? The user options.
+---@param user_opts options? The user options.
 M.setup = function(user_opts)
     config.setup(user_opts)
 end
 
 -- Configure the plugin on a per-buffer basis.
----@param buffer_opts Options? The buffer-local options.
+---@param buffer_opts options? The buffer-local options.
 M.buffer_setup = function(buffer_opts)
     config.buffer_setup(buffer_opts)
 end
@@ -52,7 +52,8 @@ end
 -- Holds the current position of the cursor, since calling opfunc will erase it.
 M.normal_curpos = nil
 -- Add delimiters around a text object.
----@param args { selection: Selection, delimiters: string[][], curpos: integer[] }
+---@param args { selection: selection, delimiters: string[][], curpos: integer[] }?
+---@param line_mode boolean Whether or not the delimiters should get put on new lines.
 ---@return string?
 M.normal_surround = function(args, line_mode)
     -- Call the operatorfunc if it has not been called yet
@@ -266,7 +267,7 @@ M.normal_callback = function(mode)
     M.normal_surround({
         delimiters = cache.normal.delimiters,
         selection = selection,
-    })
+    }, false)
 end
 
 M.delete_callback = function()

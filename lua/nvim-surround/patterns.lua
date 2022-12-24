@@ -4,6 +4,7 @@ local M = {}
 
 -- Converts a 1D index into the buffer to the corresponding 2D buffer position.
 ---@param index integer The index of the character in the string.
+---@return position @The position of the character in the buffer.
 M.index_to_pos = function(index)
     local buffer_text = table.concat(buffer.get_lines(1, -1), "\n")
     -- Counts the number of newline characters, plus one for the final character before the current line
@@ -18,6 +19,7 @@ end
 
 -- Converts a 2D position in the buffer to the corresponding 1D string index.
 ---@param pos integer[] The position in the buffer.
+---@return integer @The index of the character into the buffer.
 M.pos_to_index = function(pos)
     -- Special case for first line, as there are no newline characters preceding it
     if pos[1] == 1 then
@@ -28,6 +30,7 @@ end
 
 -- Returns a selection in the buffer based on a Lua pattern.
 ---@param find string The Lua pattern to find in the buffer.
+---@return selection? @The closest selection matching the pattern, if any.
 M.get_selection = function(find)
     -- Get the current cursor position, buffer contents
     local curpos = buffer.get_curpos()
@@ -99,9 +102,9 @@ M.get_selection = function(find)
 end
 
 -- Finds the start and end indices for the given match groups.
----@param selection Selection The parent selection encompassing the delimiter pair.
+---@param selection selection The parent selection encompassing the delimiter pair.
 ---@param pattern string The given Lua pattern to extract match groups from.
----@return Selections? @The selections for the left and right delimiters.
+---@return selections? @The selections for the left and right delimiters.
 M.get_selections = function(selection, pattern)
     local offset = M.pos_to_index(selection.first_pos)
     local str = table.concat(buffer.get_text(selection), "\n")

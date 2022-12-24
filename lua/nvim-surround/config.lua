@@ -284,7 +284,7 @@ end
 
 -- Gets a selection from the buffer based on some heuristic.
 ---@param args { char: string?, motion: string?, pattern: string?, node: string?, query: { capture: string, type: string }? }
----@return Selection? The retrieved selection.
+---@return selection? @The retrieved selection.
 M.get_selection = function(args)
     if args.char then
         if M.get_opts().surrounds[args.char] then
@@ -299,7 +299,7 @@ M.get_selection = function(args)
         return require("nvim-surround.patterns").get_selection(args.pattern)
     elseif args.query then
         return require("nvim-surround.queries").get_selection(args.query.capture, args.query.type)
-    elseif args.textobject then
+    elseif args.textobject then ---@diagnostic disable-line: undefined-field
         vim.deprecate("The `textobject` key for `config.get_selection`", "`motion`", "v2.0.0", "nvim-surround")
     else
         vim.notify("Invalid key provided for `:h nvim-surround.config.get_selection()`.", vim.log.levels.ERROR)
@@ -317,6 +317,9 @@ M.get_selections = function(args)
         return require("nvim-surround.patterns").get_selections(selection, args.pattern)
     elseif args.exclude then
         local outer_selection = M.get_opts().surrounds[args.char].find()
+        if not outer_selection then
+            return nil
+        end
         vim.fn.cursor(outer_selection.first_pos)
         local inner_selection = args.exclude()
         if not inner_selection then
@@ -347,52 +350,64 @@ end
 M.user_opts = nil
 
 -- Returns the buffer-local options for the plugin, or global options if buffer-local does not exist.
----@return Options @The buffer-local options.
+---@return options @The buffer-local options.
 M.get_opts = function()
     return vim.b[0].nvim_surround_buffer_opts or M.user_opts or {}
 end
 
 -- Returns the add key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
----@return string|string[]|fun(string?): string[][]? @The function to get the delimiters to be added.
+---@return add_func @The function to get the delimiters to be added.
 M.get_add = function(char)
     char = require("nvim-surround.utils").get_alias(char)
-    local key = M.get_opts().surrounds[char] or M.get_opts().surrounds.invalid_key_behavior
-    return key.add
+    if M.get_opts().surrounds[char] then
+        return M.get_opts().surrounds[char].add
+    end
+    return M.get_opts().surrounds.invalid_key_behavior.add
 end
 
 -- Returns the delete key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
----@return string|fun(string?): Selections? @The function to get the selections to be deleted.
+---@return delete_func @The function to get the selections to be deleted.
 M.get_delete = function(char)
     char = require("nvim-surround.utils").get_alias(char)
-    local key = M.get_opts().surrounds[char] or M.get_opts().surrounds.invalid_key_behavior
-    return key.delete
+    if M.get_opts().surrounds[char] then
+        return M.get_opts().surrounds[char].delete
+    end
+    return M.get_opts().surrounds.invalid_key_behavior.delete
 end
 
 -- Returns the change key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
----@return { target: function, replacement: function? }? @A table holding the target/replacment functions.
+---@return { target: delete_func, replacement: add_func? }? @A table holding the target/replacment functions.
 M.get_change = function(char)
     char = require("nvim-surround.utils").get_alias(char)
-    local key = M.get_opts().surrounds[char] or M.get_opts().surrounds.invalid_key_behavior
-    return key.change
+    if M.get_opts().surrounds[char] then
+        if M.get_opts().surrounds[char].change then
+            return M.get_opts().surrounds[char].change
+        else
+            return {
+                target = M.get_opts().surrounds[char].delete,
+            }
+        end
+    end
+    return M.get_opts().surrounds.invalid_key_behavior.change
 end
 
 -- Returns a set of opts, with missing keys filled in by the invalid_key_behavior key.
----@param opts Options? The provided options.
----@return Options? @The modified options.
+---@param opts options? The provided options.
+---@return options? @The modified options.
 M.fill_missing_surrounds = function(opts)
     -- If there are no surrounds, then no modification is necessary
     if not (opts and opts.surrounds) then
         return opts
     end
 
-    for char, val in pairs(opts.surrounds) do
-        if val then
+    for char, surround in pairs(opts.surrounds) do
+        local invalid = M.get_opts().surrounds.invalid_key_behavior
+        if invalid and surround then
             -- For each surround, if a key is missing, fill it in using the correspnding key from `invalid_key_behavior`
-            local add, find, delete, change = val.add, val.find, val.delete, val.change
-            local invalid = M.get_opts().surrounds.invalid_key_behavior
+            local add, find, delete = surround.add, surround.find, surround.delete
             if not add then
                 opts.surrounds[char].add = function()
                     return invalid.add(char)
@@ -408,33 +423,117 @@ M.fill_missing_surrounds = function(opts)
                     return invalid.delete(char)
                 end
             end
-            if not (change and change.target) then
-                opts.surrounds[char].change = {
-                    target = function()
-                        return invalid.change.target(char)
-                    end,
-                }
-            end
         end
     end
     return opts
 end
 
+-- Translates the user-provided surround.add into the internal form.
+---@param user_add string[]|string[][]|add_func? The user-provided add key.
+---@return add_func? @The translated add key.
+M.translate_add = function(user_add)
+    -- If the add key does not exist or is already in internal form, return
+    if type(user_add) == "nil" or type(user_add) == "function" then
+        return user_add
+    end
+    -- Wrap the left/right delimiters in a table if they are strings (single line)
+    local add = {}
+    if type(user_add[1]) == "string" then
+        add[1] = { user_add[1] }
+    end
+    if type(user_add[2]) == "string" then
+        add[2] = { user_add[2] }
+    end
+    -- Wrap the delimiter pair in a function
+    return function()
+        return add
+    end
+end
+
+-- Translates the user-provided surround.find into the internal form.
+---@param user_find string|find_func? The user-provided find key.
+---@return find_func? @The translated find key.
+M.translate_find = function(user_find)
+    if type(user_find) == "function" then
+        return user_find
+    end
+    -- Treat the string as a Lua pattern, and find the selection
+    return function()
+        return M.get_selection({ pattern = user_find })
+    end
+end
+
+-- Translates the user-provided surround.delete into the internal form.
+---@param char string The character used to activate the surround.
+---@param user_delete string|delete_func? The user-provided delete key.
+---@return delete_func? @The translated delete key.
+M.translate_delete = function(char, user_delete)
+    if type(user_delete) == "function" then
+        return user_delete
+    end
+    -- Treat the string as a Lua pattern, and find the selection
+    return function()
+        return M.get_selections({ char = char, pattern = user_delete })
+    end
+end
+
+-- Translates the user-provided surround.change into the internal form.
+---@param char string The character used to activate the surround.
+---@param user_change { target: string|delete_func, replacement: string[]|string[][]|add_func? }? The user-provided change key.
+---@return { target: delete_func, replacement: add_func? }? @The translated change key.
+M.translate_change = function(char, user_change)
+    if not user_change then
+        return nil
+    end
+
+    return {
+        target = M.translate_delete(char, user_change.target),
+        replacement = M.translate_add(user_change.replacement),
+    }
+end
+
+-- Translates the user-provided surround into the internal form.
+---@param char string The character used to activate the surround.
+---@param user_surround user_surround? The user-provided surround.
+---@return surround? @The translated surround.
+M.translate_surround = function(char, user_surround)
+    if not user_surround then
+        return nil
+    end
+    local surround = {}
+    surround.add = M.translate_add(user_surround.add)
+    surround.find = M.translate_find(user_surround.find)
+    surround.delete = M.translate_delete(char, user_surround.delete)
+    surround.change = M.translate_change(char, user_surround.change)
+
+    return surround
+end
+
 -- Translates the user-provided configuration into the internal form.
----@param opts Options? The user-provided options.
----@return Options? @The translated options.
-M.translate_opts = function(opts)
-    if opts and opts.highlight_motion then
+---@param user_opts user_options? The user-provided options.
+---@return options? @The translated options.
+M.translate_opts = function(user_opts)
+    if not user_opts then
+        return nil
+    end
+    if user_opts.highlight_motion then ---@diagnostic disable-line: undefined-field
         vim.deprecate("`config.highlight_motion`", "`config.highlight`", "v2.0.0", "nvim-surround")
     end
-    if opts and opts.delimiters then
+    if user_opts.delimiters then ---@diagnostic disable-line: undefined-field
         vim.deprecate("`config.delimiters`", "`config.surrounds`", "v2.0.0", "nvim-surround")
     end
 
-    if not (opts and opts.surrounds) then
+    local opts = {}
+    for key, value in pairs(user_opts) do
+        if key ~= "surrounds" then
+            opts[key] = value
+        end
+    end
+    if not user_opts.surrounds then
         return opts
     end
-    for char, val in pairs(opts.surrounds) do
+    opts.surrounds = {}
+    for char, user_surround in pairs(user_opts.surrounds) do
         if char == "pairs" or char == "separators" then
             vim.deprecate(
                 "`config.surrounds.pairs` and `config.surrounds.separators`",
@@ -443,82 +542,20 @@ M.translate_opts = function(opts)
                 "nvim-surround"
             )
         end
-
-        -- Validate that the delimiter has not been disabled
-        if val then
-            local add, find, delete, change = val.add, val.find, val.delete, val.change
-            -- Handle `add` key translation
-            if add and vim.tbl_islist(add) then -- Check if the add key is a table instead of a function
-                -- Wrap the left/right delimiters in a table if they are strings (single line)
-                if type(add[1]) == "string" then
-                    add[1] = { add[1] }
-                end
-                if type(add[2]) == "string" then
-                    add[2] = { add[2] }
-                end
-                -- Wrap the delimiter pair in a function
-                opts.surrounds[char].add = function()
-                    return add
-                end
-            end
-
-            -- Handle `find` key translation
-            if find and type(find) == "string" then
-                -- Treat the string as a Lua pattern, and find the selection
-                opts.surrounds[char].find = function()
-                    return M.get_selection({ pattern = find })
-                end
-            end
-
-            -- Handle `delete` key translation
-            if delete and type(delete) == "string" then
-                -- Wrap delete in a function
-                opts.surrounds[char].delete = function()
-                    return M.get_selections({ char = char, pattern = delete })
-                end
-            end
-
-            -- Handle `change` key translation
-            if change then
-                local target, replacement = change.target, change.replacement
-                -- Wrap target in a function
-                if target and type(target) == "string" then
-                    opts.surrounds[char].change.target = function()
-                        return M.get_selections({ char = char, pattern = target })
-                    end
-                end
-                -- Check if the replacement key is a table instead of a function
-                if replacement and vim.tbl_islist(replacement) then
-                    -- Wrap the left/right delimiters in a table if they are strings (single line)
-                    if type(replacement[1]) == "string" then
-                        replacement[1] = { replacement[1] }
-                    end
-                    if type(replacement[2]) == "string" then
-                        replacement[2] = { replacement[2] }
-                    end
-                    -- Wrap the delimiter pair in a function
-                    opts.surrounds[char].change.replacement = function()
-                        return replacement
-                    end
-                end
-            else
-                if M.get_opts().surrounds and M.get_opts().surrounds[char] then
-                    opts.surrounds[char].change = M.get_opts().surrounds[char].change
-                else
-                    opts.surrounds[char].change = {
-                        target = opts.surrounds[char].delete,
-                    }
-                end
-            end
+        -- Check if the delimiter has not been disabled
+        if not user_surround then
+            opts.surrounds[char] = false
+        else
+            opts.surrounds[char] = M.translate_surround(char, user_surround)
         end
     end
     return opts
 end
 
 -- Updates the buffer-local options for the plugin based on the input.
----@param base_opts Options The base options that will be used for configuration.
----@param new_opts Options? The new options to potentially override the base options.
----@return Options The merged options.
+---@param base_opts options The base options that will be used for configuration.
+---@param new_opts user_options? The new options to potentially override the base options.
+---@return options The merged options.
 M.merge_opts = function(base_opts, new_opts)
     return new_opts and vim.tbl_deep_extend("force", base_opts, M.translate_opts(new_opts)) or base_opts
 end
@@ -762,7 +799,7 @@ M.set_keymaps = function(buffer)
 end
 
 -- Setup the global user options for all files.
----@param user_opts Options? The user-defined options to be merged with default_opts.
+---@param user_opts options? The user-defined options to be merged with default_opts.
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
     ---@diagnostic disable-next-line

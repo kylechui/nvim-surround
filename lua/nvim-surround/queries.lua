@@ -6,7 +6,7 @@ local ts_parsers = require("nvim-treesitter.parsers")
 local M = {}
 
 -- Retrieves the node that corresponds exactly to a given selection.
----@param selection Selection The given selection.
+---@param selection selection The given selection.
 ---@return _ @The corresponding node.
 M.get_node = function(selection)
     -- Convert the selection into a list
@@ -42,7 +42,7 @@ end
 -- Filters an existing parent selection down to a capture.
 ---@param sexpr string The given S-expression containing the capture.
 ---@param capture string The name of the capture to be returned.
----@param parent_selection Selection The parent selection to be filtered down.
+---@param parent_selection selection The parent selection to be filtered down.
 M.filter_selection = function(sexpr, capture, parent_selection)
     local parent_node = M.get_node(parent_selection)
 
@@ -71,7 +71,7 @@ end
 -- Finds the nearest selection of a given query capture and its source.
 ---@param capture string The capture to be retrieved.
 ---@param type string The type of query to get the capture from.
----@return Selection? @The selection of the capture.
+---@return selection? @The selection of the capture.
 M.get_selection = function(capture, type)
     -- Get a table of all nodes that match the query
     local table_list = ts_query.get_capture_matches_recursively(0, capture, type)

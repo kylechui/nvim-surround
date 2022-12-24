@@ -120,11 +120,11 @@ describe("nvim-surround", function()
     it("properly handles whitespace for open/close pairs", function()
         set_lines({ "sample_text" })
         vim.cmd("normal ysiw}")
-        set_lines({ "{sample_text}" })
+        check_lines({ "{sample_text}" })
 
         set_lines({ "sample_text" })
         vim.cmd("normal ysiw{")
-        set_lines({ "{ sample_text }" })
+        check_lines({ "{ sample_text }" })
 
         set_lines({ "({ sample_text })" })
         vim.cmd("normal ds{")
