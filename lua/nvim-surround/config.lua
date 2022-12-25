@@ -554,9 +554,7 @@ end
 ---@param new_opts user_options? The new options to potentially override the base options.
 ---@return options The merged options.
 M.merge_opts = function(base_opts, new_opts)
-    if not new_opts then
-        return base_opts
-    end
+    new_opts = new_opts or {}
     local opts = vim.tbl_deep_extend("force", base_opts, M.translate_opts(new_opts))
     return opts
 end
