@@ -510,12 +510,9 @@ M.translate_surround = function(char, user_surround)
 end
 
 -- Translates the user-provided configuration into the internal form.
----@param user_opts user_options? The user-provided options.
----@return options? @The translated options.
+---@param user_opts user_options The user-provided options.
+---@return options @The translated options.
 M.translate_opts = function(user_opts)
-    if not user_opts then
-        return nil
-    end
     if user_opts.highlight_motion then ---@diagnostic disable-line: undefined-field
         vim.deprecate("`config.highlight_motion`", "`config.highlight`", "v2.0.0", "nvim-surround")
     end
@@ -557,7 +554,11 @@ end
 ---@param new_opts user_options? The new options to potentially override the base options.
 ---@return options The merged options.
 M.merge_opts = function(base_opts, new_opts)
-    return new_opts and vim.tbl_deep_extend("force", base_opts, M.translate_opts(new_opts)) or base_opts
+    if not new_opts then
+        return base_opts
+    end
+    local opts = vim.tbl_deep_extend("force", base_opts, M.translate_opts(new_opts))
+    return opts
 end
 
 -- Check if a keymap should be added before setting it.
@@ -799,7 +800,7 @@ M.set_keymaps = function(buffer)
 end
 
 -- Setup the global user options for all files.
----@param user_opts options? The user-defined options to be merged with default_opts.
+---@param user_opts user_options? The user-defined options to be merged with default_opts.
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
     ---@diagnostic disable-next-line
@@ -817,7 +818,7 @@ M.setup = function(user_opts)
 end
 
 -- Setup the user options for the current buffer.
----@param buffer_opts table? The buffer-local options to be merged with the global user_opts.
+---@param buffer_opts user_options? The buffer-local options to be merged with the global user_opts.
 M.buffer_setup = function(buffer_opts)
     -- Merge the given table into the existing buffer-local options, or global options otherwise
     vim.b[0].nvim_surround_buffer_opts = M.merge_opts(M.get_opts(), buffer_opts)

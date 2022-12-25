@@ -25,10 +25,10 @@
 ---@field change { target: delete_func, replacement: add_func? }
 
 ---@class options
----@field keymaps table<string, false|string>
----@field surrounds table<string, false|surround>
----@field aliases table<string, false|string|string[]>
----@field highlight { duration: false|integer }
+---@field keymaps table<string, string>
+---@field surrounds table<string, surround>
+---@field aliases table<string, string|string[]>
+---@field highlight { duration: integer }
 ---@field move_cursor false|string
 ---@field indent_lines false|function
 

@@ -6,18 +6,19 @@ local utils = require("nvim-surround.utils")
 local M = {}
 
 -- Setup the plugin with user-defined options.
----@param user_opts options? The user options.
+---@param user_opts user_options? The user options.
 M.setup = function(user_opts)
     config.setup(user_opts)
 end
 
 -- Configure the plugin on a per-buffer basis.
----@param buffer_opts options? The buffer-local options.
+---@param buffer_opts user_options? The buffer-local options.
 M.buffer_setup = function(buffer_opts)
     config.buffer_setup(buffer_opts)
 end
 
 -- Add delimiters around the cursor, in insert mode.
+---@param line_mode boolean Whether or not the delimiters should get put on new lines.
 M.insert_surround = function(line_mode)
     local curpos = buffer.get_curpos()
     local char = utils.get_char()
@@ -51,7 +52,7 @@ end
 
 -- Holds the current position of the cursor, since calling opfunc will erase it.
 M.normal_curpos = nil
--- Add delimiters around a text object.
+-- Add delimiters around a motion.
 ---@param args { selection: selection, delimiters: string[][], curpos: integer[] }?
 ---@param line_mode boolean Whether or not the delimiters should get put on new lines.
 ---@return string?
@@ -79,6 +80,7 @@ M.normal_surround = function(args, line_mode)
 end
 
 -- Add delimiters around a visual selection.
+---@param line_mode boolean Whether or not the delimiters should get put on new lines.
 M.visual_surround = function(line_mode)
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
@@ -152,7 +154,7 @@ end
 
 -- Delete a surrounding delimiter pair, if it exists.
 ---@param args { del_char: string, curpos: integer[] }
----@return string?
+---@return "g@l"?
 M.delete_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args then
@@ -185,6 +187,7 @@ end
 
 -- Change a surrounding delimiter pair, if it exists.
 ---@param args? table
+---@return "g@l"?
 M.change_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args then
