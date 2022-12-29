@@ -1,5 +1,6 @@
 local M = {}
 
+---@type user_options
 M.default_opts = {
     keymaps = {
         insert = "<C-g>s",
@@ -438,12 +439,8 @@ M.translate_add = function(user_add)
     end
     -- Wrap the left/right delimiters in a table if they are strings (single line)
     local add = {}
-    if type(user_add[1]) == "string" then
-        add[1] = { user_add[1] }
-    end
-    if type(user_add[2]) == "string" then
-        add[2] = { user_add[2] }
-    end
+    add[1] = type(user_add[1]) == "string" and { user_add[1] } or user_add[1]
+    add[2] = type(user_add[2]) == "string" and { user_add[2] } or user_add[2]
     -- Wrap the delimiter pair in a function
     return function()
         return add
