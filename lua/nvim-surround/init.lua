@@ -153,7 +153,7 @@ M.visual_surround = function(line_mode)
 end
 
 -- Delete a surrounding delimiter pair, if it exists.
----@param args { del_char: string, curpos: integer[] }
+---@param args? { del_char: string, curpos: integer[] }
 ---@return "g@l"?
 M.delete_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
@@ -186,7 +186,7 @@ M.delete_surround = function(args)
 end
 
 -- Change a surrounding delimiter pair, if it exists.
----@param args? table
+---@param args? { curpos: position, del_char: string, add_delimiters: add_func }
 ---@return "g@l"?
 M.change_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
@@ -199,10 +199,10 @@ M.change_surround = function(args)
     end
 
     buffer.set_curpos(args.curpos)
-    -- Get the selections to change
+    -- Get the selections to change, as well as the delimiters to replace those selections
     local selections = utils.get_nearest_selections(args.del_char, "change")
-    if selections then
-        local delimiters = args.add_delimiters()
+    local delimiters = args.add_delimiters()
+    if selections and delimiters then
         -- Change the right selection first to ensure selection positions are correct
         buffer.change_selection(selections.right, delimiters[2])
         buffer.change_selection(selections.left, delimiters[1])
@@ -217,7 +217,7 @@ end
                                                    Callback Functions
 --]====================================================================================================================]
 
----@param mode string
+---@param mode "char"|"line"|"block"
 M.normal_callback = function(mode)
     -- Adjust the ] mark if the operator was in line-mode, e.g. `ip`
     if mode == "line" then
@@ -294,9 +294,8 @@ M.change_callback = function()
     if not cache.change.del_char or not cache.change.add_delimiters then
         local del_char = utils.get_alias(utils.get_char())
         local change = config.get_change(del_char)
-        -- Get the selections to change
         local selections = utils.get_nearest_selections(del_char, "change")
-        if not selections then
+        if not (del_char and change and selections) then
             return
         end
 
