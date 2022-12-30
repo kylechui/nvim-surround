@@ -62,6 +62,7 @@ M.get_nearest_selections = function(char, action)
     local chars = config.get_opts().aliases[char] or { char }
     local curpos = buffer.get_curpos()
     local selections_list = {}
+    chars = type(chars) == "string" and { chars } or chars
     -- Iterate through all possible selections for each aliased character, and find the closest pair
     for _, c in ipairs(chars) do
         local cur_selections
