@@ -55,7 +55,7 @@ M.normal_curpos = nil
 -- Add delimiters around a motion.
 ---@param args { selection: selection, delimiters: string[][], curpos: integer[] }?
 ---@param line_mode boolean Whether or not the delimiters should get put on new lines.
----@return string?
+---@return "g@"?
 M.normal_surround = function(args, line_mode)
     -- Call the operatorfunc if it has not been called yet
     if not args then

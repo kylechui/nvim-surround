@@ -4,6 +4,7 @@ local M = {}
 ---@param target string The target type to be found.
 ---@param types string[] The list of types to search through.
 ---@return boolean @Whether or not the target type is found.
+---@nodiscard
 local function is_any_of(target, types)
     for _, type in ipairs(types) do
         if target == type then
@@ -16,6 +17,7 @@ end
 -- Finds the nearest selection of a given Tree-sitter node type or types.
 ---@param node_types string|string[] The Tree-sitter node type(s) to be retrieved.
 ---@return selection? @The selection of the node.
+---@nodiscard
 M.get_selection = function(node_types)
     if type(node_types) == "string" then
         node_types = { node_types }

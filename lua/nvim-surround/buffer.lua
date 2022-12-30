@@ -8,6 +8,7 @@ local M = {}
 
 -- Gets the position of the cursor, 1-indexed.
 ---@return position @The position of the cursor.
+---@nodiscard
 M.get_curpos = function()
     local curpos = vim.api.nvim_win_get_cursor(0)
     return { curpos[1], curpos[2] + 1 }
@@ -37,6 +38,7 @@ end
 -- Gets the row and column for a mark, 1-indexed, if it exists, returns nil otherwise.
 ---@param mark string The mark whose position will be returned.
 ---@return position? @The position of the mark.
+---@nodiscard
 M.get_mark = function(mark)
     local position = vim.api.nvim_buf_get_mark(0, mark)
     if position[1] == 0 then
@@ -71,6 +73,7 @@ end
 -- Gets the position of the first byte of a character, according to the UTF-8 standard.
 ---@param pos position The position of any byte in the character.
 ---@return position @The position of the first byte of the character.
+---@nodiscard
 M.get_first_byte = function(pos)
     local byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
     if not byte then
@@ -87,6 +90,7 @@ end
 -- Gets the position of the last byte of a character, according to the UTF-8 standard.
 ---@param pos position? The position of the beginning of the character.
 ---@return position? @The position of the last byte of the character.
+---@nodiscard
 M.get_last_byte = function(pos)
     if not pos then
         return nil
@@ -140,7 +144,7 @@ M.set_operator_marks = function(motion)
     M.del_marks({ "[", "]" })
     -- Set the [ and ] marks by calling an operatorfunc
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
-    vim.cmd("normal g@" .. motion)
+    vim.cmd.normal("g@" .. motion)
     -- Adjust the marks to not reside on whitespace
     M.adjust_mark("[")
     M.adjust_mark("]")
@@ -159,6 +163,7 @@ end
 ---@param start integer The starting line.
 ---@param stop integer The final line.
 ---@return text @A list of lines from the buffer.
+---@nodiscard
 M.get_lines = function(start, stop)
     return vim.api.nvim_buf_get_lines(0, start - 1, stop, false)
 end
@@ -166,6 +171,7 @@ end
 -- Gets a line from the buffer, 1-indexed.
 ---@param line_num integer The number of the line to be retrieved.
 ---@return string @The contents of the line that was retrieved.
+---@nodiscard
 M.get_line = function(line_num)
     return M.get_lines(line_num, line_num)[1]
 end
@@ -174,6 +180,7 @@ end
 ---@param pos1 position The first position.
 ---@param pos2 position The second position.
 ---@return boolean @Whether or not pos1 comes before pos2.
+---@nodiscard
 M.comes_before = function(pos1, pos2)
     return pos1[1] < pos2[1] or pos1[1] == pos2[1] and pos1[2] <= pos2[2]
 end
@@ -182,6 +189,7 @@ end
 ---@param pos position The given position.
 ---@param selections selections The given selections
 ---@return boolean @Whether the position is contained within the selections.
+---@nodiscard
 M.is_inside = function(pos, selections)
     return M.comes_before(selections.left.first_pos, pos) and M.comes_before(pos, selections.right.last_pos)
 end
@@ -189,6 +197,7 @@ end
 -- Gets a selection of text from the buffer.
 ---@param selection selection The selection of text to be retrieved.
 ---@return text @The text from the buffer.
+---@nodiscard
 M.get_text = function(selection)
     local first_pos, last_pos = selection.first_pos, selection.last_pos
     last_pos[2] = math.min(last_pos[2], #M.get_line(last_pos[1]))

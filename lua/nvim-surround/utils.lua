@@ -8,6 +8,7 @@ M.NOOP = function() end
 
 -- Gets a character input from the user.
 ---@return string? @The input character, or nil if a control character is pressed.
+---@nodiscard
 M.get_char = function()
     local ret_val, char_num = pcall(vim.fn.getchar)
     -- Return nil if error (e.g. <C-c>) or for control characters
@@ -21,6 +22,7 @@ end
 -- Returns the value that the input is aliased to, or the character if no alias exists.
 ---@param char string? The input character.
 ---@return string? @The aliased character if it exists, or the original if none exists.
+---@nodiscard
 M.get_alias = function(char)
     local aliases = config.get_opts().aliases
     if type(aliases[char]) == "string" then
@@ -31,7 +33,8 @@ end
 
 -- Gets a delimiter pair for a user-inputted character.
 ---@param char string? The user-given character.
----@return string[][]? @A pair of delimiters for the given input, or nil if not applicable.
+---@return delimiter_pair? @A pair of delimiters for the given input, or nil if not applicable.
+---@nodiscard
 M.get_delimiters = function(char)
     char = M.get_alias(char)
     -- Return nil if the user cancels the command
@@ -52,6 +55,7 @@ end
 ---@param char string? A character representing what kind of surrounding pair is to be selected.
 ---@param action "delete"|"change" A string representing what action is being performed.
 ---@return selections? @A table containing the start and end positions of the delimiters.
+---@nodiscard
 M.get_nearest_selections = function(char, action)
     char = M.get_alias(char)
 
@@ -84,7 +88,8 @@ end
 
 -- Filters down a list of selections to the best one, based on the jumping heuristic.
 ---@param selections_list selections[] The given list of selections.
----@return selections @The best selections from the list.
+---@return selections? @The best selections from the list.
+---@nodiscard
 M.filter_selections_list = function(selections_list)
     local curpos = buffer.get_curpos()
     local best_selections

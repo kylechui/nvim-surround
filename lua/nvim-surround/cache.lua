@@ -13,7 +13,7 @@ M.change = {}
 ---@param func_name string A string representing the callback function's name.
 M.set_callback = function(func_name)
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
-    vim.cmd("normal! g@l")
+    vim.cmd.normal({ "g@l", bang = true })
     vim.go.operatorfunc = func_name
 end
 

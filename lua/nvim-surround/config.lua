@@ -806,9 +806,7 @@ M.setup = function(user_opts)
     M.set_keymaps(false)
     -- Configure highlight group, if necessary
     if M.user_opts.highlight.duration then
-        vim.cmd([[
-            highlight default link NvimSurroundHighlight Visual
-        ]])
+        vim.cmd.highlight("default link NvimSurroundHighlight Visual")
     end
 end
 
