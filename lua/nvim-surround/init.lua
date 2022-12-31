@@ -106,6 +106,9 @@ M.visual_surround = function(line_mode)
         buffer.insert_text({ last_pos[1], #buffer.get_line(last_pos[1]) + 1 }, delimiters[2])
         buffer.insert_text(first_pos, delimiters[1])
     elseif vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
+        if vim.o.selection == "exclusive" then
+            last_pos[2] = last_pos[2] - 1
+        end
         -- Get (visually) what columns the start and end are located at
         local first_disp = vim.fn.strdisplaywidth(buffer.get_line(first_pos[1]):sub(1, first_pos[2] - 1)) + 1
         local last_disp = vim.fn.strdisplaywidth(buffer.get_line(last_pos[1]):sub(1, last_pos[2] - 1)) + 1
