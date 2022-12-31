@@ -6,19 +6,6 @@ local M = {}
 -- Do nothing.
 M.NOOP = function() end
 
--- Gets a character input from the user.
----@return string? @The input character, or nil if a control character is pressed.
----@nodiscard
-M.get_char = function()
-    local ret_val, char_num = pcall(vim.fn.getchar)
-    -- Return nil if error (e.g. <C-c>) or for control characters
-    if not ret_val or type(char_num) ~= "number" or char_num < 32 then
-        return nil
-    end
-    local char = vim.fn.nr2char(char_num)
-    return char
-end
-
 -- Gets the nearest two selections for the left and right surrounding pair.
 ---@param char string? A character representing what kind of surrounding pair is to be selected.
 ---@param action "delete"|"change" A string representing what action is being performed.

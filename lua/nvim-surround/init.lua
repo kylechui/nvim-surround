@@ -1,6 +1,7 @@
 local buffer = require("nvim-surround.buffer")
 local cache = require("nvim-surround.cache")
 local config = require("nvim-surround.config")
+local input = require("nvim-surround.input")
 local utils = require("nvim-surround.utils")
 
 local M = {}
@@ -21,7 +22,7 @@ end
 ---@param line_mode boolean Whether or not the delimiters should get put on new lines.
 M.insert_surround = function(line_mode)
     local curpos = buffer.get_curpos()
-    local char = utils.get_char()
+    local char = input.get_char()
     local delimiters = config.get_delimiters(char)
     if not delimiters then
         return
@@ -85,7 +86,7 @@ M.visual_surround = function(line_mode)
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
     -- Get a character and selection from the user
-    local ins_char = utils.get_char()
+    local ins_char = input.get_char()
     local delimiters = config.get_delimiters(ins_char)
     local first_pos, last_pos = buffer.get_mark("<"), buffer.get_mark(">")
     if not delimiters or not first_pos or not last_pos then
@@ -250,7 +251,7 @@ M.normal_callback = function(mode)
     end
     -- Get a character input and the delimiters (if not cached)
     if not cache.normal.delimiters then
-        local char = utils.get_char()
+        local char = input.get_char()
         -- Get the delimiter pair based on the input character
         cache.normal.delimiters = cache.normal.delimiters or config.get_delimiters(char)
         -- Add new lines if the addition is done line-wise
@@ -277,7 +278,7 @@ M.delete_callback = function()
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
     -- Get a character input if not cached
-    cache.delete.char = cache.delete.char or utils.get_char()
+    cache.delete.char = cache.delete.char or input.get_char()
     if not cache.delete.char then
         return
     end
@@ -292,7 +293,7 @@ M.change_callback = function()
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
     if not cache.change.del_char or not cache.change.add_delimiters then
-        local del_char = config.get_alias(utils.get_char())
+        local del_char = config.get_alias(input.get_char())
         local change = config.get_change(del_char)
         local selections = utils.get_nearest_selections(del_char, "change")
         if not (del_char and change and selections) then
@@ -314,7 +315,7 @@ M.change_callback = function()
         if change and change.replacement then
             delimiters = change.replacement()
         else
-            ins_char = utils.get_char()
+            ins_char = input.get_char()
             delimiters = config.get_delimiters(ins_char)
         end
 

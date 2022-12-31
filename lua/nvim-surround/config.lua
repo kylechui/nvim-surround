@@ -1,3 +1,5 @@
+local input = require("nvim-surround.input")
+
 local M = {}
 
 ---@type user_options
@@ -94,8 +96,8 @@ M.default_opts = {
         },
         ["i"] = { -- TODO: Add find/delete/change functions
             add = function()
-                local left_delimiter = M.get_input("Enter the left delimiter: ")
-                local right_delimiter = left_delimiter and M.get_input("Enter the right delimiter: ")
+                local left_delimiter = input.get_input("Enter the left delimiter: ")
+                local right_delimiter = left_delimiter and input.get_input("Enter the right delimiter: ")
                 if right_delimiter then
                     return { { left_delimiter }, { right_delimiter } }
                 end
@@ -105,10 +107,10 @@ M.default_opts = {
         },
         ["t"] = {
             add = function()
-                local input = M.get_input("Enter the HTML tag: ")
-                if input then
-                    local element = input:match("^<?([^%s>]*)")
-                    local attributes = input:match("^<?[^%s>]*%s+(.-)>?$")
+                local user_input = input.get_input("Enter the HTML tag: ")
+                if user_input then
+                    local element = user_input:match("^<?([^%s>]*)")
+                    local attributes = user_input:match("^<?[^%s>]*%s+(.-)>?$")
 
                     local open = attributes and element .. " " .. attributes or element
                     local close = element
@@ -123,10 +125,10 @@ M.default_opts = {
             change = {
                 target = "^<([^%s<>]*)().-([^/]*)()>$",
                 replacement = function()
-                    local input = M.get_input("Enter the HTML tag: ")
-                    if input then
-                        local element = input:match("^<?([^%s>]*)")
-                        local attributes = input:match("^<?[^%s>]*%s+(.-)>?$")
+                    local user_input = input.get_input("Enter the HTML tag: ")
+                    if user_input then
+                        local element = user_input:match("^<?([^%s>]*)")
+                        local attributes = user_input:match("^<?[^%s>]*%s+(.-)>?$")
 
                         local open = attributes and element .. " " .. attributes or element
                         local close = element
@@ -138,10 +140,10 @@ M.default_opts = {
         },
         ["T"] = {
             add = function()
-                local input = M.get_input("Enter the HTML tag: ")
-                if input then
-                    local element = input:match("^<?([^%s>]*)")
-                    local attributes = input:match("^<?[^%s>]*%s+(.-)>?$")
+                local user_input = input.get_input("Enter the HTML tag: ")
+                if user_input then
+                    local element = user_input:match("^<?([^%s>]*)")
+                    local attributes = user_input:match("^<?[^%s>]*%s+(.-)>?$")
 
                     local open = attributes and element .. " " .. attributes or element
                     local close = element
@@ -156,10 +158,10 @@ M.default_opts = {
             change = {
                 target = "^<([^>]*)().-([^/]*)()>$",
                 replacement = function()
-                    local input = M.get_input("Enter the HTML tag: ")
-                    if input then
-                        local element = input:match("^<?([^%s>]*)")
-                        local attributes = input:match("^<?[^%s>]*%s+(.-)>?$")
+                    local user_input = input.get_input("Enter the HTML tag: ")
+                    if user_input then
+                        local element = user_input:match("^<?([^%s>]*)")
+                        local attributes = user_input:match("^<?[^%s>]*%s+(.-)>?$")
 
                         local open = attributes and element .. " " .. attributes or element
                         local close = element
@@ -171,7 +173,7 @@ M.default_opts = {
         },
         ["f"] = {
             add = function()
-                local result = M.get_input("Enter the function name: ")
+                local result = input.get_input("Enter the function name: ")
                 if result then
                     return { { result .. "(" }, { ")" } }
                 end
@@ -215,7 +217,7 @@ M.default_opts = {
             change = {
                 target = "^.-([%w_]+)()%(.-%)()()$",
                 replacement = function()
-                    local result = M.get_input("Enter the function name: ")
+                    local result = input.get_input("Enter the function name: ")
                     if result then
                         return { { result }, { "" } }
                     end
@@ -275,17 +277,15 @@ M.default_opts = {
 -- Gets input from the user.
 ---@param prompt string The input prompt.
 ---@return string? @The user input.
+---@nodiscard
 M.get_input = function(prompt)
-    -- Since `vim.fn.input()` does not handle keyboard interrupts, we use a protected call to detect <C-c>
-    local ok, result = pcall(vim.fn.input, { prompt = prompt, cancelreturn = vim.NIL })
-    if ok and result ~= vim.NIL then
-        return result
-    end
+    return input.get_input(prompt)
 end
 
 -- Gets a selection from the buffer based on some heuristic.
 ---@param args { char: string?, motion: string?, pattern: string?, node: string?, query: { capture: string, type: string }? }
 ---@return selection? @The retrieved selection.
+---@nodiscard
 M.get_selection = function(args)
     if args.char then
         if M.get_opts().surrounds[args.char] then
@@ -309,6 +309,7 @@ end
 
 -- Gets a pair of selections from the buffer based on some heuristic.
 ---@param args { char: string, pattern: string?, exclude: function? }
+---@nodiscard
 M.get_selections = function(args)
     local selection = M.get_selection({ char = args.char })
     if not selection then
@@ -352,6 +353,7 @@ M.user_opts = nil
 
 -- Returns the buffer-local options for the plugin, or global options if buffer-local does not exist.
 ---@return options @The buffer-local options.
+---@nodiscard
 M.get_opts = function()
     return vim.b[0].nvim_surround_buffer_opts or M.user_opts or {}
 end
@@ -391,6 +393,7 @@ end
 -- Returns the add key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
 ---@return add_func @The function to get the delimiters to be added.
+---@nodiscard
 M.get_add = function(char)
     char = M.get_alias(char)
     if M.get_opts().surrounds[char] then
@@ -402,6 +405,7 @@ end
 -- Returns the delete key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
 ---@return delete_func @The function to get the selections to be deleted.
+---@nodiscard
 M.get_delete = function(char)
     char = M.get_alias(char)
     if M.get_opts().surrounds[char] then
@@ -413,6 +417,7 @@ end
 -- Returns the change key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
 ---@return { target: delete_func, replacement: add_func? }? @A table holding the target/replacment functions.
+---@nodiscard
 M.get_change = function(char)
     char = M.get_alias(char)
     if M.get_opts().surrounds[char] then
@@ -428,6 +433,7 @@ M.get_change = function(char)
 end
 
 -- Returns a set of opts, with missing keys filled in by the invalid_key_behavior key.
+-- TODO: Change this function name!
 ---@param opts options? The provided options.
 ---@return options? @The modified options.
 M.fill_missing_surrounds = function(opts)
