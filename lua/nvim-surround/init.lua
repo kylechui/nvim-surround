@@ -21,8 +21,8 @@ end
 -- Add delimiters around the cursor, in insert mode.
 ---@param line_mode boolean Whether or not the delimiters should get put on new lines.
 M.insert_surround = function(line_mode)
-    local curpos = buffer.get_curpos()
     local char = input.get_char()
+    local curpos = buffer.get_curpos()
     local delimiters = config.get_delimiters(char)
     if not delimiters then
         return
@@ -54,7 +54,7 @@ end
 -- Holds the current position of the cursor, since calling opfunc will erase it.
 M.normal_curpos = nil
 -- Add delimiters around a motion.
----@param args { selection: selection, delimiters: string[][], curpos: integer[] }?
+---@param args { selection: selection, delimiters: string[][] }?
 ---@param line_mode boolean Whether or not the delimiters should get put on new lines.
 ---@return "g@"?
 M.normal_surround = function(args, line_mode)

@@ -20,12 +20,13 @@ M.get_nearest_selections = function(char, action)
     local selections_list = {}
     -- Iterate through all possible selections for each aliased character, and find the closest pair
     for _, c in ipairs(chars) do
-        local cur_selections
-        if action == "change" then
-            cur_selections = config.get_change(c).target(c)
-        else
-            cur_selections = config.get_delete(c)(c)
-        end
+        local cur_selections = (function()
+            if action == "change" then
+                return config.get_change(c).target(c)
+            else
+                return config.get_delete(c)(c)
+            end
+        end)()
         -- If found, add the current selections to the list of all possible selections
         if cur_selections then
             selections_list[#selections_list + 1] = cur_selections
