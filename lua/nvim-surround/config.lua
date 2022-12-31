@@ -1,4 +1,5 @@
 local input = require("nvim-surround.input")
+local functional = require("nvim-surround.functional")
 
 local M = {}
 
@@ -475,13 +476,11 @@ M.translate_add = function(user_add)
     if type(user_add) == "nil" or type(user_add) == "function" then
         return user_add
     end
-    -- Wrap the left/right delimiters in a table if they are strings (single line)
-    local add = {}
-    add[1] = type(user_add[1]) == "string" and { user_add[1] } or user_add[1]
-    add[2] = type(user_add[2]) == "string" and { user_add[2] } or user_add[2]
-    -- Wrap the delimiter pair in a function
     return function()
-        return add
+        return {
+            functional.to_list(user_add[1]),
+            functional.to_list(user_add[2]),
+        }
     end
 end
 
@@ -520,7 +519,6 @@ M.translate_change = function(char, user_change)
     if not user_change then
         return nil
     end
-
     return {
         target = M.translate_delete(char, user_change.target),
         replacement = M.translate_add(user_change.replacement),

@@ -1,5 +1,6 @@
 local buffer = require("nvim-surround.buffer")
 local config = require("nvim-surround.config")
+local functional = require("nvim-surround.functional")
 
 local M = {}
 
@@ -14,10 +15,9 @@ M.NOOP = function() end
 M.get_nearest_selections = function(char, action)
     char = config.get_alias(char)
 
-    local chars = config.get_opts().aliases[char] or { char }
+    local chars = functional.to_list(config.get_opts().aliases[char] or char)
     local curpos = buffer.get_curpos()
     local selections_list = {}
-    chars = type(chars) == "string" and { chars } or chars
     -- Iterate through all possible selections for each aliased character, and find the closest pair
     for _, c in ipairs(chars) do
         local cur_selections
