@@ -22,7 +22,7 @@ end
 M.insert_surround = function(line_mode)
     local curpos = buffer.get_curpos()
     local char = utils.get_char()
-    local delimiters = utils.get_delimiters(char)
+    local delimiters = config.get_delimiters(char)
     if not delimiters then
         return
     end
@@ -86,7 +86,7 @@ M.visual_surround = function(line_mode)
     local curpos = buffer.get_curpos()
     -- Get a character and selection from the user
     local ins_char = utils.get_char()
-    local delimiters = utils.get_delimiters(ins_char)
+    local delimiters = config.get_delimiters(ins_char)
     local first_pos, last_pos = buffer.get_mark("<"), buffer.get_mark(">")
     if not delimiters or not first_pos or not last_pos then
         return
@@ -252,7 +252,7 @@ M.normal_callback = function(mode)
     if not cache.normal.delimiters then
         local char = utils.get_char()
         -- Get the delimiter pair based on the input character
-        cache.normal.delimiters = cache.normal.delimiters or utils.get_delimiters(char)
+        cache.normal.delimiters = cache.normal.delimiters or config.get_delimiters(char)
         -- Add new lines if the addition is done line-wise
         if cache.normal.line_mode then
             table.insert(cache.normal.delimiters[2], 1, "")
@@ -292,7 +292,7 @@ M.change_callback = function()
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
     if not cache.change.del_char or not cache.change.add_delimiters then
-        local del_char = utils.get_alias(utils.get_char())
+        local del_char = config.get_alias(utils.get_char())
         local change = config.get_change(del_char)
         local selections = utils.get_nearest_selections(del_char, "change")
         if not (del_char and change and selections) then
@@ -315,7 +315,7 @@ M.change_callback = function()
             delimiters = change.replacement()
         else
             ins_char = utils.get_char()
-            delimiters = utils.get_delimiters(ins_char)
+            delimiters = config.get_delimiters(ins_char)
         end
 
         -- Clear the highlights after getting the replacement surround

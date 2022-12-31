@@ -356,11 +356,43 @@ M.get_opts = function()
     return vim.b[0].nvim_surround_buffer_opts or M.user_opts or {}
 end
 
+-- Returns the value that the input is aliased to, or the character if no alias exists.
+---@param char string? The input character.
+---@return string? @The aliased character if it exists, or the original if none exists.
+---@nodiscard
+M.get_alias = function(char)
+    local aliases = M.get_opts().aliases
+    if type(aliases[char]) == "string" then
+        return aliases[char]
+    end
+    return char
+end
+
+-- Gets a delimiter pair for a user-inputted character.
+---@param char string? The user-given character.
+---@return delimiter_pair? @A pair of delimiters for the given input, or nil if not applicable.
+---@nodiscard
+M.get_delimiters = function(char)
+    char = M.get_alias(char)
+    -- Return nil if the user cancels the command
+    if not char then
+        return nil
+    end
+
+    -- Get the function for adding the delimiters, if it exists
+    local add = M.get_add(char)
+    if add then
+        return vim.deepcopy(add(char))
+    end
+
+    M.get_opts().surrounds.invalid_key_behavior.add(char)
+end
+
 -- Returns the add key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
 ---@return add_func @The function to get the delimiters to be added.
 M.get_add = function(char)
-    char = require("nvim-surround.utils").get_alias(char)
+    char = M.get_alias(char)
     if M.get_opts().surrounds[char] then
         return M.get_opts().surrounds[char].add
     end
@@ -371,7 +403,7 @@ end
 ---@param char string? The input character.
 ---@return delete_func @The function to get the selections to be deleted.
 M.get_delete = function(char)
-    char = require("nvim-surround.utils").get_alias(char)
+    char = M.get_alias(char)
     if M.get_opts().surrounds[char] then
         return M.get_opts().surrounds[char].delete
     end
@@ -382,7 +414,7 @@ end
 ---@param char string? The input character.
 ---@return { target: delete_func, replacement: add_func? }? @A table holding the target/replacment functions.
 M.get_change = function(char)
-    char = require("nvim-surround.utils").get_alias(char)
+    char = M.get_alias(char)
     if M.get_opts().surrounds[char] then
         if M.get_opts().surrounds[char].change then
             return M.get_opts().surrounds[char].change

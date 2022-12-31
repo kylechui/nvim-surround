@@ -1,5 +1,5 @@
 local buffer = require("nvim-surround.buffer")
-local utils = require("nvim-surround.utils")
+local config = require("nvim-surround.config")
 
 local M = {}
 
@@ -16,7 +16,7 @@ end
 ---@return selection? @The selection that represents the text-object.
 ---@nodiscard
 M.get_selection = function(motion)
-    local char = utils.get_alias(motion:sub(2, 2))
+    local char = config.get_alias(motion:sub(2, 2))
     local curpos = buffer.get_curpos()
 
     buffer.set_operator_marks(motion)
