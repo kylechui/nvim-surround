@@ -270,7 +270,7 @@ M.normal_callback = function(mode)
     M.normal_surround({
         delimiters = cache.normal.delimiters,
         selection = selection,
-    }, false)
+    }, cache.normal.line_mode)
 end
 
 M.delete_callback = function()
