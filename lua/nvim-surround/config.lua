@@ -373,22 +373,30 @@ end
 
 -- Gets a delimiter pair for a user-inputted character.
 ---@param char string? The user-given character.
+---@param line_mode boolean Whether or not the delimiters should be put on new lines.
 ---@return delimiter_pair? @A pair of delimiters for the given input, or nil if not applicable.
 ---@nodiscard
-M.get_delimiters = function(char)
-    char = M.get_alias(char)
-    -- Return nil if the user cancels the command
+M.get_delimiters = function(char, line_mode)
     if not char then
         return nil
     end
 
-    -- Get the function for adding the delimiters, if it exists
-    local add = M.get_add(char)
-    if add then
-        return vim.deepcopy(add(char))
+    char = M.get_alias(char)
+    -- Get the delimiters, using invalid_key_behavior if the add function is undefined for the character
+    local delimiters = (function()
+        if M.get_add(char) then
+            return M.get_add(char)(char)
+        else
+            return M.get_opts().surrounds.invalid_key_behavior.add(char)
+        end
+    end)()
+    -- Add new lines if the addition is done line-wise
+    if line_mode then
+        table.insert(delimiters[2], 1, "")
+        table.insert(delimiters[1], "")
     end
 
-    M.get_opts().surrounds.invalid_key_behavior.add(char)
+    return delimiters
 end
 
 -- Returns the add key for the surround associated with a given character, if one exists.

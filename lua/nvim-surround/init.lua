@@ -23,15 +23,9 @@ end
 M.insert_surround = function(line_mode)
     local char = input.get_char()
     local curpos = buffer.get_curpos()
-    local delimiters = config.get_delimiters(char)
+    local delimiters = config.get_delimiters(char, line_mode)
     if not delimiters then
         return
-    end
-
-    -- Add new lines if the addition is done line-wise
-    if line_mode then
-        table.insert(delimiters[2], 1, "")
-        table.insert(delimiters[1], "")
     end
 
     buffer.insert_text(curpos, delimiters[2])
@@ -87,16 +81,10 @@ M.visual_surround = function(line_mode)
     local curpos = buffer.get_curpos()
     -- Get a character and selection from the user
     local ins_char = input.get_char()
-    local delimiters = config.get_delimiters(ins_char)
+    local delimiters = config.get_delimiters(ins_char, line_mode)
     local first_pos, last_pos = buffer.get_mark("<"), buffer.get_mark(">")
     if not delimiters or not first_pos or not last_pos then
         return
-    end
-
-    -- Add new lines if the addition is done line-wise
-    if line_mode then
-        table.insert(delimiters[2], 1, "")
-        table.insert(delimiters[1], "")
     end
 
     -- Add the right delimiter first to ensure correct indexing
@@ -256,12 +244,7 @@ M.normal_callback = function(mode)
     if not cache.normal.delimiters then
         local char = input.get_char()
         -- Get the delimiter pair based on the input character
-        cache.normal.delimiters = cache.normal.delimiters or config.get_delimiters(char)
-        -- Add new lines if the addition is done line-wise
-        if cache.normal.line_mode then
-            table.insert(cache.normal.delimiters[2], 1, "")
-            table.insert(cache.normal.delimiters[1], "")
-        end
+        cache.normal.delimiters = cache.normal.delimiters or config.get_delimiters(char, cache.normal.line_mode)
         if not cache.normal.delimiters then
             buffer.clear_highlights()
             return
@@ -274,7 +257,7 @@ M.normal_callback = function(mode)
     M.normal_surround({
         delimiters = cache.normal.delimiters,
         selection = selection,
-    }, false)
+    }, cache.normal.line_mode)
 end
 
 M.delete_callback = function()
@@ -319,7 +302,7 @@ M.change_callback = function()
             delimiters = change.replacement()
         else
             ins_char = input.get_char()
-            delimiters = config.get_delimiters(ins_char)
+            delimiters = config.get_delimiters(ins_char, false) -- TODO: Maybe add line-wise change surround?
         end
 
         -- Clear the highlights after getting the replacement surround
