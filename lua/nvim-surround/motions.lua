@@ -6,6 +6,7 @@ local M = {}
 -- Determines whether the input character is a quote character.
 ---@param char string? The input character.
 ---@return boolean @Whether or not char is a quote character.
+---@nodiscard
 M.is_quote = function(char)
     return char == "'" or char == '"' or char == "`"
 end
@@ -13,6 +14,7 @@ end
 -- Gets a selection based on a given motion.
 ---@param motion string The provided motion.
 ---@return selection? @The selection that represents the text-object.
+---@nodiscard
 M.get_selection = function(motion)
     local char = utils.get_alias(motion:sub(2, 2))
     local curpos = buffer.get_curpos()

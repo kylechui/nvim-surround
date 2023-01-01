@@ -1,25 +1,3 @@
----@class selection
----@field first_pos integer[]
----@field last_pos integer[]
-
----@class selections
----@field left selection?
----@field right selection?
-
----@class surround
----@field add string[]|string[][]|function
----@field find string|function
----@field delete string|function
----@field change { target: string|function, replacement: string[]|string[][]|function? }
-
----@class options
----@field keymaps table<string, false|string>
----@field surrounds table<string, false|surround>
----@field aliases table<string, false|string|string[]>
----@field highlight { duration: false|integer }
----@field move_cursor false|string
----@field indent_lines false|function
-
 local buffer = require("nvim-surround.buffer")
 local cache = require("nvim-surround.cache")
 local config = require("nvim-surround.config")
@@ -28,18 +6,19 @@ local utils = require("nvim-surround.utils")
 local M = {}
 
 -- Setup the plugin with user-defined options.
----@param user_opts options? The user options.
+---@param user_opts user_options? The user options.
 M.setup = function(user_opts)
     config.setup(user_opts)
 end
 
 -- Configure the plugin on a per-buffer basis.
----@param buffer_opts options? The buffer-local options.
+---@param buffer_opts user_options? The buffer-local options.
 M.buffer_setup = function(buffer_opts)
     config.buffer_setup(buffer_opts)
 end
 
 -- Add delimiters around the cursor, in insert mode.
+---@param line_mode boolean Whether or not the delimiters should get put on new lines.
 M.insert_surround = function(line_mode)
     local curpos = buffer.get_curpos()
     local char = utils.get_char()
@@ -73,9 +52,10 @@ end
 
 -- Holds the current position of the cursor, since calling opfunc will erase it.
 M.normal_curpos = nil
--- Add delimiters around a text object.
----@param args { selection: selection, delimiters: string[][], curpos: integer[] }
----@return string?
+-- Add delimiters around a motion.
+---@param args { selection: selection, delimiters: string[][], curpos: integer[] }?
+---@param line_mode boolean Whether or not the delimiters should get put on new lines.
+---@return "g@"?
 M.normal_surround = function(args, line_mode)
     -- Call the operatorfunc if it has not been called yet
     if not args then
@@ -100,6 +80,7 @@ M.normal_surround = function(args, line_mode)
 end
 
 -- Add delimiters around a visual selection.
+---@param line_mode boolean Whether or not the delimiters should get put on new lines.
 M.visual_surround = function(line_mode)
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
@@ -172,8 +153,8 @@ M.visual_surround = function(line_mode)
 end
 
 -- Delete a surrounding delimiter pair, if it exists.
----@param args { del_char: string, curpos: integer[] }
----@return string?
+---@param args? { del_char: string, curpos: integer[] }
+---@return "g@l"?
 M.delete_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args then
@@ -205,7 +186,8 @@ M.delete_surround = function(args)
 end
 
 -- Change a surrounding delimiter pair, if it exists.
----@param args? table
+---@param args? { curpos: position, del_char: string, add_delimiters: add_func }
+---@return "g@l"?
 M.change_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args then
@@ -217,10 +199,10 @@ M.change_surround = function(args)
     end
 
     buffer.set_curpos(args.curpos)
-    -- Get the selections to change
+    -- Get the selections to change, as well as the delimiters to replace those selections
     local selections = utils.get_nearest_selections(args.del_char, "change")
-    if selections then
-        local delimiters = args.add_delimiters()
+    local delimiters = args.add_delimiters()
+    if selections and delimiters then
         -- Change the right selection first to ensure selection positions are correct
         buffer.change_selection(selections.right, delimiters[2])
         buffer.change_selection(selections.left, delimiters[1])
@@ -235,7 +217,7 @@ end
                                                    Callback Functions
 --]====================================================================================================================]
 
----@param mode string
+---@param mode "char"|"line"|"block"
 M.normal_callback = function(mode)
     -- Adjust the ] mark if the operator was in line-mode, e.g. `ip`
     if mode == "line" then
@@ -288,7 +270,7 @@ M.normal_callback = function(mode)
     M.normal_surround({
         delimiters = cache.normal.delimiters,
         selection = selection,
-    })
+    }, false)
 end
 
 M.delete_callback = function()
@@ -312,9 +294,8 @@ M.change_callback = function()
     if not cache.change.del_char or not cache.change.add_delimiters then
         local del_char = utils.get_alias(utils.get_char())
         local change = config.get_change(del_char)
-        -- Get the selections to change
         local selections = utils.get_nearest_selections(del_char, "change")
-        if not selections then
+        if not (del_char and change and selections) then
             return
         end
 

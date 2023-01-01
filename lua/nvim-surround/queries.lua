@@ -8,6 +8,7 @@ local M = {}
 -- Retrieves the node that corresponds exactly to a given selection.
 ---@param selection selection The given selection.
 ---@return _ @The corresponding node.
+---@nodiscard
 M.get_node = function(selection)
     -- Convert the selection into a list
     local range = {
@@ -72,6 +73,7 @@ end
 ---@param capture string The capture to be retrieved.
 ---@param type string The type of query to get the capture from.
 ---@return selection? @The selection of the capture.
+---@nodiscard
 M.get_selection = function(capture, type)
     -- Get a table of all nodes that match the query
     local table_list = ts_query.get_capture_matches_recursively(0, capture, type)
