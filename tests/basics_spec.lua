@@ -493,4 +493,28 @@ describe("nvim-surround", function()
             "𐍈𐍈𐍈(𐍈𐍈𐍈𐍈)𐍈𐍈𐍈",
         })
     end)
+
+    it("can properly use line-wise surrounds", function()
+        vim.bo.filetype = "lua"
+        vim.bo.shiftwidth = 4
+        vim.bo.expandtab = true
+        set_lines({
+            "local f = function()",
+            "    local a = 123",
+            "end",
+        })
+        set_curpos({ 2, 2 })
+        vim.cmd('normal VS"')
+
+        check_lines({
+            "local f = function()",
+            '    "',
+            "    local a = 123",
+            '    "',
+            "end",
+        })
+        vim.bo.filetype = nil
+        vim.bo.shiftwidth = 8
+        vim.bo.expandtab = false
+    end)
 end)
