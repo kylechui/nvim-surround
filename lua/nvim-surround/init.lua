@@ -32,16 +32,13 @@ M.insert_surround = function(line_mode)
     buffer.insert_text(curpos, delimiters[1])
     buffer.set_curpos({ curpos[1] + #delimiters[1] - 1, curpos[2] + #delimiters[1][#delimiters[1]] })
     -- Indent the cursor to the correct level, if added line-wise
-    local indent_lines = config.get_opts().indent_lines
-    if indent_lines then
-        curpos = buffer.get_curpos()
-        indent_lines(curpos[1], curpos[1] + #delimiters[1] + #delimiters[2] - 2)
-        buffer.set_curpos(curpos)
-        if line_mode then
-            local lnum = buffer.get_curpos()[1]
-            vim.cmd(lnum .. "left " .. vim.fn.indent(lnum + 1) + vim.fn.shiftwidth())
-            buffer.set_curpos({ lnum, #buffer.get_line(lnum) + 1 })
-        end
+    curpos = buffer.get_curpos()
+    config.get_opts().indent_lines(curpos[1], curpos[1] + #delimiters[1] + #delimiters[2] - 2)
+    buffer.set_curpos(curpos)
+    if line_mode then
+        local lnum = buffer.get_curpos()[1]
+        vim.cmd(lnum .. "left " .. vim.fn.indent(lnum + 1) + vim.fn.shiftwidth())
+        buffer.set_curpos({ lnum, #buffer.get_line(lnum) + 1 })
     end
 end
 
@@ -69,7 +66,7 @@ M.normal_surround = function(args, line_mode)
     buffer.insert_text(first_pos, args.delimiters[1])
     buffer.reset_curpos(M.normal_curpos)
 
-    if line_mode and config.get_opts().indent_lines then
+    if line_mode then
         config.get_opts().indent_lines(first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
     end
 end
@@ -138,9 +135,7 @@ M.visual_surround = function(line_mode)
         buffer.insert_text(first_pos, delimiters[1])
     end
 
-    if config.get_opts().indent_lines then
-        config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
-    end
+    config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.reset_curpos(curpos)
 end
 
@@ -164,12 +159,10 @@ M.delete_surround = function(args)
         -- Delete the right selection first to ensure selection positions are correct
         buffer.delete_selection(selections.right)
         buffer.delete_selection(selections.left)
-        if config.get_opts().indent_lines then
-            config.get_opts().indent_lines(
-                selections.left.first_pos[1],
-                selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
-            )
-        end
+        config.get_opts().indent_lines(
+            selections.left.first_pos[1],
+            selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
+        )
         buffer.set_curpos(selections.left.first_pos)
     end
 

@@ -563,7 +563,10 @@ M.translate_opts = function(user_opts)
 
     local opts = {}
     for key, value in pairs(user_opts) do
-        if key ~= "surrounds" then
+        if key == "surrounds" then
+        elseif key == "indent_lines" then
+            opts[key] = value or function() end
+        else
             opts[key] = value
         end
     end
