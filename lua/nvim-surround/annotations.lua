@@ -30,7 +30,7 @@
 ---@field aliases table<string, string|string[]>
 ---@field highlight { duration: integer }
 ---@field move_cursor false|string
----@field indent_lines false|function
+---@field indent_lines function
 
 --[====================================================================================================================[
                                                  User-provided options

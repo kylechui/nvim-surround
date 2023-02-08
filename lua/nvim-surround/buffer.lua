@@ -70,47 +70,6 @@ M.del_marks = function(marks)
     end
 end
 
--- Gets the position of the first byte of a character, according to the UTF-8 standard.
----@param pos position The position of any byte in the character.
----@return position @The position of the first byte of the character.
----@nodiscard
-M.get_first_byte = function(pos)
-    local byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
-    if not byte then
-        return pos
-    end
-    -- See https://en.wikipedia.org/wiki/UTF-8#Encoding
-    while byte >= 0x80 and byte < 0xc0 do
-        pos[2] = pos[2] - 1
-        byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
-    end
-    return pos
-end
-
--- Gets the position of the last byte of a character, according to the UTF-8 standard.
----@param pos position? The position of the beginning of the character.
----@return position? @The position of the last byte of the character.
----@nodiscard
-M.get_last_byte = function(pos)
-    if not pos then
-        return nil
-    end
-
-    local byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
-    if not byte then
-        return pos
-    end
-    -- See https://en.wikipedia.org/wiki/UTF-8#Encoding
-    if byte >= 0xf0 then
-        pos[2] = pos[2] + 3
-    elseif byte >= 0xe0 then
-        pos[2] = pos[2] + 2
-    elseif byte >= 0xc0 then
-        pos[2] = pos[2] + 1
-    end
-    return pos
-end
-
 -- Moves operator marks to not be on whitespace characters.
 ---@param mark string The mark to potentially move.
 M.adjust_mark = function(mark)
@@ -153,6 +112,51 @@ M.set_operator_marks = function(motion)
     M.set_curpos(curpos)
     M.set_mark("<", visual_marks[1])
     M.set_mark(">", visual_marks[2])
+end
+
+--[====================================================================================================================[
+                                             Byte indexing helper functions
+--]====================================================================================================================]
+
+-- Gets the position of the first byte of a character, according to the UTF-8 standard.
+---@param pos position The position of any byte in the character.
+---@return position @The position of the first byte of the character.
+---@nodiscard
+M.get_first_byte = function(pos)
+    local byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
+    if not byte then
+        return pos
+    end
+    -- See https://en.wikipedia.org/wiki/UTF-8#Encoding
+    while byte >= 0x80 and byte < 0xc0 do
+        pos[2] = pos[2] - 1
+        byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
+    end
+    return pos
+end
+
+-- Gets the position of the last byte of a character, according to the UTF-8 standard.
+---@param pos position? The position of the beginning of the character.
+---@return position? @The position of the last byte of the character.
+---@nodiscard
+M.get_last_byte = function(pos)
+    if not pos then
+        return nil
+    end
+
+    local byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
+    if not byte then
+        return pos
+    end
+    -- See https://en.wikipedia.org/wiki/UTF-8#Encoding
+    if byte >= 0xf0 then
+        pos[2] = pos[2] + 3
+    elseif byte >= 0xe0 then
+        pos[2] = pos[2] + 2
+    elseif byte >= 0xc0 then
+        pos[2] = pos[2] + 1
+    end
+    return pos
 end
 
 --[====================================================================================================================[

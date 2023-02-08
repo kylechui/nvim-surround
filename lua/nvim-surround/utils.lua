@@ -1,55 +1,11 @@
 local buffer = require("nvim-surround.buffer")
 local config = require("nvim-surround.config")
+local functional = require("nvim-surround.functional")
 
 local M = {}
 
 -- Do nothing.
 M.NOOP = function() end
-
--- Gets a character input from the user.
----@return string? @The input character, or nil if a control character is pressed.
----@nodiscard
-M.get_char = function()
-    local ret_val, char_num = pcall(vim.fn.getchar)
-    -- Return nil if error (e.g. <C-c>) or for control characters
-    if not ret_val or type(char_num) ~= "number" or char_num < 32 then
-        return nil
-    end
-    local char = vim.fn.nr2char(char_num)
-    return char
-end
-
--- Returns the value that the input is aliased to, or the character if no alias exists.
----@param char string? The input character.
----@return string? @The aliased character if it exists, or the original if none exists.
----@nodiscard
-M.get_alias = function(char)
-    local aliases = config.get_opts().aliases
-    if type(aliases[char]) == "string" then
-        return aliases[char]
-    end
-    return char
-end
-
--- Gets a delimiter pair for a user-inputted character.
----@param char string? The user-given character.
----@return delimiter_pair? @A pair of delimiters for the given input, or nil if not applicable.
----@nodiscard
-M.get_delimiters = function(char)
-    char = M.get_alias(char)
-    -- Return nil if the user cancels the command
-    if not char then
-        return nil
-    end
-
-    -- Get the function for adding the delimiters, if it exists
-    local add = config.get_add(char)
-    if add then
-        return vim.deepcopy(add(char))
-    end
-
-    config.get_opts().surrounds.invalid_key_behavior.add(char)
-end
 
 -- Gets the nearest two selections for the left and right surrounding pair.
 ---@param char string? A character representing what kind of surrounding pair is to be selected.
@@ -57,20 +13,20 @@ end
 ---@return selections? @A table containing the start and end positions of the delimiters.
 ---@nodiscard
 M.get_nearest_selections = function(char, action)
-    char = M.get_alias(char)
+    char = config.get_alias(char)
 
-    local chars = config.get_opts().aliases[char] or { char }
+    local chars = functional.to_list(config.get_opts().aliases[char] or char)
     local curpos = buffer.get_curpos()
     local selections_list = {}
-    chars = type(chars) == "string" and { chars } or chars
     -- Iterate through all possible selections for each aliased character, and find the closest pair
     for _, c in ipairs(chars) do
-        local cur_selections
-        if action == "change" then
-            cur_selections = config.get_change(c).target(c)
-        else
-            cur_selections = config.get_delete(c)(c)
-        end
+        local cur_selections = (function()
+            if action == "change" then
+                return config.get_change(c).target(c)
+            else
+                return config.get_delete(c)(c)
+            end
+        end)()
         -- If found, add the current selections to the list of all possible selections
         if cur_selections then
             selections_list[#selections_list + 1] = cur_selections

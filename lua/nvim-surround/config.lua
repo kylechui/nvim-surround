@@ -1,3 +1,6 @@
+local input = require("nvim-surround.input")
+local functional = require("nvim-surround.functional")
+
 local M = {}
 
 ---@type user_options
@@ -94,8 +97,8 @@ M.default_opts = {
         },
         ["i"] = { -- TODO: Add find/delete/change functions
             add = function()
-                local left_delimiter = M.get_input("Enter the left delimiter: ")
-                local right_delimiter = left_delimiter and M.get_input("Enter the right delimiter: ")
+                local left_delimiter = input.get_input("Enter the left delimiter: ")
+                local right_delimiter = left_delimiter and input.get_input("Enter the right delimiter: ")
                 if right_delimiter then
                     return { { left_delimiter }, { right_delimiter } }
                 end
@@ -105,10 +108,10 @@ M.default_opts = {
         },
         ["t"] = {
             add = function()
-                local input = M.get_input("Enter the HTML tag: ")
-                if input then
-                    local element = input:match("^<?([^%s>]*)")
-                    local attributes = input:match("^<?[^%s>]*%s+(.-)>?$")
+                local user_input = input.get_input("Enter the HTML tag: ")
+                if user_input then
+                    local element = user_input:match("^<?([^%s>]*)")
+                    local attributes = user_input:match("^<?[^%s>]*%s+(.-)>?$")
 
                     local open = attributes and element .. " " .. attributes or element
                     local close = element
@@ -123,10 +126,10 @@ M.default_opts = {
             change = {
                 target = "^<([^%s<>]*)().-([^/]*)()>$",
                 replacement = function()
-                    local input = M.get_input("Enter the HTML tag: ")
-                    if input then
-                        local element = input:match("^<?([^%s>]*)")
-                        local attributes = input:match("^<?[^%s>]*%s+(.-)>?$")
+                    local user_input = input.get_input("Enter the HTML tag: ")
+                    if user_input then
+                        local element = user_input:match("^<?([^%s>]*)")
+                        local attributes = user_input:match("^<?[^%s>]*%s+(.-)>?$")
 
                         local open = attributes and element .. " " .. attributes or element
                         local close = element
@@ -138,10 +141,10 @@ M.default_opts = {
         },
         ["T"] = {
             add = function()
-                local input = M.get_input("Enter the HTML tag: ")
-                if input then
-                    local element = input:match("^<?([^%s>]*)")
-                    local attributes = input:match("^<?[^%s>]*%s+(.-)>?$")
+                local user_input = input.get_input("Enter the HTML tag: ")
+                if user_input then
+                    local element = user_input:match("^<?([^%s>]*)")
+                    local attributes = user_input:match("^<?[^%s>]*%s+(.-)>?$")
 
                     local open = attributes and element .. " " .. attributes or element
                     local close = element
@@ -156,10 +159,10 @@ M.default_opts = {
             change = {
                 target = "^<([^>]*)().-([^/]*)()>$",
                 replacement = function()
-                    local input = M.get_input("Enter the HTML tag: ")
-                    if input then
-                        local element = input:match("^<?([^%s>]*)")
-                        local attributes = input:match("^<?[^%s>]*%s+(.-)>?$")
+                    local user_input = input.get_input("Enter the HTML tag: ")
+                    if user_input then
+                        local element = user_input:match("^<?([^%s>]*)")
+                        local attributes = user_input:match("^<?[^%s>]*%s+(.-)>?$")
 
                         local open = attributes and element .. " " .. attributes or element
                         local close = element
@@ -171,7 +174,7 @@ M.default_opts = {
         },
         ["f"] = {
             add = function()
-                local result = M.get_input("Enter the function name: ")
+                local result = input.get_input("Enter the function name: ")
                 if result then
                     return { { result .. "(" }, { ")" } }
                 end
@@ -215,7 +218,7 @@ M.default_opts = {
             change = {
                 target = "^.-([%w_]+)()%(.-%)()()$",
                 replacement = function()
-                    local result = M.get_input("Enter the function name: ")
+                    local result = input.get_input("Enter the function name: ")
                     if result then
                         return { { result }, { "" } }
                     end
@@ -275,17 +278,15 @@ M.default_opts = {
 -- Gets input from the user.
 ---@param prompt string The input prompt.
 ---@return string? @The user input.
+---@nodiscard
 M.get_input = function(prompt)
-    -- Since `vim.fn.input()` does not handle keyboard interrupts, we use a protected call to detect <C-c>
-    local ok, result = pcall(vim.fn.input, { prompt = prompt, cancelreturn = vim.NIL })
-    if ok and result ~= vim.NIL then
-        return result
-    end
+    return input.get_input(prompt)
 end
 
 -- Gets a selection from the buffer based on some heuristic.
 ---@param args { char: string?, motion: string?, pattern: string?, node: string?, query: { capture: string, type: string }? }
 ---@return selection? @The retrieved selection.
+---@nodiscard
 M.get_selection = function(args)
     if args.char then
         if M.get_opts().surrounds[args.char] then
@@ -309,6 +310,7 @@ end
 
 -- Gets a pair of selections from the buffer based on some heuristic.
 ---@param args { char: string, pattern: string?, exclude: function? }
+---@nodiscard
 M.get_selections = function(args)
     local selection = M.get_selection({ char = args.char })
     if not selection then
@@ -352,15 +354,57 @@ M.user_opts = nil
 
 -- Returns the buffer-local options for the plugin, or global options if buffer-local does not exist.
 ---@return options @The buffer-local options.
+---@nodiscard
 M.get_opts = function()
     return vim.b[0].nvim_surround_buffer_opts or M.user_opts or {}
+end
+
+-- Returns the value that the input is aliased to, or the character if no alias exists.
+---@param char string? The input character.
+---@return string? @The aliased character if it exists, or the original if none exists.
+---@nodiscard
+M.get_alias = function(char)
+    local aliases = M.get_opts().aliases
+    if type(aliases[char]) == "string" then
+        return aliases[char]
+    end
+    return char
+end
+
+-- Gets a delimiter pair for a user-inputted character.
+---@param char string? The user-given character.
+---@param line_mode boolean Whether or not the delimiters should be put on new lines.
+---@return delimiter_pair? @A pair of delimiters for the given input, or nil if not applicable.
+---@nodiscard
+M.get_delimiters = function(char, line_mode)
+    if not char then
+        return nil
+    end
+
+    char = M.get_alias(char)
+    -- Get the delimiters, using invalid_key_behavior if the add function is undefined for the character
+    local delimiters = (function()
+        if M.get_add(char) then
+            return M.get_add(char)(char)
+        else
+            return M.get_opts().surrounds.invalid_key_behavior.add(char)
+        end
+    end)()
+    -- Add new lines if the addition is done line-wise
+    if line_mode then
+        table.insert(delimiters[2], 1, "")
+        table.insert(delimiters[1], "")
+    end
+
+    return delimiters
 end
 
 -- Returns the add key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
 ---@return add_func @The function to get the delimiters to be added.
+---@nodiscard
 M.get_add = function(char)
-    char = require("nvim-surround.utils").get_alias(char)
+    char = M.get_alias(char)
     if M.get_opts().surrounds[char] then
         return M.get_opts().surrounds[char].add
     end
@@ -370,8 +414,9 @@ end
 -- Returns the delete key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
 ---@return delete_func @The function to get the selections to be deleted.
+---@nodiscard
 M.get_delete = function(char)
-    char = require("nvim-surround.utils").get_alias(char)
+    char = M.get_alias(char)
     if M.get_opts().surrounds[char] then
         return M.get_opts().surrounds[char].delete
     end
@@ -381,8 +426,9 @@ end
 -- Returns the change key for the surround associated with a given character, if one exists.
 ---@param char string? The input character.
 ---@return { target: delete_func, replacement: add_func? }? @A table holding the target/replacment functions.
+---@nodiscard
 M.get_change = function(char)
-    char = require("nvim-surround.utils").get_alias(char)
+    char = M.get_alias(char)
     if M.get_opts().surrounds[char] then
         if M.get_opts().surrounds[char].change then
             return M.get_opts().surrounds[char].change
@@ -396,6 +442,7 @@ M.get_change = function(char)
 end
 
 -- Returns a set of opts, with missing keys filled in by the invalid_key_behavior key.
+-- TODO: Change this function name!
 ---@param opts options? The provided options.
 ---@return options? @The modified options.
 M.fill_missing_surrounds = function(opts)
@@ -437,13 +484,11 @@ M.translate_add = function(user_add)
     if type(user_add) == "nil" or type(user_add) == "function" then
         return user_add
     end
-    -- Wrap the left/right delimiters in a table if they are strings (single line)
-    local add = {}
-    add[1] = type(user_add[1]) == "string" and { user_add[1] } or user_add[1]
-    add[2] = type(user_add[2]) == "string" and { user_add[2] } or user_add[2]
-    -- Wrap the delimiter pair in a function
     return function()
-        return add
+        return {
+            functional.to_list(user_add[1]),
+            functional.to_list(user_add[2]),
+        }
     end
 end
 
@@ -482,7 +527,6 @@ M.translate_change = function(char, user_change)
     if not user_change then
         return nil
     end
-
     return {
         target = M.translate_delete(char, user_change.target),
         replacement = M.translate_add(user_change.replacement),
@@ -519,7 +563,10 @@ M.translate_opts = function(user_opts)
 
     local opts = {}
     for key, value in pairs(user_opts) do
-        if key ~= "surrounds" then
+        if key == "surrounds" then
+        elseif key == "indent_lines" then
+            opts[key] = value or function() end
+        else
             opts[key] = value
         end
     end

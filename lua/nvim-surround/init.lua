@@ -1,6 +1,7 @@
 local buffer = require("nvim-surround.buffer")
 local cache = require("nvim-surround.cache")
 local config = require("nvim-surround.config")
+local input = require("nvim-surround.input")
 local utils = require("nvim-surround.utils")
 
 local M = {}
@@ -20,40 +21,31 @@ end
 -- Add delimiters around the cursor, in insert mode.
 ---@param line_mode boolean Whether or not the delimiters should get put on new lines.
 M.insert_surround = function(line_mode)
+    local char = input.get_char()
     local curpos = buffer.get_curpos()
-    local char = utils.get_char()
-    local delimiters = utils.get_delimiters(char)
+    local delimiters = config.get_delimiters(char, line_mode)
     if not delimiters then
         return
-    end
-
-    -- Add new lines if the addition is done line-wise
-    if line_mode then
-        table.insert(delimiters[2], 1, "")
-        table.insert(delimiters[1], "")
     end
 
     buffer.insert_text(curpos, delimiters[2])
     buffer.insert_text(curpos, delimiters[1])
     buffer.set_curpos({ curpos[1] + #delimiters[1] - 1, curpos[2] + #delimiters[1][#delimiters[1]] })
     -- Indent the cursor to the correct level, if added line-wise
-    local indent_lines = config.get_opts().indent_lines
-    if indent_lines then
-        curpos = buffer.get_curpos()
-        indent_lines(curpos[1], curpos[1] + #delimiters[1] + #delimiters[2] - 2)
-        buffer.set_curpos(curpos)
-        if line_mode then
-            local lnum = buffer.get_curpos()[1]
-            vim.cmd(lnum .. "left " .. vim.fn.indent(lnum + 1) + vim.fn.shiftwidth())
-            buffer.set_curpos({ lnum, #buffer.get_line(lnum) + 1 })
-        end
+    curpos = buffer.get_curpos()
+    config.get_opts().indent_lines(curpos[1], curpos[1] + #delimiters[1] + #delimiters[2] - 2)
+    buffer.set_curpos(curpos)
+    if line_mode then
+        local lnum = buffer.get_curpos()[1]
+        vim.cmd(lnum .. "left " .. vim.fn.indent(lnum + 1) + vim.fn.shiftwidth())
+        buffer.set_curpos({ lnum, #buffer.get_line(lnum) + 1 })
     end
 end
 
 -- Holds the current position of the cursor, since calling opfunc will erase it.
 M.normal_curpos = nil
 -- Add delimiters around a motion.
----@param args { selection: selection, delimiters: string[][], curpos: integer[] }?
+---@param args { selection: selection, delimiters: string[][] }?
 ---@param line_mode boolean Whether or not the delimiters should get put on new lines.
 ---@return "g@"?
 M.normal_surround = function(args, line_mode)
@@ -74,7 +66,7 @@ M.normal_surround = function(args, line_mode)
     buffer.insert_text(first_pos, args.delimiters[1])
     buffer.reset_curpos(M.normal_curpos)
 
-    if line_mode and config.get_opts().indent_lines then
+    if line_mode then
         config.get_opts().indent_lines(first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
     end
 end
@@ -85,17 +77,11 @@ M.visual_surround = function(line_mode)
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
     -- Get a character and selection from the user
-    local ins_char = utils.get_char()
-    local delimiters = utils.get_delimiters(ins_char)
+    local ins_char = input.get_char()
+    local delimiters = config.get_delimiters(ins_char, line_mode)
     local first_pos, last_pos = buffer.get_mark("<"), buffer.get_mark(">")
     if not delimiters or not first_pos or not last_pos then
         return
-    end
-
-    -- Add new lines if the addition is done line-wise
-    if line_mode then
-        table.insert(delimiters[2], 1, "")
-        table.insert(delimiters[1], "")
     end
 
     -- Add the right delimiter first to ensure correct indexing
@@ -105,6 +91,9 @@ M.visual_surround = function(line_mode)
         buffer.insert_text({ last_pos[1], #buffer.get_line(last_pos[1]) + 1 }, delimiters[2])
         buffer.insert_text(first_pos, delimiters[1])
     elseif vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
+        if vim.o.selection == "exclusive" then
+            last_pos[2] = last_pos[2] - 1
+        end
         -- Get (visually) what columns the start and end are located at
         local first_disp = vim.fn.strdisplaywidth(buffer.get_line(first_pos[1]):sub(1, first_pos[2] - 1)) + 1
         local last_disp = vim.fn.strdisplaywidth(buffer.get_line(last_pos[1]):sub(1, last_pos[2] - 1)) + 1
@@ -146,9 +135,7 @@ M.visual_surround = function(line_mode)
         buffer.insert_text(first_pos, delimiters[1])
     end
 
-    if config.get_opts().indent_lines then
-        config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
-    end
+    config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.reset_curpos(curpos)
 end
 
@@ -172,12 +159,10 @@ M.delete_surround = function(args)
         -- Delete the right selection first to ensure selection positions are correct
         buffer.delete_selection(selections.right)
         buffer.delete_selection(selections.left)
-        if config.get_opts().indent_lines then
-            config.get_opts().indent_lines(
-                selections.left.first_pos[1],
-                selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
-            )
-        end
+        config.get_opts().indent_lines(
+            selections.left.first_pos[1],
+            selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
+        )
         buffer.set_curpos(selections.left.first_pos)
     end
 
@@ -250,14 +235,9 @@ M.normal_callback = function(mode)
     end
     -- Get a character input and the delimiters (if not cached)
     if not cache.normal.delimiters then
-        local char = utils.get_char()
+        local char = input.get_char()
         -- Get the delimiter pair based on the input character
-        cache.normal.delimiters = cache.normal.delimiters or utils.get_delimiters(char)
-        -- Add new lines if the addition is done line-wise
-        if cache.normal.line_mode then
-            table.insert(cache.normal.delimiters[2], 1, "")
-            table.insert(cache.normal.delimiters[1], "")
-        end
+        cache.normal.delimiters = cache.normal.delimiters or config.get_delimiters(char, cache.normal.line_mode)
         if not cache.normal.delimiters then
             buffer.clear_highlights()
             return
@@ -277,7 +257,7 @@ M.delete_callback = function()
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
     -- Get a character input if not cached
-    cache.delete.char = cache.delete.char or utils.get_char()
+    cache.delete.char = cache.delete.char or input.get_char()
     if not cache.delete.char then
         return
     end
@@ -292,7 +272,7 @@ M.change_callback = function()
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
     if not cache.change.del_char or not cache.change.add_delimiters then
-        local del_char = utils.get_alias(utils.get_char())
+        local del_char = config.get_alias(input.get_char())
         local change = config.get_change(del_char)
         local selections = utils.get_nearest_selections(del_char, "change")
         if not (del_char and change and selections) then
@@ -314,8 +294,8 @@ M.change_callback = function()
         if change and change.replacement then
             delimiters = change.replacement()
         else
-            ins_char = utils.get_char()
-            delimiters = utils.get_delimiters(ins_char)
+            ins_char = input.get_char()
+            delimiters = config.get_delimiters(ins_char, false) -- TODO: Maybe add line-wise change surround?
         end
 
         -- Clear the highlights after getting the replacement surround
