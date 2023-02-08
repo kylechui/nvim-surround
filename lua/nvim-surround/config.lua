@@ -189,7 +189,7 @@ M.default_opts = {
                 if selection then
                     return selection
                 end
-                return M.get_selection({ pattern = "[^=%s%(%)]+%b()" })
+                return M.get_selection({ pattern = "[^=%s%(%){}]+%b()" })
             end,
             delete = "^(.-%()().-(%))()$",
             --[[ function()
