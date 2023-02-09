@@ -517,4 +517,34 @@ describe("nvim-surround", function()
         vim.bo.shiftwidth = 8
         vim.bo.expandtab = false
     end)
+
+    it("can surround linewise normal mode selections", function()
+        set_lines({
+            "I have this text file, and my cursor is here | let's say",
+            "then I want to surround these two lines with parenthesis",
+        })
+        set_curpos({ 1, 46 })
+        vim.cmd("normal ysjb")
+        check_lines({
+            "(I have this text file, and my cursor is here | let's say",
+            "then I want to surround these two lines with parenthesis)",
+        })
+
+        set_lines({
+            "some more arbitrary",
+            "text that's spread across",
+            "multiple lines",
+            "or something",
+            "i guess",
+        })
+        set_curpos({ 2, 6 })
+        vim.cmd("normal ys2jB")
+        check_lines({
+            "some more arbitrary",
+            "{text that's spread across",
+            "multiple lines",
+            "or something}",
+            "i guess",
+        })
+    end)
 end)

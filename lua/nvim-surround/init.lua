@@ -204,14 +204,17 @@ end
 
 ---@param mode "char"|"line"|"block"
 M.normal_callback = function(mode)
-    -- Adjust the ] mark if the operator was in line-mode, e.g. `ip`
+    -- Adjust the ] mark if the operator was in line-mode, e.g. `ip` or `3j`
     if mode == "line" then
-        local pos = buffer.get_mark("]")
-        if not pos then
+        local first_pos = buffer.get_mark("[")
+        local last_pos = buffer.get_mark("]")
+        if not (first_pos and last_pos) then
             return
         end
-        pos = { pos[1], #buffer.get_line(pos[1]) }
-        buffer.set_mark("]", pos)
+        first_pos = { first_pos[1], 1 }
+        last_pos = { last_pos[1], #buffer.get_line(last_pos[1]) }
+        buffer.set_mark("[", first_pos)
+        buffer.set_mark("]", last_pos)
     end
     -- Move the last position to the last byte of the character, if necessary
     buffer.set_mark("]", buffer.get_last_byte(buffer.get_mark("]")))
