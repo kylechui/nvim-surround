@@ -227,14 +227,23 @@ M.default_opts = {
         },
         invalid_key_behavior = {
             add = function(char)
+                if char:byte() < 32 then
+                    return
+                end
                 return { { char }, { char } }
             end,
             find = function(char)
+                if char:byte() < 32 then
+                    return
+                end
                 return M.get_selection({
                     pattern = vim.pesc(char) .. ".-" .. vim.pesc(char),
                 })
             end,
             delete = function(char)
+                if char:byte() < 32 then
+                    return
+                end
                 return M.get_selections({
                     char = char,
                     pattern = "^(.)().-(.)()$",
