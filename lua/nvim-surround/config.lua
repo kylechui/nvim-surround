@@ -227,14 +227,23 @@ M.default_opts = {
         },
         invalid_key_behavior = {
             add = function(char)
+                if char:find("%c") then
+                    return
+                end
                 return { { char }, { char } }
             end,
             find = function(char)
+                if char:find("%c") then
+                    return
+                end
                 return M.get_selection({
                     pattern = vim.pesc(char) .. ".-" .. vim.pesc(char),
                 })
             end,
             delete = function(char)
+                if char:find("%c") then
+                    return
+                end
                 return M.get_selections({
                     char = char,
                     pattern = "^(.)().-(.)()$",
@@ -343,6 +352,14 @@ M.get_selections = function(args)
     else
         vim.notify("Invalid key provided for `:h nvim-surround.config.get_selections()`.", vim.log.levels.ERROR)
     end
+end
+
+-- Translate Vim-style key notation to terminal code, for usage in `surrounds` keys.
+---@param str string A Vim-style key notation (e.g. "<Cr>")
+---@return string? @The key notation translated to terminal codes (e.g. "\r")
+---@nodiscard
+M.termcode = function(str)
+    return vim.api.nvim_replace_termcodes(str, true, true, true)
 end
 
 --[====================================================================================================================[
