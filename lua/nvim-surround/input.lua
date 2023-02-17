@@ -5,8 +5,8 @@ local M = {}
 ---@nodiscard
 M.get_char = function()
     local ret_val, char_num = pcall(vim.fn.getchar)
-    -- Return nil if error (e.g. <C-c>) or for <Esc>/<C-[> (ascii code 27)
-    if not ret_val or type(char_num) ~= "number" or char_num == 27 then
+    -- Return nil if error (e.g. <C-c>) or for control characters
+    if not ret_val or type(char_num) ~= "number" or char_num < 32 then
         return nil
     end
     local char = vim.fn.nr2char(char_num)
