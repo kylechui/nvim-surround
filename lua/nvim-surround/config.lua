@@ -354,14 +354,6 @@ M.get_selections = function(args)
     end
 end
 
--- Translate Vim-style key notation to terminal code, for usage in `surrounds` keys.
----@param str string A Vim-style key notation (e.g. "<Cr>")
----@return string? @The key notation translated to terminal codes (e.g. "\r")
----@nodiscard
-M.termcode = function(str)
-    return vim.api.nvim_replace_termcodes(str, true, true, true)
-end
-
 --[====================================================================================================================[
                                                 End of Helper Functions
 --]====================================================================================================================]
@@ -600,6 +592,8 @@ M.translate_opts = function(user_opts)
                 "nvim-surround"
             )
         end
+        -- Support Vim's notation for special characters
+        char = vim.api.nvim_replace_termcodes(char, true, true, true)
         -- Check if the delimiter has not been disabled
         if not user_surround then
             opts.surrounds[char] = false
