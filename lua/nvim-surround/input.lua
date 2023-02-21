@@ -4,12 +4,11 @@ local M = {}
 ---@return string? @The input character, or nil if a control character is pressed.
 ---@nodiscard
 M.get_char = function()
-    local ret_val, char_num = pcall(vim.fn.getchar)
-    -- Return nil if error (e.g. <C-c>) or for control characters
-    if not ret_val or type(char_num) ~= "number" or char_num < 32 then
+    local ret_val, char = pcall(vim.fn.getcharstr)
+    -- Return nil if error (e.g. <C-c>) or for <Esc>/<C-[> (ascii code 27)
+    if not ret_val or char == "\27" then
         return nil
     end
-    local char = vim.fn.nr2char(char_num)
     return char
 end
 

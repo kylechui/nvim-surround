@@ -227,14 +227,23 @@ M.default_opts = {
         },
         invalid_key_behavior = {
             add = function(char)
+                if char:find("%c") then
+                    return
+                end
                 return { { char }, { char } }
             end,
             find = function(char)
+                if char:find("%c") then
+                    return
+                end
                 return M.get_selection({
                     pattern = vim.pesc(char) .. ".-" .. vim.pesc(char),
                 })
             end,
             delete = function(char)
+                if char:find("%c") then
+                    return
+                end
                 return M.get_selections({
                     char = char,
                     pattern = "^(.)().-(.)()$",
@@ -583,6 +592,8 @@ M.translate_opts = function(user_opts)
                 "nvim-surround"
             )
         end
+        -- Support Vim's notation for special characters
+        char = vim.api.nvim_replace_termcodes(char, true, true, true)
         -- Check if the delimiter has not been disabled
         if not user_surround then
             opts.surrounds[char] = false
