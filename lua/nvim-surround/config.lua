@@ -229,14 +229,6 @@ M.default_opts = {
                     pattern = "^(.)().-(.)()$",
                 })
             end,
-            change = {
-                target = function(char)
-                    return M.get_selections({
-                        char = char,
-                        pattern = "^(.)().-(.)()$",
-                    })
-                end,
-            },
         },
     },
     aliases = {
@@ -436,7 +428,7 @@ M.get_change = function(char)
             }
         end
     end
-    return M.get_opts().surrounds.invalid_key_behavior.change
+    return M.get_change("invalid_key_behavior")
 end
 
 -- Translates the user-provided surround.add into the internal form.
@@ -495,9 +487,12 @@ end
 -- Translates the user-provided surround.change into the internal form.
 ---@param char string The character used to activate the surround.
 ---@param user_change user_change? The user-provided change key.
----@return false|change_table @The translated change key.
+---@return false|change_table? @The translated change key.
 M.translate_change = function(char, user_change)
-    if not user_change then
+    if user_change == nil then
+        return nil
+    end
+    if user_change == false then
         return false
     end
     return {
@@ -549,7 +544,7 @@ M.translate_invalid_key_behavior = function(invalid_surround)
     end
     if invalid.change == false then
         invalid.change = noop_surround.change
-    else
+    elseif invalid.change ~= nil then
         if invalid.change.target == false then
             invalid.change.target = noop_surround.change.target
         end
