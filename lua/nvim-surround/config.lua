@@ -627,15 +627,17 @@ M.set_keymap = function(args)
 end
 
 -- Set up user-configured keymaps, globally or for the buffer.
----@param buffer boolean Whether the keymaps should be set for the buffer or not.
-M.set_keymaps = function(buffer)
+---@param args { buffer: boolean } Whether the keymaps should be set for the buffer or not.
+M.set_keymaps = function(args)
     -- Set up <Plug> keymaps
     M.set_keymap({
         mode = "i",
         lhs = "<Plug>(nvim-surround-insert)",
-        rhs = require("nvim-surround").insert_surround,
+        rhs = function()
+            require("nvim-surround").insert_surround({ line_mode = false })
+        end,
         opts = {
-            buffer = buffer,
+            buffer = args.buffer,
             desc = "Add a surrounding pair around the cursor (insert mode)",
             remap = true,
             silent = true,
@@ -645,10 +647,10 @@ M.set_keymaps = function(buffer)
         mode = "i",
         lhs = "<Plug>(nvim-surround-insert-line)",
         rhs = function()
-            require("nvim-surround").insert_surround(true)
+            require("nvim-surround").insert_surround({ line_mode = true })
         end,
         opts = {
-            buffer = buffer,
+            buffer = args.buffer,
             desc = "Add a surrounding pair around the cursor, on new lines (insert mode)",
             remap = true,
             silent = true,
@@ -657,9 +659,11 @@ M.set_keymaps = function(buffer)
     M.set_keymap({
         mode = "n",
         lhs = "<Plug>(nvim-surround-normal)",
-        rhs = require("nvim-surround").normal_surround,
+        rhs = function()
+            return require("nvim-surround").normal_surround({ line_mode = false })
+        end,
         opts = {
-            buffer = buffer,
+            buffer = args.buffer,
             desc = "Add a surrounding pair around a motion (normal mode)",
             expr = true,
             remap = true,
@@ -673,7 +677,7 @@ M.set_keymaps = function(buffer)
             return "^" .. tostring(vim.v.count1) .. "<Plug>(nvim-surround-normal)g_"
         end,
         opts = {
-            buffer = buffer,
+            buffer = args.buffer,
             desc = "Add a surrounding pair around the current line (normal mode)",
             expr = true,
             remap = true,
@@ -684,10 +688,10 @@ M.set_keymaps = function(buffer)
         mode = "n",
         lhs = "<Plug>(nvim-surround-normal-line)",
         rhs = function()
-            return require("nvim-surround").normal_surround(nil, true)
+            return require("nvim-surround").normal_surround({ line_mode = true })
         end,
         opts = {
-            buffer = buffer,
+            buffer = args.buffer,
             desc = "Add a surrounding pair around a motion, on new lines (normal mode)",
             expr = true,
             remap = true,
@@ -701,7 +705,7 @@ M.set_keymaps = function(buffer)
             return "^" .. tostring(vim.v.count1) .. "<Plug>(nvim-surround-normal-line)g_"
         end,
         opts = {
-            buffer = buffer,
+            buffer = args.buffer,
             desc = "Add a surrounding pair around the current line, on new lines (normal mode)",
             expr = true,
             remap = true,
@@ -711,9 +715,9 @@ M.set_keymaps = function(buffer)
     M.set_keymap({
         mode = "x",
         lhs = "<Plug>(nvim-surround-visual)",
-        rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround()<CR>",
+        rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround({ line_mode = false })<CR>",
         opts = {
-            buffer = buffer,
+            buffer = args.buffer,
             desc = "Add a surrounding pair around a visual selection",
             remap = true,
             silent = true,
@@ -722,9 +726,9 @@ M.set_keymaps = function(buffer)
     M.set_keymap({
         mode = "x",
         lhs = "<Plug>(nvim-surround-visual-line)",
-        rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround(true)<CR>",
+        rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround({ line_mode = true })<CR>",
         opts = {
-            buffer = buffer,
+            buffer = args.buffer,
             desc = "Add a surrounding pair around a visual selection, on new lines",
             remap = true,
             silent = true,
@@ -735,7 +739,7 @@ M.set_keymaps = function(buffer)
         lhs = "<Plug>(nvim-surround-delete)",
         rhs = require("nvim-surround").delete_surround,
         opts = {
-            buffer = buffer,
+            buffer = args.buffer,
             desc = "Delete a surrounding pair",
             expr = true,
             remap = true,
@@ -747,7 +751,7 @@ M.set_keymaps = function(buffer)
         lhs = "<Plug>(nvim-surround-change)",
         rhs = require("nvim-surround").change_surround,
         opts = {
-            buffer = buffer,
+            buffer = args.buffer,
             desc = "Change a surrounding pair",
             expr = true,
             remap = true,
@@ -853,8 +857,7 @@ end
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
     M.user_opts = M.merge_opts(M.translate_opts(M.default_opts), user_opts)
-    -- Configure global keymaps
-    M.set_keymaps(false)
+    M.set_keymaps({ buffer = false })
     -- Configure highlight group, if necessary
     if M.user_opts.highlight.duration then
         vim.cmd.highlight("default link NvimSurroundHighlight Visual")
@@ -866,8 +869,7 @@ end
 M.buffer_setup = function(buffer_opts)
     -- Merge the given table into the existing buffer-local options, or global options otherwise
     vim.b[0].nvim_surround_buffer_opts = M.merge_opts(M.get_opts(), buffer_opts)
-    -- Configure buffer-local keymaps
-    M.set_keymaps(true)
+    M.set_keymaps({ buffer = true })
 end
 
 return M

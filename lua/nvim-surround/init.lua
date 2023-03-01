@@ -19,11 +19,11 @@ M.buffer_setup = function(buffer_opts)
 end
 
 -- Add delimiters around the cursor, in insert mode.
----@param line_mode boolean Whether or not the delimiters should get put on new lines.
-M.insert_surround = function(line_mode)
+---@param args { line_mode: boolean } Whether or not the delimiters should get put on new lines.
+M.insert_surround = function(args)
     local char = input.get_char()
     local curpos = buffer.get_curpos()
-    local delimiters = config.get_delimiters(char, line_mode)
+    local delimiters = config.get_delimiters(char, args.line_mode)
     if not delimiters then
         return
     end
@@ -35,7 +35,7 @@ M.insert_surround = function(line_mode)
     curpos = buffer.get_curpos()
     config.get_opts().indent_lines(curpos[1], curpos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.set_curpos(curpos)
-    if line_mode then
+    if args.line_mode then
         local lnum = buffer.get_curpos()[1]
         vim.cmd(lnum .. "left " .. vim.fn.indent(lnum + 1) + vim.fn.shiftwidth())
         buffer.set_curpos({ lnum, #buffer.get_line(lnum) + 1 })
@@ -45,14 +45,13 @@ end
 -- Holds the current position of the cursor, since calling opfunc will erase it.
 M.normal_curpos = nil
 -- Add delimiters around a motion.
----@param args { selection: selection, delimiters: string[][] }?
----@param line_mode boolean Whether or not the delimiters should get put on new lines.
+---@param args { selection: selection, delimiters: string[][], line_mode: boolean }
 ---@return "g@"?
-M.normal_surround = function(args, line_mode)
+M.normal_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
-    if not args then
+    if not args.selection then
         -- Clear the normal cache (since it was user-called)
-        cache.normal = { line_mode = line_mode }
+        cache.normal = { line_mode = args.line_mode }
         M.normal_curpos = buffer.get_curpos()
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.normal_callback"
@@ -66,19 +65,19 @@ M.normal_surround = function(args, line_mode)
     buffer.insert_text(first_pos, args.delimiters[1])
     buffer.reset_curpos(M.normal_curpos)
 
-    if line_mode then
+    if args.line_mode then
         config.get_opts().indent_lines(first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
     end
 end
 
 -- Add delimiters around a visual selection.
----@param line_mode boolean Whether or not the delimiters should get put on new lines.
-M.visual_surround = function(line_mode)
+---@param args { line_mode: boolean } Whether or not the delimiters should get put on new lines.
+M.visual_surround = function(args)
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
     -- Get a character and selection from the user
     local ins_char = input.get_char()
-    local delimiters = config.get_delimiters(ins_char, line_mode)
+    local delimiters = config.get_delimiters(ins_char, args.line_mode)
     local first_pos, last_pos = buffer.get_mark("<"), buffer.get_mark(">")
     if not delimiters or not first_pos or not last_pos then
         return
@@ -253,7 +252,8 @@ M.normal_callback = function(mode)
     M.normal_surround({
         delimiters = cache.normal.delimiters,
         selection = selection,
-    }, cache.normal.line_mode)
+        line_mode = cache.normal.line_mode,
+    })
 end
 
 M.delete_callback = function()
