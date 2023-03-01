@@ -65,7 +65,7 @@ describe("configuration", function()
         })
     end)
 
-    it("can change invalid_key_behavior", function() -- TODO: What should invalid_key_behavior do on false?
+    it("can change invalid_key_behavior", function()
         require("nvim-surround").setup({
             surrounds = {
                 invalid_key_behavior = {

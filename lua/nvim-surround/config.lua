@@ -532,30 +532,26 @@ M.translate_invalid_key_behavior = function(invalid_surround)
         delete = function() end,
         change = {
             target = function() end,
-            replacement = function() end,
         },
     }
     local invalid = M.translate_surround("invalid_key_behavior", invalid_surround)
-    if not invalid then
+    if invalid == false then
         return noop_surround
     end
-    if not invalid.add then
+    if invalid.add == false then
         invalid.add = noop_surround.add
     end
-    if not invalid.find then
+    if invalid.find == false then
         invalid.find = noop_surround.find
     end
-    if not invalid.delete then
+    if invalid.delete == false then
         invalid.delete = noop_surround.delete
     end
-    if not invalid.change then
+    if invalid.change == false then
         invalid.change = noop_surround.change
     else
-        if invalid.change.target then
+        if invalid.change.target == false then
             invalid.change.target = noop_surround.change.target
-        end
-        if invalid.change.replacement then
-            invalid.change.replacement = noop_surround.change.replacement
         end
     end
     return invalid
@@ -581,6 +577,9 @@ M.translate_opts = function(user_opts)
             opts[key] = value
         end
     end
+    if not user_opts.surrounds then
+        return opts
+    end
 
     opts.surrounds = {}
     for char, user_surround in pairs(user_opts.surrounds) do
@@ -594,9 +593,13 @@ M.translate_opts = function(user_opts)
         end
         -- Support Vim's notation for special characters
         char = vim.api.nvim_replace_termcodes(char, true, true, true)
-        -- Check if the delimiter has not been disabled
-        if char ~= "invalid_key_behavior" and user_surround then
-            opts.surrounds[char] = M.translate_surround(char, user_surround)
+        -- Special case translation for `invalid_key_behavior`
+        if type(user_surround) ~= "nil" then
+            if char == "invalid_key_behavior" then
+                opts.surrounds[char] = M.translate_invalid_key_behavior(user_surround)
+            else
+                opts.surrounds[char] = M.translate_surround(char, user_surround)
+            end
         end
     end
     return opts
@@ -854,7 +857,6 @@ end
 ---@param user_opts user_options? The user-defined options to be merged with default_opts.
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
-    ---@diagnostic disable-next-line
     M.user_opts = M.merge_opts(M.translate_opts(M.default_opts), user_opts)
     -- Configure global keymaps
     M.set_keymaps(false)
