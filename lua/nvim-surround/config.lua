@@ -195,26 +195,6 @@ M.default_opts = {
                 return M.get_selection({ pattern = "[^=%s%(%){}]+%b()" })
             end,
             delete = "^(.-%()().-(%))()$",
-            --[[ function()
-                local selections
-                if vim.g.loaded_nvim_treesitter then
-                    selections = M.get_selections({
-                        char = "f",
-                        exclude = function()
-                            return M.get_selection({
-                                query = {
-                                    capture = "@call.inner",
-                                    type = "textobjects",
-                                },
-                            })
-                        end,
-                    })
-                end
-                if selections then
-                    return selections
-                end
-                return M.get_selections({ char = "f", pattern = "^([^=%s%(%)]+%()().-(%))()$" })
-            end, ]]
             change = {
                 target = "^.-([%w_]+)()%(.-%)()()$",
                 replacement = function()
@@ -298,10 +278,7 @@ end
 ---@nodiscard
 M.get_selection = function(args)
     if args.char then
-        if M.get_opts().surrounds[args.char] then
-            return M.get_opts().surrounds[args.char].find(args.char)
-        end
-        return M.get_opts().surrounds.invalid_key_behavior.find(args.char)
+        return M.get_find(args.char)(args.char)
     elseif args.motion then
         return require("nvim-surround.motions").get_selection(args.motion)
     elseif args.node then
@@ -414,10 +391,22 @@ end
 ---@nodiscard
 M.get_add = function(char)
     char = M.get_alias(char)
-    if M.get_opts().surrounds[char] then
+    if M.get_opts().surrounds[char] and M.get_opts().surrounds[char].add then
         return M.get_opts().surrounds[char].add
     end
     return M.get_opts().surrounds.invalid_key_behavior.add
+end
+
+-- Returns the find key for the surround associated with a given character, if one exists.
+---@param char string? The input character.
+---@return find_func @The function to get the selection.
+---@nodiscard
+M.get_find = function(char)
+    char = M.get_alias(char)
+    if M.get_opts().surrounds[char] and M.get_opts().surrounds[char].find then
+        return M.get_opts().surrounds[char].find
+    end
+    return M.get_opts().surrounds.invalid_key_behavior.find
 end
 
 -- Returns the delete key for the surround associated with a given character, if one exists.
@@ -426,7 +415,7 @@ end
 ---@nodiscard
 M.get_delete = function(char)
     char = M.get_alias(char)
-    if M.get_opts().surrounds[char] then
+    if M.get_opts().surrounds[char] and M.get_opts().surrounds[char].delete then
         return M.get_opts().surrounds[char].delete
     end
     return M.get_opts().surrounds.invalid_key_behavior.delete
@@ -443,56 +432,25 @@ M.get_change = function(char)
             return M.get_opts().surrounds[char].change
         else
             return {
-                target = M.get_opts().surrounds[char].delete,
+                target = M.get_delete(char),
             }
         end
     end
     return M.get_opts().surrounds.invalid_key_behavior.change
 end
 
--- Returns a set of opts, with missing keys filled in by the invalid_key_behavior key.
--- TODO: Change this function name!
----@param opts options? The provided options.
----@return options? @The modified options.
-M.fill_missing_surrounds = function(opts)
-    -- If there are no surrounds, then no modification is necessary
-    if not (opts and opts.surrounds) then
-        return opts
-    end
-
-    for char, surround in pairs(opts.surrounds) do
-        local invalid = M.get_opts().surrounds.invalid_key_behavior
-        if invalid and surround then
-            -- For each surround, if a key is missing, fill it in using the correspnding key from `invalid_key_behavior`
-            local add, find, delete = surround.add, surround.find, surround.delete
-            if not add then
-                opts.surrounds[char].add = function()
-                    return invalid.add(char)
-                end
-            end
-            if not find then
-                opts.surrounds[char].find = function()
-                    return invalid.find(char)
-                end
-            end
-            if not delete then
-                opts.surrounds[char].delete = function()
-                    return invalid.delete(char)
-                end
-            end
-        end
-    end
-    return opts
-end
-
 -- Translates the user-provided surround.add into the internal form.
----@param user_add string[]|string[][]|add_func? The user-provided add key.
----@return add_func? @The translated add key.
+---@param user_add user_add The user-provided add key.
+---@return false|add_func @The translated add key.
 M.translate_add = function(user_add)
-    -- If the add key does not exist or is already in internal form, return
-    if type(user_add) == "nil" or type(user_add) == "function" then
+    if not user_add then
+        return false
+    end
+    -- If the add key is already in internal form, return
+    if type(user_add) == "function" then
         return user_add
     end
+    -- Otherwise, wrap the string tables in a function
     return function()
         return {
             functional.to_list(user_add[1]),
@@ -502,9 +460,12 @@ M.translate_add = function(user_add)
 end
 
 -- Translates the user-provided surround.find into the internal form.
----@param user_find string|find_func? The user-provided find key.
----@return find_func? @The translated find key.
+---@param user_find user_find The user-provided find key.
+---@return false|find_func @The translated find key.
 M.translate_find = function(user_find)
+    if not user_find then
+        return false
+    end
     if type(user_find) == "function" then
         return user_find
     end
@@ -516,9 +477,12 @@ end
 
 -- Translates the user-provided surround.delete into the internal form.
 ---@param char string The character used to activate the surround.
----@param user_delete string|delete_func? The user-provided delete key.
----@return delete_func? @The translated delete key.
+---@param user_delete user_delete The user-provided delete key.
+---@return false|delete_func @The translated delete key.
 M.translate_delete = function(char, user_delete)
+    if not user_delete then
+        return false
+    end
     if type(user_delete) == "function" then
         return user_delete
     end
@@ -530,11 +494,11 @@ end
 
 -- Translates the user-provided surround.change into the internal form.
 ---@param char string The character used to activate the surround.
----@param user_change { target: string|delete_func, replacement: string[]|string[][]|add_func? }? The user-provided change key.
----@return { target: delete_func, replacement: add_func? }? @The translated change key.
+---@param user_change user_change? The user-provided change key.
+---@return false|change_table @The translated change key.
 M.translate_change = function(char, user_change)
     if not user_change then
-        return nil
+        return false
     end
     return {
         target = M.translate_delete(char, user_change.target),
@@ -544,19 +508,57 @@ end
 
 -- Translates the user-provided surround into the internal form.
 ---@param char string The character used to activate the surround.
----@param user_surround user_surround? The user-provided surround.
----@return surround? @The translated surround.
+---@param user_surround false|user_surround The user-provided surround.
+---@return false|surround @The translated surround.
 M.translate_surround = function(char, user_surround)
     if not user_surround then
-        return nil
+        return false
     end
-    local surround = {}
-    surround.add = M.translate_add(user_surround.add)
-    surround.find = M.translate_find(user_surround.find)
-    surround.delete = M.translate_delete(char, user_surround.delete)
-    surround.change = M.translate_change(char, user_surround.change)
+    return {
+        add = M.translate_add(user_surround.add),
+        find = M.translate_find(user_surround.find),
+        delete = M.translate_delete(char, user_surround.delete),
+        change = M.translate_change(char, user_surround.change),
+    }
+end
 
-    return surround
+-- Translates `invalid_key_behavior` into the internal form.
+---@param invalid_surround false|user_surround The user-provided `invalid_key_behavior`.
+---@return surround @The translated `invalid_key_behavior`.
+M.translate_invalid_key_behavior = function(invalid_surround)
+    local noop_surround = {
+        add = function() end,
+        find = function() end,
+        delete = function() end,
+        change = {
+            target = function() end,
+            replacement = function() end,
+        },
+    }
+    local invalid = M.translate_surround("invalid_key_behavior", invalid_surround)
+    if not invalid then
+        return noop_surround
+    end
+    if not invalid.add then
+        invalid.add = noop_surround.add
+    end
+    if not invalid.find then
+        invalid.find = noop_surround.find
+    end
+    if not invalid.delete then
+        invalid.delete = noop_surround.delete
+    end
+    if not invalid.change then
+        invalid.change = noop_surround.change
+    else
+        if invalid.change.target then
+            invalid.change.target = noop_surround.change.target
+        end
+        if invalid.change.replacement then
+            invalid.change.replacement = noop_surround.change.replacement
+        end
+    end
+    return invalid
 end
 
 -- Translates the user-provided configuration into the internal form.
@@ -579,9 +581,7 @@ M.translate_opts = function(user_opts)
             opts[key] = value
         end
     end
-    if not user_opts.surrounds then
-        return opts
-    end
+
     opts.surrounds = {}
     for char, user_surround in pairs(user_opts.surrounds) do
         if char == "pairs" or char == "separators" then
@@ -595,9 +595,7 @@ M.translate_opts = function(user_opts)
         -- Support Vim's notation for special characters
         char = vim.api.nvim_replace_termcodes(char, true, true, true)
         -- Check if the delimiter has not been disabled
-        if not user_surround then
-            opts.surrounds[char] = false
-        else
+        if char ~= "invalid_key_behavior" and user_surround then
             opts.surrounds[char] = M.translate_surround(char, user_surround)
         end
     end
@@ -858,8 +856,6 @@ M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
     ---@diagnostic disable-next-line
     M.user_opts = M.merge_opts(M.translate_opts(M.default_opts), user_opts)
-    -- Filling in missing keys must occur after, since the user might have defined their own `invalid_key_behavior`
-    M.user_opts = M.fill_missing_surrounds(M.user_opts)
     -- Configure global keymaps
     M.set_keymaps(false)
     -- Configure highlight group, if necessary
@@ -873,8 +869,6 @@ end
 M.buffer_setup = function(buffer_opts)
     -- Merge the given table into the existing buffer-local options, or global options otherwise
     vim.b[0].nvim_surround_buffer_opts = M.merge_opts(M.get_opts(), buffer_opts)
-    -- Filling in missing keys must occur after, since the user might have defined their own `invalid_key_behavior`
-    vim.b[0].nvim_surround_buffer_opts = M.fill_missing_surrounds(vim.b[0].nvim_surround_buffer_opts)
     -- Configure buffer-local keymaps
     M.set_keymaps(true)
 end

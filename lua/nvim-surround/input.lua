@@ -4,9 +4,9 @@ local M = {}
 ---@return string? @The input character, or nil if a control character is pressed.
 ---@nodiscard
 M.get_char = function()
-    local ret_val, char = pcall(vim.fn.getcharstr)
-    -- Return nil if error (e.g. <C-c>) or for <Esc>/<C-[> (ascii code 27)
-    if not ret_val or char == "\27" then
+    local ok, char = pcall(vim.fn.getcharstr)
+    -- Return nil if input is cancelled (e.g. <C-c> or <Esc>)
+    if not ok or char == "\27" then
         return nil
     end
     return char

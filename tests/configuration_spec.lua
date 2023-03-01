@@ -100,4 +100,20 @@ describe("configuration", function()
         })
         vim.bo.filetype = nil
     end)
+
+    it("can disable invalid_key_behavior", function()
+        require("nvim-surround").setup({
+            surrounds = {
+                invalid_key_behavior = false,
+            },
+        })
+
+        set_lines({
+            "hello world",
+        })
+        vim.cmd("normal yssx")
+        check_lines({
+            "hello world",
+        })
+    end)
 end)
