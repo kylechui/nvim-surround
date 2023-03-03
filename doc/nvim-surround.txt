@@ -196,7 +196,7 @@ used interchangeably anywhere. For example, the default configuration aliases
 Note: While `ysabB` is a valid surround action, `ysarB` is not, since `ar` is
 not a valid Vim motion. This can be side-stepped by creating the following
 operator-mode maps:
->
+>lua
     vim.keymap.set("o", "ir", "i[")
     vim.keymap.set("o", "ar", "a[")
     vim.keymap.set("o", "ia", "i<")
@@ -251,7 +251,7 @@ default behavior, the corresponding value needs to explicitly be set to
 `false`.
 
 Both functions take a table as an argument, full of configuration options.
->
+>lua
     require("nvim-surround").setup({
         keymaps =       -- Defines plugin keymaps,
         surrounds =     -- Defines surround keys and behavior,
@@ -269,7 +269,7 @@ on new lines. If the key ends in "_cur", the surround is performed around the
 current line.
 
 The default configuration is as follows:
->
+>lua
     keymaps = {
         insert = "<C-g>s",
         insert_line = "<C-g>S",
@@ -293,7 +293,7 @@ containing the following keys:
     add: ~
         A function that returns the delimiter pair to be added to the buffer.
         For example, consider the function for adding parentheses:
->
+>lua
         [")"] = {
             add = function()
                 return { { "(" }, { ")" } }
@@ -302,7 +302,7 @@ containing the following keys:
 <
         The function must return pairs of multi-line strings. Anything can be
         called in the functions; consider the default for `f`:
->
+>lua
         add = function()
             local config = require("nvim-surround.config")
             local result = config.get_input("Enter the function name: ")
@@ -319,7 +319,7 @@ containing the following keys:
         value of the delimiter pair. Furthermore, tables with just one string
         can be replaced by the string itself. For example, the following
         configuration also adds parentheses:
->
+>lua
         [")"] = {
             add = { "(", ")" },
         }
@@ -331,7 +331,7 @@ containing the following keys:
         else, as it is used by the `delete` and `change` keys to determine
         what to modify. For example, HTML tags are found via the `at`
         text-object:
->
+>lua
         ["t"] = {
             find = function()
                 local config = require("nvim-surround.config")
@@ -353,7 +353,7 @@ containing the following keys:
         then interpreted as a Lua pattern whose match groups represent the
         left/right delimiter pair. For example, function calls are deleted
         via
->
+>lua
         delete = "^([^=%s]+%()().-(%))()$",
 <
         The Lua pattern matches the function name and opening  parenthesis for
@@ -375,7 +375,7 @@ containing the following keys:
             is then interpreted as a Lua pattern whose match groups represent
             the left/right delimiter pair. For example, the default `T`
             surround's `change.target` key:
->
+>lua
             target = "^<([^>]*)().-([^%/]*)()>$",
 <
             The Lua pattern matches the contents of the opening tag (including
@@ -401,7 +401,7 @@ There is a special key in the `surrounds` table, `invalid_key_behavior`, that
 defines how |nvim-surround| behaves when a given key in the delimiter table is
 omitted. It takes the same form as all other surrounds. The default behavior
 is to treat the character literally, and add/modify the surrounding pair:
->
+>lua
     invalid_key_behavior = {
         add = function(char)
             return { { char }, { char } }
@@ -436,7 +436,7 @@ default.
 
 |nvim-surround| exposes a few helper functions to assist in finding
 selection(s). For the sake of brevity we assume
->
+>lua
     local config = require("nvim-surround.config")
 <
                                             *nvim-surround.config.get_input()*
@@ -452,7 +452,7 @@ config.get_selection({args})
     motion: ~
         A string that represents any Neovim motion. For example, the default
         `find` key for `(` is:
->
+>lua
         find = function()
             return config.get_selection({ motion = "a(" })
         end,
@@ -460,7 +460,7 @@ config.get_selection({args})
     pattern: ~
         A Lua pattern to be found in the buffer. For example, the default
         `find` key for `invalid_key_behavior` is:
->
+>lua
         find = function(char)
             return config.get_selection({
                 pattern = vim.pesc(char) .. ".-" .. vim.pesc(char),
@@ -473,7 +473,7 @@ config.get_selection({args})
     node: ~
         A Tree-sitter node type to be found in the buffer. For example, the
         default `find` key for `f` in Lua files is:
->
+>lua
         find = function()
             return config.get_selection({ node = "function_call" })
         end,
@@ -499,7 +499,7 @@ config.get_selections({args})
         and right selections.
 
         For example, the default `delete` key for `t` is:
->
+>lua
         delete = function()
             return config.get_selections({
                 char = "t",
@@ -512,7 +512,7 @@ config.get_selections({args})
         selection is a second balanced pair of angle brackets `%b<>`, followed
         by an empty capture group. Another example is the `change.target` key
         for `t`:
->
+>lua
         target = function()
             return config.get_selections({
                 char = "t",
@@ -529,7 +529,7 @@ config.get_selections({args})
 The aliases table maps characters to other characters, or lists of characters.
 Its behavior is described in |nvim-surround.aliasing|. The default
 configuration is
->
+>lua
     aliases = {
         ["a"] = ">",
         ["b"] = ")",
@@ -555,7 +555,7 @@ a surrounding pair, one can optionally highlight the pair to be replaced. The
 
 The relevant highlight group is `NvimSurroundHighlight`, which can be
 configured separately. The default highlight group used is `Visual`:
->
+>vim
     highlight default link NvimSurroundHighlight Visual
 <
 --------------------------------------------------------------------------------
@@ -582,7 +582,7 @@ indent things "appropriately", i.e. when it is enabled by a Vim option. The
 disabled by setting `indent_lines = false` in one of the setup functions.
 
 By default, |nvim-surround| uses the following function for indentation:
->
+>lua
     indent_lines = function(start, stop)
         local b = vim.bo
         -- Only re-indent the selection if a formatter is set up already
