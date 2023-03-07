@@ -72,7 +72,7 @@ end
 -- Finds the nearest selection of a given query capture and its source.
 ---@param capture string The capture to be retrieved.
 ---@param type string The type of query to get the capture from.
----@return selection? @The selection of the capture.
+---@return selection|nil @The selection of the capture.
 ---@nodiscard
 M.get_selection = function(capture, type)
     -- Get a table of all nodes that match the query

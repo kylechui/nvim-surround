@@ -207,22 +207,22 @@ M.default_opts = {
         },
         invalid_key_behavior = {
             add = function(char)
-                if char:find("%c") then
-                    return
+                if not char or char:find("%c") then
+                    return nil
                 end
                 return { { char }, { char } }
             end,
             find = function(char)
-                if char:find("%c") then
-                    return
+                if not char or char:find("%c") then
+                    return nil
                 end
                 return M.get_selection({
                     pattern = vim.pesc(char) .. ".-" .. vim.pesc(char),
                 })
             end,
             delete = function(char)
-                if char:find("%c") then
-                    return
+                if not char or char:find("%c") then
+                    return nil
                 end
                 return M.get_selections({
                     char = char,
@@ -258,15 +258,15 @@ M.default_opts = {
 
 -- Gets input from the user.
 ---@param prompt string The input prompt.
----@return string? @The user input.
+---@return string|nil @The user input.
 ---@nodiscard
 M.get_input = function(prompt)
     return input.get_input(prompt)
 end
 
 -- Gets a selection from the buffer based on some heuristic.
----@param args { char: string?, motion: string?, pattern: string?, node: string?, query: { capture: string, type: string }? }
----@return selection? @The retrieved selection.
+---@param args { char: string|nil, motion: string|nil, pattern: string|nil, node: string|nil, query: { capture: string, type: string }|nil }
+---@return selection|nil @The retrieved selection.
 ---@nodiscard
 M.get_selection = function(args)
     if args.char then
@@ -287,7 +287,7 @@ M.get_selection = function(args)
 end
 
 -- Gets a pair of selections from the buffer based on some heuristic.
----@param args { char: string, pattern: string?, exclude: function? }
+---@param args { char: string, pattern: string|nil, exclude: function|nil }
 ---@nodiscard
 M.get_selections = function(args)
     local selection = M.get_selection({ char = args.char })
@@ -338,8 +338,8 @@ M.get_opts = function()
 end
 
 -- Returns the value that the input is aliased to, or the character if no alias exists.
----@param char string? The input character.
----@return string? @The aliased character if it exists, or the original if none exists.
+---@param char string|nil The input character.
+---@return string|nil @The aliased character if it exists, or the original if none exists.
 ---@nodiscard
 M.get_alias = function(char)
     local aliases = M.get_opts().aliases
@@ -350,9 +350,9 @@ M.get_alias = function(char)
 end
 
 -- Gets a delimiter pair for a user-inputted character.
----@param char string? The user-given character.
+---@param char string|nil The user-given character.
 ---@param line_mode boolean Whether or not the delimiters should be put on new lines.
----@return delimiter_pair? @A pair of delimiters for the given input, or nil if not applicable.
+---@return delimiter_pair|nil @A pair of delimiters for the given input, or nil if not applicable.
 ---@nodiscard
 M.get_delimiters = function(char, line_mode)
     if not char then
@@ -369,7 +369,7 @@ M.get_delimiters = function(char, line_mode)
         end
     end)()
     -- Add new lines if the addition is done line-wise
-    if line_mode then
+    if delimiters and line_mode then
         table.insert(delimiters[2], 1, "")
         table.insert(delimiters[1], "")
     end
@@ -378,7 +378,7 @@ M.get_delimiters = function(char, line_mode)
 end
 
 -- Returns the add key for the surround associated with a given character, if one exists.
----@param char string? The input character.
+---@param char string|nil The input character.
 ---@return add_func @The function to get the delimiters to be added.
 ---@nodiscard
 M.get_add = function(char)
@@ -390,7 +390,7 @@ M.get_add = function(char)
 end
 
 -- Returns the find key for the surround associated with a given character, if one exists.
----@param char string? The input character.
+---@param char string|nil The input character.
 ---@return find_func @The function to get the selection.
 ---@nodiscard
 M.get_find = function(char)
@@ -402,7 +402,7 @@ M.get_find = function(char)
 end
 
 -- Returns the delete key for the surround associated with a given character, if one exists.
----@param char string? The input character.
+---@param char string|nil The input character.
 ---@return delete_func @The function to get the selections to be deleted.
 ---@nodiscard
 M.get_delete = function(char)
@@ -414,8 +414,8 @@ M.get_delete = function(char)
 end
 
 -- Returns the change key for the surround associated with a given character, if one exists.
----@param char string? The input character.
----@return { target: delete_func, replacement: add_func? }? @A table holding the target/replacment functions.
+---@param char string|nil The input character.
+---@return { target: delete_func, replacement: add_func|nil }|nil @A table holding the target/replacment functions.
 ---@nodiscard
 M.get_change = function(char)
     char = M.get_alias(char)
@@ -486,8 +486,8 @@ end
 
 -- Translates the user-provided surround.change into the internal form.
 ---@param char string The character used to activate the surround.
----@param user_change user_change? The user-provided change key.
----@return false|change_table? @The translated change key.
+---@param user_change user_change|nil The user-provided change key.
+---@return false|change_table|nil @The translated change key.
 M.translate_change = function(char, user_change)
     if user_change == nil then
         return nil
@@ -602,7 +602,7 @@ end
 
 -- Updates the buffer-local options for the plugin based on the input.
 ---@param base_opts options The base options that will be used for configuration.
----@param new_opts user_options? The new options to potentially override the base options.
+---@param new_opts user_options|nil The new options to potentially override the base options.
 ---@return options The merged options.
 M.merge_opts = function(base_opts, new_opts)
     new_opts = new_opts or {}
@@ -853,7 +853,7 @@ M.set_keymaps = function(args)
 end
 
 -- Setup the global user options for all files.
----@param user_opts user_options? The user-defined options to be merged with default_opts.
+---@param user_opts user_options|nil The user-defined options to be merged with default_opts.
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
     M.user_opts = M.merge_opts(M.translate_opts(M.default_opts), user_opts)
@@ -865,7 +865,7 @@ M.setup = function(user_opts)
 end
 
 -- Setup the user options for the current buffer.
----@param buffer_opts user_options? The buffer-local options to be merged with the global user_opts.
+---@param buffer_opts user_options|nil The buffer-local options to be merged with the global user_opts.
 M.buffer_setup = function(buffer_opts)
     -- Merge the given table into the existing buffer-local options, or global options otherwise
     vim.b[0].nvim_surround_buffer_opts = M.merge_opts(M.get_opts(), buffer_opts)

@@ -1,3 +1,5 @@
+local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
+local ctrl_c = vim.api.nvim_replace_termcodes("<C-c>", true, false, true)
 local ctrl_v = vim.api.nvim_replace_termcodes("<C-v>", true, false, true)
 local set_curpos = function(pos)
     vim.api.nvim_win_set_cursor(0, { pos[1], pos[2] - 1 })
@@ -545,6 +547,42 @@ describe("nvim-surround", function()
             "multiple lines",
             "or something}",
             "i guess",
+        })
+    end)
+
+    it("can cancel adding delimiters to the buffer", function()
+        set_lines({
+            "Hello, world!",
+        })
+        set_curpos({ 1, 8 })
+        vim.cmd("normal ysiw" .. esc)
+        vim.cmd("normal ysiw" .. ctrl_c)
+        check_lines({
+            "Hello, world!",
+        })
+    end)
+
+    it("can cancel deleting delimiters from the buffer", function()
+        set_lines({
+            "Hello, (world)!",
+        })
+        vim.cmd("normal ds" .. esc)
+        vim.cmd("normal ds" .. ctrl_c)
+        check_lines({
+            "Hello, (world)!",
+        })
+    end)
+
+    it("can cancel changing delimiters in the buffer", function()
+        set_lines({
+            "Hello, (world)!",
+        })
+        vim.cmd("normal cs" .. esc)
+        vim.cmd("normal csb" .. esc)
+        vim.cmd("normal cs" .. ctrl_c)
+        vim.cmd("normal cs" .. ctrl_c)
+        check_lines({
+            "Hello, (world)!",
         })
     end)
 end)

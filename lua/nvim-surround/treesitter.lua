@@ -16,7 +16,7 @@ end
 
 -- Finds the nearest selection of a given Tree-sitter node type or types.
 ---@param node_types string|string[] The Tree-sitter node type(s) to be retrieved.
----@return selection? @The selection of the node.
+---@return selection|nil @The selection of the node.
 ---@nodiscard
 M.get_selection = function(node_types)
     if type(node_types) == "string" then

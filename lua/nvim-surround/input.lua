@@ -1,7 +1,7 @@
 local M = {}
 
 -- Gets a character input from the user.
----@return string? @The input character, or nil if a control character is pressed.
+---@return string|nil @The input character, or nil if a control character is pressed.
 ---@nodiscard
 M.get_char = function()
     local ok, char = pcall(vim.fn.getcharstr)
@@ -14,7 +14,7 @@ end
 
 -- Gets a string input from the user.
 ---@param prompt string The input prompt.
----@return string? @The user input.
+---@return string|nil @The user input.
 ---@nodiscard
 M.get_input = function(prompt)
     -- Since `vim.fn.input()` does not handle keyboard interrupts, we use a protected call to detect <C-c>

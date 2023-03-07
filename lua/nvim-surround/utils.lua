@@ -8,14 +8,17 @@ local M = {}
 M.NOOP = function() end
 
 -- Gets the nearest two selections for the left and right surrounding pair.
----@param char string? A character representing what kind of surrounding pair is to be selected.
+---@param char string|nil A character representing what kind of surrounding pair is to be selected.
 ---@param action "delete"|"change" A string representing what action is being performed.
----@return selections? @A table containing the start and end positions of the delimiters.
+---@return selections|nil @A table containing the start and end positions of the delimiters.
 ---@nodiscard
 M.get_nearest_selections = function(char, action)
     char = config.get_alias(char)
-
     local chars = functional.to_list(config.get_opts().aliases[char] or char)
+    if not chars then
+        return nil
+    end
+
     local curpos = buffer.get_curpos()
     local selections_list = {}
     -- Iterate through all possible selections for each aliased character, and find the closest pair
@@ -45,7 +48,7 @@ end
 
 -- Filters down a list of selections to the best one, based on the jumping heuristic.
 ---@param selections_list selections[] The given list of selections.
----@return selections? @The best selections from the list.
+---@return selections|nil @The best selections from the list.
 ---@nodiscard
 M.filter_selections_list = function(selections_list)
     local curpos = buffer.get_curpos()

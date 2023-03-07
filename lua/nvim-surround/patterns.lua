@@ -32,7 +32,7 @@ end
 
 -- Returns a selection in the buffer based on a Lua pattern.
 ---@param find string The Lua pattern to find in the buffer.
----@return selection? @The closest selection matching the pattern, if any.
+---@return selection|nil @The closest selection matching the pattern, if any.
 ---@nodiscard
 M.get_selection = function(find)
     -- Get the current cursor position, buffer contents
@@ -107,7 +107,7 @@ end
 -- Finds the start and end indices for the given match groups.
 ---@param selection selection The parent selection encompassing the delimiter pair.
 ---@param pattern string The given Lua pattern to extract match groups from.
----@return selections? @The selections for the left and right delimiters.
+---@return selections|nil @The selections for the left and right delimiters.
 ---@nodiscard
 M.get_selections = function(selection, pattern)
     local offset = M.pos_to_index(selection.first_pos)

@@ -15,7 +15,7 @@ M.get_curpos = function()
 end
 
 -- Sets the position of the cursor, 1-indexed.
----@param pos position? The given position.
+---@param pos position|nil The given position.
 M.set_curpos = function(pos)
     if not pos then
         return
@@ -37,7 +37,7 @@ end
 
 -- Gets the row and column for a mark, 1-indexed, if it exists, returns nil otherwise.
 ---@param mark string The mark whose position will be returned.
----@return position? @The position of the mark.
+---@return position|nil @The position of the mark.
 ---@nodiscard
 M.get_mark = function(mark)
     local position = vim.api.nvim_buf_get_mark(0, mark)
@@ -49,7 +49,7 @@ end
 
 -- Sets the position of a mark, 1-indexed.
 ---@param mark string The mark whose position will be returned.
----@param position position? The position that the mark should be set to.
+---@param position position|nil The position that the mark should be set to.
 M.set_mark = function(mark, position)
     if position then
         vim.api.nvim_buf_set_mark(0, mark, position[1], position[2] - 1, {})
@@ -136,8 +136,8 @@ M.get_first_byte = function(pos)
 end
 
 -- Gets the position of the last byte of a character, according to the UTF-8 standard.
----@param pos position? The position of the beginning of the character.
----@return position? @The position of the last byte of the character.
+---@param pos position|nil The position of the beginning of the character.
+---@return position|nil @The position of the last byte of the character.
 ---@nodiscard
 M.get_last_byte = function(pos)
     if not pos then
@@ -224,7 +224,7 @@ M.delete_selection = function(selection)
 end
 
 -- Replaces a given selection with a set of lines.
----@param selection? selection The given selection.
+---@param selection selection|nil The given selection.
 ---@param text text The given text to replace the selection.
 M.change_selection = function(selection, text)
     if not selection then
@@ -239,7 +239,7 @@ end
 --]====================================================================================================================]
 
 -- Highlights a given selection.
----@param selection selection? The selection to be highlighted.
+---@param selection selection|nil The selection to be highlighted.
 M.highlight_selection = function(selection)
     if not selection then
         return

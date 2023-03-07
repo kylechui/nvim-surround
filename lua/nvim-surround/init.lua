@@ -7,13 +7,13 @@ local utils = require("nvim-surround.utils")
 local M = {}
 
 -- Setup the plugin with user-defined options.
----@param user_opts user_options? The user options.
+---@param user_opts user_options|nil The user options.
 M.setup = function(user_opts)
     config.setup(user_opts)
 end
 
 -- Configure the plugin on a per-buffer basis.
----@param buffer_opts user_options? The buffer-local options.
+---@param buffer_opts user_options|nil The buffer-local options.
 M.buffer_setup = function(buffer_opts)
     config.buffer_setup(buffer_opts)
 end
@@ -46,7 +46,7 @@ end
 M.normal_curpos = nil
 -- Add delimiters around a motion.
 ---@param args { selection: selection, delimiters: string[][], line_mode: boolean }
----@return "g@"?
+---@return "g@"|nil
 M.normal_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args.selection then
@@ -139,8 +139,8 @@ M.visual_surround = function(args)
 end
 
 -- Delete a surrounding delimiter pair, if it exists.
----@param args? { del_char: string, curpos: integer[] }
----@return "g@l"?
+---@param args { del_char: string, curpos: integer[] }|nil
+---@return "g@l"|nil
 M.delete_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args then
@@ -170,8 +170,8 @@ M.delete_surround = function(args)
 end
 
 -- Change a surrounding delimiter pair, if it exists.
----@param args? { curpos: position, del_char: string, add_delimiters: add_func }
----@return "g@l"?
+---@param args { curpos: position, del_char: string, add_delimiters: add_func }|nil
+---@return "g@l"|nil
 M.change_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args then
@@ -317,7 +317,7 @@ M.change_callback = function()
     end
     local args = vim.deepcopy(cache.change)
     args.curpos = curpos
-    M.change_surround(args)
+    M.change_surround(args) ---@diagnostic disable-line: param-type-mismatch
 end
 
 return M

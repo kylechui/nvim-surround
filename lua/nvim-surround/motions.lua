@@ -4,7 +4,7 @@ local config = require("nvim-surround.config")
 local M = {}
 
 -- Determines whether the input character is a quote character.
----@param char string? The input character.
+---@param char string|nil The input character.
 ---@return boolean @Whether or not char is a quote character.
 ---@nodiscard
 M.is_quote = function(char)
@@ -13,7 +13,7 @@ end
 
 -- Gets a selection based on a given motion.
 ---@param motion string The provided motion.
----@return selection? @The selection that represents the text-object.
+---@return selection|nil @The selection that represents the text-object.
 ---@nodiscard
 M.get_selection = function(motion)
     local char = config.get_alias(motion:sub(2, 2))
