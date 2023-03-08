@@ -38,10 +38,6 @@ M.get_nearest_selections = function(char, action)
         buffer.set_curpos(curpos)
     end
     local nearest_selections = M.filter_selections_list(selections_list)
-    -- If a pair of selections is found, jump to the beginning of the left one
-    if nearest_selections then
-        buffer.set_curpos(nearest_selections.left.first_pos)
-    end
 
     return nearest_selections
 end

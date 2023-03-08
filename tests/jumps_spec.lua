@@ -18,39 +18,6 @@ describe("jumps", function()
         vim.api.nvim_win_set_buf(0, bufnr)
     end)
 
-    it("can be disabled", function()
-        require("nvim-surround").buffer_setup({ move_cursor = false })
-        set_lines({
-            [[And jump "forwards" and `backwards` to 'the' "nearest" surround.]],
-        })
-        set_curpos({ 1, 27 })
-
-        vim.cmd("normal dsq")
-        assert.are.same(get_curpos(), { 1, 27 })
-        check_lines({
-            [[And jump "forwards" and backwards to 'the' "nearest" surround.]],
-        })
-
-        vim.cmd("normal ysa'\"")
-        check_lines({
-            [[And jump "forwards" and backwards to "'the'" "nearest" surround.]],
-        })
-
-        vim.cmd("normal dsq")
-        assert.are.same(get_curpos(), { 1, 27 })
-        vim.cmd("normal! ..")
-        assert.are.same(get_curpos(), { 1, 27 })
-        check_lines({
-            [[And jump forwards and backwards to the "nearest" surround.]],
-        })
-
-        vim.cmd("normal csqb")
-        assert.are.same(get_curpos(), { 1, 27 })
-        check_lines({
-            [[And jump forwards and backwards to the (nearest) surround.]],
-        })
-    end)
-
     it("can do lookahead/lookbehind", function()
         set_lines({
             [[And jump "forwards" and `backwards` to 'the' "nearest" surround.]],

@@ -63,7 +63,10 @@ M.normal_surround = function(args)
 
     buffer.insert_text(last_pos, args.delimiters[2])
     buffer.insert_text(first_pos, args.delimiters[1])
-    buffer.reset_curpos(M.normal_curpos)
+    buffer.reset_curpos({
+        first_pos = first_pos,
+        old_pos = M.normal_curpos,
+    })
 
     if args.line_mode then
         config.get_opts().indent_lines(first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
@@ -135,7 +138,10 @@ M.visual_surround = function(args)
     end
 
     config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
-    buffer.reset_curpos(curpos)
+    buffer.reset_curpos({
+        first_pos = first_pos,
+        old_pos = curpos,
+    })
 end
 
 -- Delete a surrounding delimiter pair, if it exists.
@@ -162,10 +168,12 @@ M.delete_surround = function(args)
             selections.left.first_pos[1],
             selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
         )
-        buffer.set_curpos(selections.left.first_pos)
+        buffer.reset_curpos({
+            first_pos = selections.left.first_pos,
+            old_pos = args.curpos,
+        })
     end
 
-    buffer.reset_curpos(args.curpos)
     cache.set_callback("v:lua.require'nvim-surround'.delete_callback")
 end
 
@@ -190,10 +198,12 @@ M.change_surround = function(args)
         -- Change the right selection first to ensure selection positions are correct
         buffer.change_selection(selections.right, delimiters[2])
         buffer.change_selection(selections.left, delimiters[1])
-        buffer.set_curpos(selections.left.first_pos)
+        buffer.reset_curpos({
+            first_pos = selections.left.first_pos,
+            old_pos = args.curpos,
+        })
     end
 
-    buffer.reset_curpos(args.curpos)
     cache.set_callback("v:lua.require'nvim-surround'.change_callback")
 end
 

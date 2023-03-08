@@ -23,11 +23,14 @@ M.set_curpos = function(pos)
     vim.api.nvim_win_set_cursor(0, { pos[1], pos[2] - 1 })
 end
 
--- Move the cursor back to its original location post-action, if desired.
----@param pos position The original position of the cursor.
+-- Move the cursor to a location in the buffer, depending on the `move_cursor` setting.
+---@param pos { first_pos: position, old_pos: position } Various positions in the buffer.
 M.reset_curpos = function(pos)
-    if not config.get_opts().move_cursor then
-        M.set_curpos(pos)
+    -- TODO: Add a `last_pos` field for if `move_cursor` is set to "end"
+    if config.get_opts().move_cursor == "begin" then
+        M.set_curpos(pos.first_pos)
+    elseif not config.get_opts().move_cursor then
+        M.set_curpos(pos.old_pos)
     end
 end
 

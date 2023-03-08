@@ -1,4 +1,8 @@
 local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
+local get_curpos = function()
+    local curpos = vim.api.nvim_win_get_cursor(0)
+    return { curpos[1], curpos[2] + 1 }
+end
 local set_curpos = function(pos)
     vim.api.nvim_win_set_cursor(0, { pos[1], pos[2] - 1 })
 end
@@ -114,6 +118,90 @@ describe("configuration", function()
         vim.cmd("normal yssx")
         check_lines({
             "hello world",
+        })
+    end)
+
+    it("can disable cursor movement for actions", function()
+        require("nvim-surround").buffer_setup({ move_cursor = false })
+        set_lines({
+            [[And jump "forwards" and `backwards` to 'the' "nearest" surround.]],
+        })
+        set_curpos({ 1, 27 })
+
+        vim.cmd("normal dsq")
+        assert.are.same(get_curpos(), { 1, 27 })
+        check_lines({
+            [[And jump "forwards" and backwards to 'the' "nearest" surround.]],
+        })
+
+        vim.cmd("normal ysa'\"")
+        check_lines({
+            [[And jump "forwards" and backwards to "'the'" "nearest" surround.]],
+        })
+
+        vim.cmd("normal dsq")
+        assert.are.same(get_curpos(), { 1, 27 })
+        vim.cmd("normal! ..")
+        assert.are.same(get_curpos(), { 1, 27 })
+        check_lines({
+            [[And jump forwards and backwards to the "nearest" surround.]],
+        })
+
+        vim.cmd("normal csqb")
+        assert.are.same(get_curpos(), { 1, 27 })
+        check_lines({
+            [[And jump forwards and backwards to the (nearest) surround.]],
+        })
+
+        set_curpos({ 1, 5 })
+        vim.cmd("normal v")
+        set_curpos({ 1, 31 })
+        vim.cmd('normal S"')
+        assert.are.same(get_curpos(), { 1, 31 })
+        check_lines({
+            [[And "jump forwards and backwards" to the (nearest) surround.]],
+        })
+    end)
+
+    it("can move the cursor to the beginning of an action", function()
+        set_lines({
+            [[And jump "forwards" and `backwards` to 'the' "nearest" surround.]],
+        })
+        set_curpos({ 1, 27 })
+
+        vim.cmd("normal dsq")
+        assert.are.same(get_curpos(), { 1, 25 })
+        check_lines({
+            [[And jump "forwards" and backwards to 'the' "nearest" surround.]],
+        })
+
+        vim.cmd("normal ysa'\"")
+        assert.are.same(get_curpos(), { 1, 38 })
+        check_lines({
+            [[And jump "forwards" and backwards to "'the'" "nearest" surround.]],
+        })
+
+        vim.cmd("normal dsq")
+        assert.are.same(get_curpos(), { 1, 38 })
+        vim.cmd("normal! ..")
+        assert.are.same(get_curpos(), { 1, 19 })
+        check_lines({
+            [[And jump "forwards and backwards to the nearest" surround.]],
+        })
+
+        vim.cmd("normal csqb")
+        assert.are.same(get_curpos(), { 1, 10 })
+        check_lines({
+            [[And jump (forwards and backwards to the nearest) surround.]],
+        })
+
+        set_curpos({ 1, 11 })
+        vim.cmd("normal v")
+        set_curpos({ 1, 32 })
+        vim.cmd('normal S"')
+        assert.are.same(get_curpos(), { 1, 11 })
+        check_lines({
+            [[And jump ("forwards and backwards" to the nearest) surround.]],
         })
     end)
 end)
