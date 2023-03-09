@@ -204,4 +204,16 @@ describe("configuration", function()
             [[And jump ("forwards and backwards" to the nearest) surround.]],
         })
     end)
+
+    it("can disable keymaps", function()
+        require("nvim-surround").buffer_setup({
+            keymaps = {
+                normal = false,
+            },
+        })
+
+        set_lines({ "Hello, world!" })
+        vim.cmd("normal ysiwb")
+        check_lines({ "wbHello, world!" })
+    end)
 end)
