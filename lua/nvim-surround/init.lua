@@ -45,7 +45,7 @@ end
 -- Holds the current position of the cursor, since calling opfunc will erase it.
 M.normal_curpos = nil
 -- Add delimiters around a motion.
----@param args { selection: selection, delimiters: string[][], line_mode: boolean }
+---@param args { selection: selection, delimiters: delimiter_pair, line_mode: boolean }
 ---@return "g@"|nil
 M.normal_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
@@ -131,7 +131,7 @@ M.visual_surround = function(args)
 
         last_pos = buffer.get_last_byte(last_pos)
         if not last_pos then
-            return nil
+            return
         end
         buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
         buffer.insert_text(first_pos, delimiters[1])
@@ -145,7 +145,7 @@ M.visual_surround = function(args)
 end
 
 -- Delete a surrounding delimiter pair, if it exists.
----@param args { del_char: string, curpos: integer[] }|nil
+---@param args { del_char: string, curpos: position }|nil
 ---@return "g@l"|nil
 M.delete_surround = function(args)
     -- Call the operatorfunc if it has not been called yet

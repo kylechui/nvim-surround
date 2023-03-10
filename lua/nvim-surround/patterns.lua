@@ -19,7 +19,7 @@ M.index_to_pos = function(index)
 end
 
 -- Converts a 2D position in the buffer to the corresponding 1D string index.
----@param pos integer[] The position in the buffer.
+---@param pos position The position in the buffer.
 ---@return integer @The index of the character into the buffer.
 ---@nodiscard
 M.pos_to_index = function(pos)
