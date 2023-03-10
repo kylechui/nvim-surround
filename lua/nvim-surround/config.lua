@@ -97,8 +97,8 @@ M.default_opts = {
         },
         ["i"] = { -- TODO: Add find/delete/change functions
             add = function()
-                local left_delimiter = input.get_input("Enter the left delimiter: ")
-                local right_delimiter = left_delimiter and input.get_input("Enter the right delimiter: ")
+                local left_delimiter = M.get_input("Enter the left delimiter: ")
+                local right_delimiter = left_delimiter and M.get_input("Enter the right delimiter: ")
                 if right_delimiter then
                     return { { left_delimiter }, { right_delimiter } }
                 end
@@ -108,7 +108,7 @@ M.default_opts = {
         },
         ["t"] = {
             add = function()
-                local user_input = input.get_input("Enter the HTML tag: ")
+                local user_input = M.get_input("Enter the HTML tag: ")
                 if user_input then
                     local element = user_input:match("^<?([^%s>]*)")
                     local attributes = user_input:match("^<?[^%s>]*%s+(.-)>?$")
@@ -126,7 +126,7 @@ M.default_opts = {
             change = {
                 target = "^<([^%s<>]*)().-([^/]*)()>$",
                 replacement = function()
-                    local user_input = input.get_input("Enter the HTML tag: ")
+                    local user_input = M.get_input("Enter the HTML tag: ")
                     if user_input then
                         local element = user_input:match("^<?([^%s>]*)")
                         local attributes = user_input:match("^<?[^%s>]*%s+(.-)>?$")
@@ -141,7 +141,7 @@ M.default_opts = {
         },
         ["T"] = {
             add = function()
-                local user_input = input.get_input("Enter the HTML tag: ")
+                local user_input = M.get_input("Enter the HTML tag: ")
                 if user_input then
                     local element = user_input:match("^<?([^%s>]*)")
                     local attributes = user_input:match("^<?[^%s>]*%s+(.-)>?$")
@@ -159,7 +159,7 @@ M.default_opts = {
             change = {
                 target = "^<([^>]*)().-([^/]*)()>$",
                 replacement = function()
-                    local user_input = input.get_input("Enter the HTML tag: ")
+                    local user_input = M.get_input("Enter the HTML tag: ")
                     if user_input then
                         local element = user_input:match("^<?([^%s>]*)")
                         local attributes = user_input:match("^<?[^%s>]*%s+(.-)>?$")
@@ -174,23 +174,22 @@ M.default_opts = {
         },
         ["f"] = {
             add = function()
-                local result = input.get_input("Enter the function name: ")
+                local result = M.get_input("Enter the function name: ")
                 if result then
                     return { { result .. "(" }, { ")" } }
                 end
             end,
             find = function()
-                local selection
                 if vim.g.loaded_nvim_treesitter then
-                    selection = M.get_selection({
+                    local selection = M.get_selection({
                         query = {
                             capture = "@call.outer",
                             type = "textobjects",
                         },
                     })
-                end
-                if selection then
-                    return selection
+                    if selection then
+                        return selection
+                    end
                 end
                 return M.get_selection({ pattern = "[^=%s%(%){}]+%b()" })
             end,
@@ -198,7 +197,7 @@ M.default_opts = {
             change = {
                 target = "^.-([%w_]+)()%(.-%)()()$",
                 replacement = function()
-                    local result = input.get_input("Enter the function name: ")
+                    local result = M.get_input("Enter the function name: ")
                     if result then
                         return { { result }, { "" } }
                     end
@@ -279,8 +278,6 @@ M.get_selection = function(args)
         return require("nvim-surround.patterns").get_selection(args.pattern)
     elseif args.query then
         return require("nvim-surround.queries").get_selection(args.query.capture, args.query.type)
-    elseif args.textobject then ---@diagnostic disable-line: undefined-field
-        vim.deprecate("The `textobject` key for `config.get_selection`", "`motion`", "v2.0.0", "nvim-surround")
     else
         vim.notify("Invalid key provided for `:h nvim-surround.config.get_selection()`.", vim.log.levels.ERROR)
     end
@@ -556,13 +553,6 @@ end
 ---@param user_opts user_options The user-provided options.
 ---@return options @The translated options.
 M.translate_opts = function(user_opts)
-    if user_opts.highlight_motion then ---@diagnostic disable-line: undefined-field
-        vim.deprecate("`config.highlight_motion`", "`config.highlight`", "v2.0.0", "nvim-surround")
-    end
-    if user_opts.delimiters then ---@diagnostic disable-line: undefined-field
-        vim.deprecate("`config.delimiters`", "`config.surrounds`", "v2.0.0", "nvim-surround")
-    end
-
     local opts = {}
     for key, value in pairs(user_opts) do
         if key == "surrounds" then

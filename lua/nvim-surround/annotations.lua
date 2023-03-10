@@ -23,7 +23,7 @@
                                                     Internal Options
 --]====================================================================================================================]
 
--- TODO: Come up with a better name for `change_table`|nil
+-- TODO: Come up with a better name for `change_table`?
 ---@class surround
 ---@field add add_func
 ---@field find find_func
@@ -53,8 +53,6 @@
 ---@field delete user_delete
 ---@field change user_change
 
--- TODO: Can we find a way to unify the `false|` into user_surrounds|nil It would make more sense, since `false` is
--- something that the user is directly passing to the setup function. See user_* for an example.
 ---@class user_options
 ---@field keymaps table<string, false|string>
 ---@field surrounds table<string, false|user_surround>

@@ -25,7 +25,7 @@ end
 
 -- Move the cursor to a location in the buffer, depending on the `move_cursor` setting.
 ---@param pos { first_pos: position, old_pos: position } Various positions in the buffer.
-M.reset_curpos = function(pos)
+M.restore_curpos = function(pos)
     -- TODO: Add a `last_pos` field for if `move_cursor` is set to "end"
     if config.get_opts().move_cursor == "begin" then
         M.set_curpos(pos.first_pos)
@@ -251,8 +251,8 @@ M.highlight_selection = function(selection)
 
     vim.highlight.range(
         0,
-        namespace, ---@diagnostic disable-line: param-type-mismatch
-        "NvimSurroundHighlight", ---@diagnostic disable-line: param-type-mismatch
+        namespace,
+        "NvimSurroundHighlight",
         { selection.first_pos[1] - 1, selection.first_pos[2] - 1 },
         { selection.last_pos[1] - 1, selection.last_pos[2] - 1 },
         { inclusive = true }

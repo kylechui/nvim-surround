@@ -63,7 +63,7 @@ M.normal_surround = function(args)
 
     buffer.insert_text(last_pos, args.delimiters[2])
     buffer.insert_text(first_pos, args.delimiters[1])
-    buffer.reset_curpos({
+    buffer.restore_curpos({
         first_pos = first_pos,
         old_pos = M.normal_curpos,
     })
@@ -138,7 +138,7 @@ M.visual_surround = function(args)
     end
 
     config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
-    buffer.reset_curpos({
+    buffer.restore_curpos({
         first_pos = first_pos,
         old_pos = curpos,
     })
@@ -168,7 +168,7 @@ M.delete_surround = function(args)
             selections.left.first_pos[1],
             selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
         )
-        buffer.reset_curpos({
+        buffer.restore_curpos({
             first_pos = selections.left.first_pos,
             old_pos = args.curpos,
         })
@@ -198,7 +198,7 @@ M.change_surround = function(args)
         -- Change the right selection first to ensure selection positions are correct
         buffer.change_selection(selections.right, delimiters[2])
         buffer.change_selection(selections.left, delimiters[1])
-        buffer.reset_curpos({
+        buffer.restore_curpos({
             first_pos = selections.left.first_pos,
             old_pos = args.curpos,
         })
