@@ -639,7 +639,6 @@ M.set_keymaps = function(args)
         opts = {
             buffer = args.buffer,
             desc = "Add a surrounding pair around the cursor (insert mode)",
-            remap = true,
             silent = true,
         },
     })
@@ -652,7 +651,6 @@ M.set_keymaps = function(args)
         opts = {
             buffer = args.buffer,
             desc = "Add a surrounding pair around the cursor, on new lines (insert mode)",
-            remap = true,
             silent = true,
         },
     })
@@ -666,7 +664,6 @@ M.set_keymaps = function(args)
             buffer = args.buffer,
             desc = "Add a surrounding pair around a motion (normal mode)",
             expr = true,
-            remap = true,
             silent = true,
         },
     })
@@ -680,7 +677,6 @@ M.set_keymaps = function(args)
             buffer = args.buffer,
             desc = "Add a surrounding pair around the current line (normal mode)",
             expr = true,
-            remap = true,
             silent = true,
         },
     })
@@ -694,7 +690,6 @@ M.set_keymaps = function(args)
             buffer = args.buffer,
             desc = "Add a surrounding pair around a motion, on new lines (normal mode)",
             expr = true,
-            remap = true,
             silent = true,
         },
     })
@@ -708,7 +703,6 @@ M.set_keymaps = function(args)
             buffer = args.buffer,
             desc = "Add a surrounding pair around the current line, on new lines (normal mode)",
             expr = true,
-            remap = true,
             silent = true,
         },
     })
@@ -719,7 +713,6 @@ M.set_keymaps = function(args)
         opts = {
             buffer = args.buffer,
             desc = "Add a surrounding pair around a visual selection",
-            remap = true,
             silent = true,
         },
     })
@@ -730,7 +723,6 @@ M.set_keymaps = function(args)
         opts = {
             buffer = args.buffer,
             desc = "Add a surrounding pair around a visual selection, on new lines",
-            remap = true,
             silent = true,
         },
     })
@@ -742,7 +734,6 @@ M.set_keymaps = function(args)
             buffer = args.buffer,
             desc = "Delete a surrounding pair",
             expr = true,
-            remap = true,
             silent = true,
         },
     })
@@ -754,7 +745,6 @@ M.set_keymaps = function(args)
             buffer = args.buffer,
             desc = "Change a surrounding pair",
             expr = true,
-            remap = true,
             silent = true,
         },
     })
