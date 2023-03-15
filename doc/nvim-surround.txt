@@ -245,19 +245,27 @@ buffer-local options that override the global options. This is particularly
 useful for setting up filetype-specific surrounds, i.e. by calling
 `require("nvim-surround").buffer_setup()` in a `ftplugin/` file.
 
-The main setup and buffer setup functions are strictly additive, so only the
-keys that are to be modified need to be provided. However, to disable any
-default behavior, the corresponding value needs to explicitly be set to
-`false`.
-
 Both functions take a table as an argument, full of configuration options.
 >lua
     require("nvim-surround").setup({
-        keymaps =       -- Defines plugin keymaps,
-        surrounds =     -- Defines surround keys and behavior,
-        aliases =       -- Defines aliases,
-        highlight =     -- Defines highlight behavior,
-        move_cursor =   -- Defines cursor behavior,
+        keymaps =       -- Defines plugin keymaps
+        surrounds =     -- Defines surround keys and behavior
+        aliases =       -- Defines aliases
+        highlight =     -- Defines highlight behavior
+        move_cursor =   -- Defines cursor behavior
+        indent_lines =  -- Defines line indentation behavior
+    })
+<
+
+The main setup and buffer setup functions are strictly additive, so only the
+keys that are to be modified need to be provided. To disable any default
+behavior, set the corresponding value to `false`. For example, to disable
+the `(` surround, call:
+>lua
+    require("nvim-surround").setup({
+        surrounds = {
+            ["("] = false,
+        }
     })
 <
 --------------------------------------------------------------------------------
@@ -282,6 +290,21 @@ The default configuration is as follows:
         delete = "ds",
         change = "cs",
     },
+<
+
+Additionally, there is a corresponding set of |<Plug>| mappings that one may
+use to set up their own custom keymaps:
+>vim
+    <Plug>(nvim-surround-insert)
+    <Plug>(nvim-surround-insert-line)
+    <Plug>(nvim-surround-normal)
+    <Plug>(nvim-surround-normal-cur)
+    <Plug>(nvim-surround-normal-line)
+    <Plug>(nvim-surround-normal-cur-line)
+    <Plug>(nvim-surround-visual)
+    <Plug>(nvim-surround-visual-line)
+    <Plug>(nvim-surround-delete)
+    <Plug>(nvim-surround-change)
 <
 --------------------------------------------------------------------------------
 3.2. Surrounds                                *nvim-surround.config.surrounds*
@@ -354,7 +377,7 @@ containing the following keys:
         left/right delimiter pair. For example, function calls are deleted
         via
 >lua
-        delete = "^([^=%s]+%()().-(%))()$",
+        delete = "^(.-%()().-(%))()$",
 <
         The Lua pattern matches the function name and opening  parenthesis for
         the left delimiter, and the closing parenthesis for the right
@@ -404,32 +427,34 @@ is to treat the character literally, and add/modify the surrounding pair:
 >lua
     invalid_key_behavior = {
         add = function(char)
+            if not char or char:find("%c") then
+                return nil
+            end
             return { { char }, { char } }
         end,
         find = function(char)
-            return config.get_selection({
+            if not char or char:find("%c") then
+                return nil
+            end
+            return M.get_selection({
                 pattern = vim.pesc(char) .. ".-" .. vim.pesc(char),
             })
         end,
         delete = function(char)
-            return config.get_selections({
+            if not char or char:find("%c") then
+                return nil
+            end
+            return M.get_selections({
                 char = char,
                 pattern = "^(.)().-(.)()$",
             })
         end,
-        change = {
-            target = function(char)
-                return config.get_selections({
-                    char = char,
-                    pattern = "^(.)().-(.)()$",
-                })
-            end,
-        },
     },
 <
 For example, `ysiw*` would surround a word with asterisks, and `ds*` would
 delete those same asterisks, despite the `*` surround not being configured by
-default.
+default. Note that control characters are valid inputs, with the exception of
+<C-c>, which cancels the input (same as <Esc>).
 
 --------------------------------------------------------------------------------
 3.3. Helper Functions                           *nvim-surround.config.helpers*
@@ -442,7 +467,7 @@ selection(s). For the sake of brevity we assume
                                             *nvim-surround.config.get_input()*
 config.get_input({prompt})
     Queries the user for input using {prompt}. Properly handles keyboard
-    interrupts and <Esc> for cancelling the input.
+    interrupts (i.e. <C-c>) and <Esc> for cancelling the input.
 
                                         *nvim-surround.config.get_selection()*
 config.get_selection({args})
