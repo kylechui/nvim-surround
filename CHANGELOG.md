@@ -1,3 +1,12 @@
+# Changelog
+
+## [2.0.1](https://github.com/kylechui/nvim-surround/compare/v2.0.0...v2.0.1) (2023-03-21)
+
+
+### Bug Fixes
+
+* **config:** User-defined surrounds fallback on defaults. ([29929a5](https://github.com/kylechui/nvim-surround/commit/29929a54a88f2764a47f1d19fdc7932eeaa576fb))
+
 ## [2.0.0](https://github.com/kylechui/nvim-surround/compare/v1.0.0...v2.0.0) (2023-03-11)
 
 ### ⚠ BREAKING CHANGES
