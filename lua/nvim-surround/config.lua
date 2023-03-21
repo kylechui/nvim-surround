@@ -568,14 +568,6 @@ M.translate_opts = function(user_opts)
 
     opts.surrounds = {}
     for char, user_surround in pairs(user_opts.surrounds) do
-        if char == "pairs" or char == "separators" then
-            vim.deprecate(
-                "`config.surrounds.pairs` and `config.surrounds.separators`",
-                "`config.surrounds`",
-                "v2.0.0",
-                "nvim-surround"
-            )
-        end
         -- Support Vim's notation for special characters
         char = vim.api.nvim_replace_termcodes(char, true, true, true)
         -- Special case translation for `invalid_key_behavior`
