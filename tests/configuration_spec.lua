@@ -205,6 +205,20 @@ describe("configuration", function()
         })
     end)
 
+    it("can partially define surrounds", function()
+        require("nvim-surround").buffer_setup({
+            surrounds = {
+                ["t"] = {
+                    delete = "^()().-()()$",
+                },
+            },
+        })
+
+        assert.are_not.same(require("nvim-surround.config").get_opts().surrounds.t.add, false)
+        assert.are_not.same(require("nvim-surround.config").get_opts().surrounds.t.find, false)
+        assert.are_not.same(require("nvim-surround.config").get_opts().surrounds.t.change, false)
+    end)
+
     it("can disable keymaps", function()
         require("nvim-surround").buffer_setup({
             keymaps = {

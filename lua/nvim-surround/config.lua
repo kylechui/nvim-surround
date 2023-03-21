@@ -412,7 +412,7 @@ end
 
 -- Returns the change key for the surround associated with a given character, if one exists.
 ---@param char string|nil The input character.
----@return { target: delete_func, replacement: add_func|nil }|nil @A table holding the target/replacment functions.
+---@return change_table @A table holding the target/replacement functions.
 ---@nodiscard
 M.get_change = function(char)
     char = M.get_alias(char)
@@ -430,16 +430,12 @@ end
 
 -- Translates the user-provided surround.add into the internal form.
 ---@param user_add user_add The user-provided add key.
----@return false|add_func @The translated add key.
+---@return false|add_func|nil @The translated add key.
 M.translate_add = function(user_add)
-    if not user_add then
-        return false
-    end
-    -- If the add key is already in internal form, return
-    if type(user_add) == "function" then
+    if type(user_add) ~= "table" then
         return user_add
     end
-    -- Otherwise, wrap the string tables in a function
+    -- If the input is given as a pair of strings, or pair of string lists, wrap it in a function
     return function()
         return {
             functional.to_list(user_add[1]),
@@ -450,12 +446,9 @@ end
 
 -- Translates the user-provided surround.find into the internal form.
 ---@param user_find user_find The user-provided find key.
----@return false|find_func @The translated find key.
+---@return false|find_func|nil @The translated find key.
 M.translate_find = function(user_find)
-    if not user_find then
-        return false
-    end
-    if type(user_find) == "function" then
+    if type(user_find) ~= "string" then
         return user_find
     end
     -- Treat the string as a Lua pattern, and find the selection
@@ -467,12 +460,9 @@ end
 -- Translates the user-provided surround.delete into the internal form.
 ---@param char string The character used to activate the surround.
 ---@param user_delete user_delete The user-provided delete key.
----@return false|delete_func @The translated delete key.
+---@return false|delete_func|nil @The translated delete key.
 M.translate_delete = function(char, user_delete)
-    if not user_delete then
-        return false
-    end
-    if type(user_delete) == "function" then
+    if type(user_delete) ~= "string" then
         return user_delete
     end
     -- Treat the string as a Lua pattern, and find the selection
@@ -486,11 +476,8 @@ end
 ---@param user_change user_change|nil The user-provided change key.
 ---@return false|change_table|nil @The translated change key.
 M.translate_change = function(char, user_change)
-    if user_change == nil then
-        return nil
-    end
-    if user_change == false then
-        return false
+    if type(user_change) ~= "table" then
+        return user_change
     end
     return {
         target = M.translate_delete(char, user_change.target),
