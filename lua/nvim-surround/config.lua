@@ -367,8 +367,15 @@ M.get_delimiters = function(char, line_mode)
     end)()
     -- Add new lines if the addition is done line-wise
     if delimiters and line_mode then
-        table.insert(delimiters[2], 1, "")
-        table.insert(delimiters[1], "")
+        local lhs = delimiters[1]
+        local rhs = delimiters[2]
+
+        -- Trim whitespace after the leading delimiter and before the trailing delimiter
+        lhs[#lhs] = lhs[#lhs]:gsub("%s+$", "")
+        rhs[1] = rhs[1]:gsub("^%s+", "")
+
+        table.insert(rhs, 1, "")
+        table.insert(lhs, "")
     end
 
     return delimiters

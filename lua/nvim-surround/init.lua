@@ -80,19 +80,17 @@ M.visual_surround = function(args)
     local curpos = buffer.get_curpos()
     -- Get a character and selection from the user
     local ins_char = input.get_char()
+
+    if vim.fn.visualmode() == "V" then
+        args.line_mode = true
+    end
     local delimiters = config.get_delimiters(ins_char, args.line_mode)
     local first_pos, last_pos = buffer.get_mark("<"), buffer.get_mark(">")
     if not delimiters or not first_pos or not last_pos then
         return
     end
 
-    -- Add the right delimiter first to ensure correct indexing
-    if vim.fn.visualmode() == "V" then -- Visual line mode case (need to create new lines)
-        table.insert(delimiters[2], 1, "")
-        table.insert(delimiters[1], "")
-        buffer.insert_text({ last_pos[1], #buffer.get_line(last_pos[1]) + 1 }, delimiters[2])
-        buffer.insert_text(first_pos, delimiters[1])
-    elseif vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
+    if vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
         if vim.o.selection == "exclusive" then
             last_pos[2] = last_pos[2] - 1
         end
