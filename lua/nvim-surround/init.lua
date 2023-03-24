@@ -193,6 +193,34 @@ M.change_surround = function(args)
     local selections = utils.get_nearest_selections(args.del_char, "change")
     local delimiters = args.add_delimiters()
     if selections and delimiters then
+        -- Avoid adding any, and remove any existing whitespace after the
+        -- opening delimiter if only whitespace exists between it and the end
+        -- of the line. Avoid adding or removing leading whitespace before the
+        -- closing delimiter if only whitespace exists between it and the
+        -- beginning of the line.
+
+        -- Column number of end of opening selection
+        local xpos = selections.left.last_pos[2]
+        local space_begin, space_end = buffer.get_line(selections.left.last_pos[1]):find("%s*$")
+
+        if space_begin - 1 <= xpos then -- Whitespace is adjacent to opening delimiter
+            -- Trim trailing whitespace from opening delimiter
+            delimiters[1][#delimiters[1]] = delimiters[1][#delimiters[1]]:gsub("%s+$", "")
+            -- Adjust selection to include trailing whitespace, so it gets removed
+            selections.left.last_pos[2] = space_end
+        end
+
+        -- Column number of beginning of closing selection
+        xpos = selections.right.first_pos[2]
+        space_begin, space_end = buffer.get_line(selections.right.first_pos[1]):find("^%s*")
+
+        if space_end + 1 >= xpos then -- Whitespace is adjacent to closing delimiter
+            -- Trim leading whitespace from closing delimiter
+            delimiters[2][1] = delimiters[2][1]:gsub("^%s+", "")
+            -- Adjust selection to exclude leading whitespace, so it remains unchanged
+            selections.right.first_pos[2] = space_end + 1
+        end
+
         -- Change the right selection first to ensure selection positions are correct
         buffer.change_selection(selections.right, delimiters[2])
         buffer.change_selection(selections.left, delimiters[1])
