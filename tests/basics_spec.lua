@@ -147,6 +147,84 @@ describe("nvim-surround", function()
         check_lines({ "(sample_text)" })
     end)
 
+    it("properly handles whitespace next to line boundaries", function()
+        set_lines({ "sample_text" })
+        vim.cmd("normal ySS{")
+        check_lines({ "{", "sample_text", "}" })
+        vim.cmd("normal cs}[")
+        check_lines({ "[", "sample_text", "]" })
+
+        set_lines({ "(", "    sample_text", ")" })
+        vim.cmd("normal cs)<")
+        check_lines({ "<", "    sample_text", ">" })
+
+        set_lines({
+            "    <texta",
+            "        textb",
+            "    >",
+        })
+        vim.cmd("normal cs><")
+        check_lines({
+            "    < texta",
+            "        textb",
+            "    >",
+        })
+        vim.cmd("normal cs>{")
+        check_lines({
+            "    {  texta",
+            "        textb",
+            "    }",
+        })
+        vim.cmd("normal cs{]")
+        check_lines({
+            "    [ texta",
+            "        textb",
+            "    ]",
+        })
+        vim.cmd("normal cs[)")
+        check_lines({
+            "    (texta",
+            "        textb",
+            "    )",
+        })
+
+        set_lines({
+            "    {texta",
+            "        textb",
+            "    textc}",
+        })
+        vim.cmd("normal cs{{")
+        check_lines({
+            "    { texta",
+            "        textb",
+            "    textc }",
+        })
+        vim.cmd("normal cs{{")
+        check_lines({
+            "    { texta",
+            "        textb",
+            "    textc }",
+        })
+        vim.cmd("normal cs}{")
+        check_lines({
+            "    {  texta",
+            "        textb",
+            "    textc  }",
+        })
+        vim.cmd("normal cs{}")
+        check_lines({
+            "    { texta",
+            "        textb",
+            "    textc }",
+        })
+        vim.cmd("normal cs{}")
+        check_lines({
+            "    {texta",
+            "        textb",
+            "    textc}",
+        })
+    end)
+
     it("can surround charwise visual selections", function()
         set_lines({ "this is", "a full", "sentence" })
         set_curpos({ 1, 2 })
