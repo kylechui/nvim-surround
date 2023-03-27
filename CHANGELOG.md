@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.3](https://github.com/kylechui/nvim-surround/compare/v2.0.2...v2.0.3) (2023-03-27)
+
+
+### Bug Fixes
+
+* Restore window view after finding nearest selections. ([#227](https://github.com/kylechui/nvim-surround/issues/227)) ([97f7309](https://github.com/kylechui/nvim-surround/commit/97f7309273fde2a81937ab3b8bdeabdf2787283c))
+
 ## [2.0.2](https://github.com/kylechui/nvim-surround/compare/v2.0.1...v2.0.2) (2023-03-27)
 
 
