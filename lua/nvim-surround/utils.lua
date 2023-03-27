@@ -20,6 +20,7 @@ M.get_nearest_selections = function(char, action)
     end
 
     local curpos = buffer.get_curpos()
+    local winview = vim.fn.winsaveview()
     local selections_list = {}
     -- Iterate through all possible selections for each aliased character, and find the closest pair
     for _, c in ipairs(chars) do
@@ -37,8 +38,10 @@ M.get_nearest_selections = function(char, action)
         -- Reset the cursor position
         buffer.set_curpos(curpos)
     end
-    local nearest_selections = M.filter_selections_list(selections_list)
+    -- Reset the window view (in case some delimiters were off screen)
+    vim.fn.winrestview(winview)
 
+    local nearest_selections = M.filter_selections_list(selections_list)
     return nearest_selections
 end
 
