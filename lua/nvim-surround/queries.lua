@@ -50,7 +50,8 @@ M.filter_selection = function(sexpr, capture, parent_selection)
     local range = { ts_utils.get_vim_range({ parent_node:range() }) }
     local lang_tree = ts_parsers.get_parser(0)
     local ok, parsed_query = pcall(function()
-        return vim.treesitter.parse_query(lang_tree:lang(), sexpr)
+        return vim.treesitter.query.parse and vim.treesitter.query.parse(lang_tree:lang(), sexpr)
+            or vim.treesitter.parse_query(lang_tree:lang(), sexpr)
     end)
     if not ok or not parent_node then
         return {}

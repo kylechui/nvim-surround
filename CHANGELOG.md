@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/kylechui/nvim-surround/compare/v2.0.1...v2.0.2) (2023-03-27)
+
+
+### Bug Fixes
+
+* Use `vim.treesitter.query.parse()`. ([#228](https://github.com/kylechui/nvim-surround/issues/228)) ([b3abce1](https://github.com/kylechui/nvim-surround/commit/b3abce1d8c4f02d40df9a902ec1e38e0eed51f76))
+
 ## [2.0.1](https://github.com/kylechui/nvim-surround/compare/v2.0.0...v2.0.1) (2023-03-21)
 
 
