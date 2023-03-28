@@ -199,25 +199,19 @@ M.change_surround = function(args)
         -- closing delimiter if only whitespace exists between it and the
         -- beginning of the line.
 
-        -- Column number of end of opening selection
-        local xpos = selections.left.last_pos[2]
         local space_begin, space_end = buffer.get_line(selections.left.last_pos[1]):find("%s*$")
-
-        if space_begin - 1 <= xpos then -- Whitespace is adjacent to opening delimiter
+        if space_begin - 1 <= selections.left.last_pos[2] then -- Whitespace is adjacent to opening delimiter
             -- Trim trailing whitespace from opening delimiter
             delimiters[1][#delimiters[1]] = delimiters[1][#delimiters[1]]:gsub("%s+$", "")
-            -- Adjust selection to include trailing whitespace, so it gets removed
+            -- Grow selection end to include trailing whitespace, so it gets removed
             selections.left.last_pos[2] = space_end
         end
 
-        -- Column number of beginning of closing selection
-        xpos = selections.right.first_pos[2]
         space_begin, space_end = buffer.get_line(selections.right.first_pos[1]):find("^%s*")
-
-        if space_end + 1 >= xpos then -- Whitespace is adjacent to closing delimiter
+        if space_end + 1 >= selections.right.first_pos[2] then -- Whitespace is adjacent to closing delimiter
             -- Trim leading whitespace from closing delimiter
             delimiters[2][1] = delimiters[2][1]:gsub("^%s+", "")
-            -- Adjust selection to exclude leading whitespace, so it remains unchanged
+            -- Shrink selection beginning to exclude leading whitespace, so it remains unchanged
             selections.right.first_pos[2] = space_end + 1
         end
 
