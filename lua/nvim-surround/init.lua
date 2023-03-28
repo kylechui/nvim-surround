@@ -80,19 +80,17 @@ M.visual_surround = function(args)
     local curpos = buffer.get_curpos()
     -- Get a character and selection from the user
     local ins_char = input.get_char()
+
+    if vim.fn.visualmode() == "V" then
+        args.line_mode = true
+    end
     local delimiters = config.get_delimiters(ins_char, args.line_mode)
     local first_pos, last_pos = buffer.get_mark("<"), buffer.get_mark(">")
     if not delimiters or not first_pos or not last_pos then
         return
     end
 
-    -- Add the right delimiter first to ensure correct indexing
-    if vim.fn.visualmode() == "V" then -- Visual line mode case (need to create new lines)
-        table.insert(delimiters[2], 1, "")
-        table.insert(delimiters[1], "")
-        buffer.insert_text({ last_pos[1], #buffer.get_line(last_pos[1]) + 1 }, delimiters[2])
-        buffer.insert_text(first_pos, delimiters[1])
-    elseif vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
+    if vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
         if vim.o.selection == "exclusive" then
             last_pos[2] = last_pos[2] - 1
         end
@@ -195,6 +193,28 @@ M.change_surround = function(args)
     local selections = utils.get_nearest_selections(args.del_char, "change")
     local delimiters = args.add_delimiters()
     if selections and delimiters then
+        -- Avoid adding any, and remove any existing whitespace after the
+        -- opening delimiter if only whitespace exists between it and the end
+        -- of the line. Avoid adding or removing leading whitespace before the
+        -- closing delimiter if only whitespace exists between it and the
+        -- beginning of the line.
+
+        local space_begin, space_end = buffer.get_line(selections.left.last_pos[1]):find("%s*$")
+        if space_begin - 1 <= selections.left.last_pos[2] then -- Whitespace is adjacent to opening delimiter
+            -- Trim trailing whitespace from opening delimiter
+            delimiters[1][#delimiters[1]] = delimiters[1][#delimiters[1]]:gsub("%s+$", "")
+            -- Grow selection end to include trailing whitespace, so it gets removed
+            selections.left.last_pos[2] = space_end
+        end
+
+        space_begin, space_end = buffer.get_line(selections.right.first_pos[1]):find("^%s*")
+        if space_end + 1 >= selections.right.first_pos[2] then -- Whitespace is adjacent to closing delimiter
+            -- Trim leading whitespace from closing delimiter
+            delimiters[2][1] = delimiters[2][1]:gsub("^%s+", "")
+            -- Shrink selection beginning to exclude leading whitespace, so it remains unchanged
+            selections.right.first_pos[2] = space_end + 1
+        end
+
         -- Change the right selection first to ensure selection positions are correct
         buffer.change_selection(selections.right, delimiters[2])
         buffer.change_selection(selections.left, delimiters[1])

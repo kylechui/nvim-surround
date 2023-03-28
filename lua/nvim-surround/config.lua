@@ -352,23 +352,20 @@ end
 ---@return delimiter_pair|nil @A pair of delimiters for the given input, or nil if not applicable.
 ---@nodiscard
 M.get_delimiters = function(char, line_mode)
-    if not char then
-        return nil
-    end
-
     char = M.get_alias(char)
     -- Get the delimiters, using invalid_key_behavior if the add function is undefined for the character
-    local delimiters = (function()
-        if M.get_add(char) then
-            return M.get_add(char)(char)
-        else
-            return M.get_opts().surrounds.invalid_key_behavior.add(char)
-        end
-    end)()
+    local delimiters = M.get_add(char)(char)
     -- Add new lines if the addition is done line-wise
     if delimiters and line_mode then
-        table.insert(delimiters[2], 1, "")
-        table.insert(delimiters[1], "")
+        local lhs = delimiters[1]
+        local rhs = delimiters[2]
+
+        -- Trim whitespace after the leading delimiter and before the trailing delimiter
+        lhs[#lhs] = lhs[#lhs]:gsub("%s+$", "")
+        rhs[1] = rhs[1]:gsub("^%s+", "")
+
+        table.insert(rhs, 1, "")
+        table.insert(lhs, "")
     end
 
     return delimiters
