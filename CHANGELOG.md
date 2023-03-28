@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.4](https://github.com/kylechui/nvim-surround/compare/v2.0.3...v2.0.4) (2023-03-28)
+
+
+### Bug Fixes
+
+* Whitespace handling when delimiters are on own line. ([#226](https://github.com/kylechui/nvim-surround/issues/226)) ([808fc7d](https://github.com/kylechui/nvim-surround/commit/808fc7d5899d88065ba4a4360f04f76cf9ff94b1))
+
 ## [2.0.3](https://github.com/kylechui/nvim-surround/compare/v2.0.2...v2.0.3) (2023-03-27)
 
 
