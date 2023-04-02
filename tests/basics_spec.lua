@@ -663,4 +663,22 @@ describe("nvim-surround", function()
             "Hello, (world)!",
         })
     end)
+
+    it("doesn't re-indent visual surrounds for one line", function()
+        set_lines({
+            "data Foo = Foo",
+            "  { fooA :: !Decimal",
+            "  , fooB :: !Decimal",
+            "  }",
+        })
+        vim.opt.cindent = true
+        set_curpos({ 3, 14 })
+        vim.cmd("normal viwS)")
+        check_lines({
+            "data Foo = Foo",
+            "  { fooA :: !Decimal",
+            "  , fooB :: !(Decimal)",
+            "  }",
+        })
+    end)
 end)
