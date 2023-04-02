@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.5](https://github.com/kylechui/nvim-surround/compare/v2.0.4...v2.0.5) (2023-04-02)
+
+
+### Bug Fixes
+
+* Don't re-indent single-line surrounds. ([2fca63c](https://github.com/kylechui/nvim-surround/commit/2fca63c88a6b827019ad9d01f20e30b6499e1d45))
+
 ## [2.0.4](https://github.com/kylechui/nvim-surround/compare/v2.0.3...v2.0.4) (2023-03-28)
 
 
