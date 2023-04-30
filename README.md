@@ -35,6 +35,9 @@ Surround selections, stylishly :sunglasses:
 
 ## :package: Installation
 
+Install this plugin using your favorite plugin manager, and then call
+`require("nvim-surround").setup()`.
+
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
