@@ -52,10 +52,10 @@ end
 
 -- Sets the position of a mark, 1-indexed.
 ---@param mark string The mark whose position will be returned.
----@param position position|nil The position that the mark should be set to.
-M.set_mark = function(mark, position)
-    if position then
-        vim.api.nvim_buf_set_mark(0, mark, position[1], position[2] - 1, {})
+---@param pos position|nil The position that the mark should be set to.
+M.set_mark = function(mark, pos)
+    if pos and M.is_valid_pos(pos) then
+        vim.api.nvim_buf_set_mark(0, mark, pos[1], pos[2] - 1, {})
     end
 end
 
@@ -165,6 +165,20 @@ end
 --[====================================================================================================================[
                                             Buffer contents helper functions
 --]====================================================================================================================]
+
+-- Returns whether or not the position is inside the current buffer.
+---@param pos position The input position.
+---@return boolean @Whether or not the position is inside the buffer.
+---@nodiscard
+M.is_valid_pos = function(pos)
+    if pos[1] < 1 or pos[1] > vim.api.nvim_buf_line_count(0) then
+        return false
+    end
+    if pos[2] < 1 or pos[2] > #M.get_line(pos[1]) then
+        return false
+    end
+    return true
+end
 
 -- Gets a set of lines from the buffer, inclusive and 1-indexed.
 ---@param start integer The starting line.
