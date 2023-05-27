@@ -432,6 +432,48 @@ describe("nvim-surround", function()
         check_lines({ "[", "", "]" })
     end)
 
+    it("can change delimiter pairs on new lines", function()
+        set_lines({
+            "require'nvim-surround'.setup(args)",
+        })
+        set_curpos({ 1, 29 })
+        vim.cmd("normal cS))")
+        check_lines({
+            "require'nvim-surround'.setup(",
+            "args",
+            ")",
+        })
+        set_curpos({ 2, 1 })
+        vim.cmd([[normal ysab}]])
+        set_curpos({ 1, 29 })
+        vim.cmd("normal cS}]")
+        check_lines({
+            "require'nvim-surround'.setup[",
+            "(",
+            "args",
+            ")",
+            "]",
+        })
+        vim.cmd("normal cS]{")
+        check_lines({
+            "require'nvim-surround'.setup{",
+            "",
+            "(",
+            "args",
+            ")",
+            "",
+            "}",
+        })
+
+        set_lines({ "()" })
+        vim.cmd("normal cSbb")
+        check_lines({ "(", "", ")" })
+
+        set_lines({ "{", "", "}" })
+        vim.cmd("normal cSBB")
+        check_lines({ "{", "", "", "", "}" })
+    end)
+
     it("can handle invalid key behavior", function()
         set_lines({ "sample text" })
         vim.cmd("normal yss|")
