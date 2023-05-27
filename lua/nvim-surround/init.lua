@@ -176,13 +176,13 @@ M.delete_surround = function(args)
 end
 
 -- Change a surrounding delimiter pair, if it exists.
----@param args { curpos: position, del_char: string, add_delimiters: add_func }|nil
+---@param args { curpos: position, del_char: string, add_delimiters: add_func, line_mode: boolean }
 ---@return "g@l"|nil
 M.change_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
-    if not args then
+    if not args.del_char or not args.add_delimiters then
         -- Clear the change cache (since it was user-called)
-        cache.change = {}
+        cache.change = { line_mode = args.line_mode }
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.change_callback"
         return "g@l"
@@ -222,6 +222,13 @@ M.change_surround = function(args)
             first_pos = selections.left.first_pos,
             old_pos = args.curpos,
         })
+
+        if args.line_mode then
+            local first_pos = selections.left.first_pos
+            local last_pos = selections.right.last_pos
+
+            config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
+        end
     end
 
     cache.set_callback("v:lua.require'nvim-surround'.change_callback")
@@ -328,7 +335,7 @@ M.change_callback = function()
             delimiters = change.replacement()
         else
             ins_char = input.get_char()
-            delimiters = config.get_delimiters(ins_char, false) -- TODO: Maybe add line-wise change surround?
+            delimiters = config.get_delimiters(ins_char, cache.change.line_mode)
         end
 
         -- Clear the highlights after getting the replacement surround
@@ -343,6 +350,7 @@ M.change_callback = function()
             add_delimiters = function()
                 return delimiters
             end,
+            line_mode = cache.change.line_mode,
         }
     end
     local args = vim.deepcopy(cache.change)
