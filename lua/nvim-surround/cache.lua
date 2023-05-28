@@ -2,7 +2,7 @@ local M = {}
 
 -- These variables hold cache values for dot-repeating the three actions
 
----@type { line_mode: boolean }
+---@type { delimiters: string[][]|nil, line_mode: boolean }
 M.normal = {}
 ---@type { char: string }
 M.delete = {}
