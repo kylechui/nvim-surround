@@ -16,6 +16,7 @@ M.default_opts = {
         visual_line = "gS",
         delete = "ds",
         change = "cs",
+        change_line = "cS",
     },
     surrounds = {
         ["("] = {
@@ -706,10 +707,25 @@ M.set_keymaps = function(args)
     M.set_keymap({
         mode = "n",
         lhs = "<Plug>(nvim-surround-change)",
-        rhs = require("nvim-surround").change_surround,
+        rhs = function()
+            return require("nvim-surround").change_surround({ line_mode = false })
+        end,
         opts = {
             buffer = args.buffer,
             desc = "Change a surrounding pair",
+            expr = true,
+            silent = true,
+        },
+    })
+    M.set_keymap({
+        mode = "n",
+        lhs = "<Plug>(nvim-surround-change-line)",
+        rhs = function()
+            return require("nvim-surround").change_surround({ line_mode = true })
+        end,
+        opts = {
+            buffer = args.buffer,
+            desc = "Change a surrounding pair, putting replacements on new lines",
             expr = true,
             silent = true,
         },
@@ -804,6 +820,15 @@ M.set_keymaps = function(args)
         rhs = "<Plug>(nvim-surround-change)",
         opts = {
             desc = "Change a surrounding pair",
+        },
+    })
+    M.set_keymap({
+        name = "change",
+        mode = "n",
+        lhs = M.get_opts().keymaps.change_line,
+        rhs = "<Plug>(nvim-surround-change-line)",
+        opts = {
+            desc = "Change a surrounding pair, putting replacements on new lines",
         },
     })
 end
