@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.1.0](https://github.com/kylechui/nvim-surround/compare/v2.0.5...v2.1.0) (2023-05-28)
+
+
+### Features
+
+* Implement `change_line` mapping. ([ff9c981](https://github.com/kylechui/nvim-surround/commit/ff9c981202f4bd45dd3c8e6c6aad965d437a7cb8))
+
+
+### Bug Fixes
+
+* **buffer:** `set_mark` should check for validity of input. ([841f83f](https://github.com/kylechui/nvim-surround/commit/841f83fd458de37c2a5bd63cece1088448529b6c))
+
 ## [2.0.5](https://github.com/kylechui/nvim-surround/compare/v2.0.4...v2.0.5) (2023-04-02)
 
 
