@@ -97,14 +97,39 @@ line via `yss[char]`, ignoring leading and trailing whitespace. The *yS* and
 *ySS* operators are analogous to |ys| and |yss|, but add the delimiter pair on
 new lines.
 
+    Old text                    Command         New text ~
+    hel*lo world                yss"            "hello world"
+    some content                ySStp           <p>
+                                                some content
+                                                </p>
+
 The *<C-g>S* insert-mode operator is analogous to |<C-g>s|, but adds the
 delimiter pair on new lines.
+
+    Old text                    Command         New text ~
+    func_name*                  <C-g>S)         func(
+                                                	*
+                                                )
+
+The *cS* normal-mode operator is analogous to |cs|, but adds the replacement
+delimiter pair on new lines.
+
+    Old text                    Command         New text ~
+    func(a*rgs)                 cS))            func(
+                                                args
+                                                )
 
 For the visual-mode `S` map, the type of visual mode determines how the
 delimiter pair is added
 * |charwise-visual|: Adds the pair around the selection
 * |linewise-visual|: Adds the pair around the selection, on new lines
 * |blockwise-visual|: Adds the pair around the visual block, once per line
+
+Note: For surrounds that add a delimiter pair on new lines, |nvim-surround|
+re-indents the text inside the pair (which may be dependent on filetype!). For
+example, the contents of an HTML tag pair may not be indented in a text file,
+but might be in an HTML file. See |nvim-surround.config.indent_lines| for
+details.
 
 --------------------------------------------------------------------------------
 2.3. Default Pairs                               *nvim-surround.default_pairs*
