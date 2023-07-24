@@ -10,11 +10,6 @@ local M = {}
 ---@param user_opts user_options|nil The user options.
 M.setup = function(user_opts)
     config.setup(user_opts)
-    
-    vim.keymap.set('n', '.', function()
-      M.normal_curpos = buffer.get_curpos()
-      vim.cmd [[norm! .]]
-    end, {remap = true})
 end
 
 -- Configure the plugin on a per-buffer basis.

@@ -843,6 +843,13 @@ M.setup = function(user_opts)
     if M.user_opts.highlight.duration then
         vim.cmd.highlight("default link NvimSurroundHighlight Visual")
     end
+    -- Intercept dot repeat action, remembering cursor position
+    local buffer = require("nvim-surround.buffer")
+    local nvim_surround = require("nvim-surround")
+    vim.keymap.set("n", ".", function()
+      nvim_surround.normal_curpos = buffer.get_curpos()
+      vim.cmd.normal({ ".", bang = true })
+    end, {})
 end
 
 -- Setup the user options for the current buffer.
