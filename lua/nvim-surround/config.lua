@@ -846,10 +846,11 @@ M.setup = function(user_opts)
     -- Intercept dot repeat action, remembering cursor position
     local buffer = require("nvim-surround.buffer")
     local nvim_surround = require("nvim-surround")
-    vim.keymap.set("n", ".", function()
-      nvim_surround.normal_curpos = buffer.get_curpos()
-      vim.cmd.normal({ ".", bang = true })
-    end, {})
+    vim.on_key(function(key)
+      if key == "." and vim.fn.reg_executing() == "" and vim.fn.reg_recording() == "" then
+        nvim_surround.normal_curpos = buffer.get_curpos()
+      end
+    end)
 end
 
 -- Setup the user options for the current buffer.
