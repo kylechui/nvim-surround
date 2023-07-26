@@ -847,9 +847,9 @@ M.setup = function(user_opts)
     local buffer = require("nvim-surround.buffer")
     local nvim_surround = require("nvim-surround")
     vim.on_key(function(key)
-      if key == "." and vim.fn.reg_executing() == "" and vim.fn.reg_recording() == "" then
-        nvim_surround.normal_curpos = buffer.get_curpos()
-      end
+        if key == "." and not nvim_surround.pending_surround then
+            nvim_surround.normal_curpos = buffer.get_curpos()
+        end
     end)
 end
 

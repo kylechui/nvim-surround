@@ -44,6 +44,8 @@ end
 
 -- Holds the current position of the cursor, since calling opfunc will erase it.
 M.normal_curpos = nil
+-- Detects if plugin is currently prompting the user for a motion / delimiter.
+M.pending_surround = false
 -- Add delimiters around a motion.
 ---@param args { selection: selection, delimiters: delimiter_pair, line_mode: boolean }
 ---@return "g@"|nil
@@ -53,6 +55,7 @@ M.normal_surround = function(args)
         -- Clear the normal cache (since it was user-called)
         cache.normal = { line_mode = args.line_mode }
         M.normal_curpos = buffer.get_curpos()
+        M.pending_surround = true
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.normal_callback"
         return "g@"
@@ -284,6 +287,8 @@ M.normal_callback = function(mode)
     end
     -- Clear the highlights right after the action is no longer pending
     buffer.clear_highlights()
+    -- Mark that the action is no longer pending
+    M.pending_surround = false
 
     -- Call the normal surround function with some arguments
     M.normal_surround({
