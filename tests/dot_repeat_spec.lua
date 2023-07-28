@@ -8,6 +8,9 @@ end
 local check_lines = function(lines)
     assert.are.same(lines, vim.api.nvim_buf_get_lines(0, 0, -1, false))
 end
+local check_curpos = function(pos)
+    assert.are.same({ pos[1], pos[2] - 1 }, vim.api.nvim_win_get_cursor(0))
+end
 
 describe("dot-repeat", function()
     before_each(function()
@@ -134,11 +137,95 @@ describe("dot-repeat", function()
         })
         vim.cmd("normal csfnew_name" .. cr)
         vim.cmd("normal j.j.j.")
-        set_lines({
+        check_lines({
             "new_name(here)",
             "new_name(are)",
             "new_name(some)",
             "new_name(lines)",
         })
+    end)
+
+    it("can perform a dot-repeat while maintaining the original cursor position", function()
+        require("nvim-surround").buffer_setup({
+            move_cursor = false,
+        })
+
+        set_lines({
+            "'here'",
+            "'there is'",
+            "'another'",
+            "'line'",
+        })
+        set_curpos({ 1, 3 })
+        vim.cmd("normal ds'")
+        vim.cmd("normal j.j.j.3k")
+        check_curpos({ 1, 3 })
+    end)
+
+    it("can perform a dot-repeat while keeping cursor position intact when inserting a surround", function()
+        require("nvim-surround").buffer_setup({
+            move_cursor = false,
+        })
+
+        set_lines({
+            "here",
+            "there is",
+            "another",
+            "line",
+        })
+        set_curpos({ 1, 3 })
+        vim.cmd("normal ysiwfhi" .. cr)
+        vim.cmd("normal j.j.j.3k")
+        check_curpos({ 1, 3 })
+    end)
+
+    it("still moves cursor to the end if the move_cursor property is true", function()
+        require("nvim-surround").buffer_setup({
+            move_cursor = true,
+        })
+
+        set_lines({
+            "here",
+            "there is",
+            "another",
+            "line",
+        })
+        set_curpos({ 1, 3 })
+        vim.cmd("normal ysiw'")
+        vim.cmd("normal j.j.j.3k")
+        check_curpos({ 1, 1 })
+    end)
+
+    it("still stores cursor position properly when surrounding the text with a dot", function()
+        require("nvim-surround").buffer_setup({
+            move_cursor = false,
+        })
+
+        set_lines({
+            "here",
+            "there is",
+            "another",
+            "line",
+        })
+        set_curpos({ 1, 3 })
+        vim.cmd("normal ysiw.")
+        vim.cmd("normal j.j.j.3k")
+        check_curpos({ 1, 3 })
+    end)
+
+    it("does not have improper dot-repeat cursor functionality when other dots are inputted", function()
+        require("nvim-surround").buffer_setup({
+            move_cursor = false,
+        })
+
+        set_lines({
+            "this is a line",
+            "there is another",
+        })
+        set_curpos({ 1, 3 })
+        vim.cmd("normal ysiw)")
+        vim.cmd("echo 'this. is. a. dot.'")
+        vim.cmd("normal j.")
+        check_curpos({ 2, 3 })
     end)
 end)
