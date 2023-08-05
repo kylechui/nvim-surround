@@ -74,6 +74,7 @@ M.normal_surround = function(args)
     if args.line_mode then
         config.get_opts().indent_lines(first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
     end
+    M.pending_surround = false
 end
 
 -- Add delimiters around a visual selection.
@@ -287,8 +288,6 @@ M.normal_callback = function(mode)
     end
     -- Clear the highlights right after the action is no longer pending
     buffer.clear_highlights()
-    -- Mark that the action is no longer pending
-    M.pending_surround = false
 
     -- Call the normal surround function with some arguments
     M.normal_surround({
