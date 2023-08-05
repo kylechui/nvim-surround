@@ -145,7 +145,7 @@ describe("dot-repeat", function()
         })
     end)
 
-    it("can perform a dot-repeat while maintaining the original cursor position", function()
+    it("can perform a dot-repeat deletion without moving the cursor", function()
         require("nvim-surround").buffer_setup({
             move_cursor = false,
         })
@@ -162,7 +162,7 @@ describe("dot-repeat", function()
         check_curpos({ 1, 3 })
     end)
 
-    it("can perform a dot-repeat while keeping cursor position intact when inserting a surround", function()
+    it("can perform a dot-repeat addition without moving the cursor", function()
         require("nvim-surround").buffer_setup({
             move_cursor = false,
         })
@@ -179,7 +179,7 @@ describe("dot-repeat", function()
         check_curpos({ 1, 3 })
     end)
 
-    it("still moves cursor to the end if the move_cursor property is true", function()
+    it("can perform a dot-repeat addition, moving the cursor to the beginning of the surround", function()
         require("nvim-surround").buffer_setup({
             move_cursor = true,
         })
@@ -196,7 +196,7 @@ describe("dot-repeat", function()
         check_curpos({ 1, 1 })
     end)
 
-    it("still stores cursor position properly when surrounding the text with a dot", function()
+    it("can perform a dot-repeat addition (containing `.`) without moving the cursor", function()
         require("nvim-surround").buffer_setup({
             move_cursor = false,
         })
@@ -224,7 +224,7 @@ describe("dot-repeat", function()
         })
         set_curpos({ 1, 3 })
         vim.cmd("normal ysiw)")
-        vim.cmd("echo 'this. is. a. dot.'")
+        vim.cmd("normal :echo 'this. is. a. dot.'" .. cr)
         vim.cmd("normal j.")
         check_curpos({ 2, 3 })
     end)
