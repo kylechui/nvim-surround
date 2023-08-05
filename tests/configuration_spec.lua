@@ -1,4 +1,5 @@
 local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
+local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
 local get_curpos = function()
     local curpos = vim.api.nvim_win_get_cursor(0)
     return { curpos[1], curpos[2] + 1 }
@@ -229,5 +230,20 @@ describe("configuration", function()
         set_lines({ "Hello, world!" })
         vim.cmd("normal ysiwb")
         check_lines({ "wbHello, world!" })
+    end)
+
+    it("can cancel surrounds, without moving the cursor", function()
+        require("nvim-surround").buffer_setup({
+            move_cursor = false,
+        })
+
+        set_lines({ "(some 'text')" })
+        set_curpos({ 1, 5 })
+        vim.cmd("normal ysiw" .. esc)
+        vim.cmd("normal ds" .. esc)
+        vim.cmd("normal cs'" .. esc)
+        vim.cmd("normal csb" .. esc)
+        assert.are.same(get_curpos(), { 1, 5 })
+        check_lines({ "(some 'text')" })
     end)
 end)

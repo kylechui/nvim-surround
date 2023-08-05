@@ -44,6 +44,8 @@ end
 
 -- Holds the current position of the cursor, since calling opfunc will erase it.
 M.normal_curpos = nil
+-- Detects if plugin is currently prompting the user for a motion / delimiter.
+M.pending_surround = false
 -- Add delimiters around a motion.
 ---@param args { selection: selection, delimiters: delimiter_pair, line_mode: boolean }
 ---@return "g@"|nil
@@ -53,6 +55,7 @@ M.normal_surround = function(args)
         -- Clear the normal cache (since it was user-called)
         cache.normal = { line_mode = args.line_mode }
         M.normal_curpos = buffer.get_curpos()
+        M.pending_surround = true
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.normal_callback"
         return "g@"
@@ -71,6 +74,7 @@ M.normal_surround = function(args)
     if args.line_mode then
         config.get_opts().indent_lines(first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
     end
+    M.pending_surround = false
 end
 
 -- Add delimiters around a visual selection.
@@ -240,11 +244,13 @@ end
 
 ---@param mode "char"|"line"|"block"
 M.normal_callback = function(mode)
+    buffer.restore_curpos({ old_pos = M.normal_curpos })
     -- Adjust the ] mark if the operator was in line-mode, e.g. `ip` or `3j`
     if mode == "line" then
         local first_pos = buffer.get_mark("[")
         local last_pos = buffer.get_mark("]")
         if not (first_pos and last_pos) then
+            M.pending_surround = false
             return
         end
         first_pos = { first_pos[1], 1 }
@@ -262,6 +268,7 @@ M.normal_callback = function(mode)
         last_pos = buffer.get_mark("]"),
     }
     if not selection.first_pos or not selection.last_pos then
+        M.pending_surround = false
         return
     end
     -- Highlight the range and set a timer to clear it if necessary
@@ -278,6 +285,7 @@ M.normal_callback = function(mode)
         -- Get the delimiter pair based on the input character
         cache.normal.delimiters = cache.normal.delimiters or config.get_delimiters(char, cache.normal.line_mode)
         if not cache.normal.delimiters then
+            M.pending_surround = false
             buffer.clear_highlights()
             return
         end
