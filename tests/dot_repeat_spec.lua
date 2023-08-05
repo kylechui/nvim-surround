@@ -1,4 +1,5 @@
 local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
+local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
 local set_curpos = function(pos)
     vim.api.nvim_win_set_cursor(0, { pos[1], pos[2] - 1 })
 end
@@ -227,5 +228,25 @@ describe("dot-repeat", function()
         vim.cmd("normal :echo 'this. is. a. dot.'" .. cr)
         vim.cmd("normal j.")
         check_curpos({ 2, 3 })
+    end)
+
+    it("maintains cursor position correctly after dot-repeating after cancelling a motion", function()
+        require("nvim-surround").buffer_setup({
+            move_cursor = false,
+        })
+
+        set_lines({
+            "this is a line",
+            "there is another",
+        })
+        set_curpos({ 1, 3 })
+        vim.cmd("normal ysiw" .. esc)
+        set_curpos({ 2, 13 })
+        vim.cmd("normal ..")
+        check_curpos({ 2, 13 })
+        check_lines({
+            "this is a line",
+            "there is .another.",
+        })
     end)
 end)

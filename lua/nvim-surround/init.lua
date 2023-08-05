@@ -244,11 +244,13 @@ end
 
 ---@param mode "char"|"line"|"block"
 M.normal_callback = function(mode)
+    buffer.restore_curpos({ old_pos = M.normal_curpos })
     -- Adjust the ] mark if the operator was in line-mode, e.g. `ip` or `3j`
     if mode == "line" then
         local first_pos = buffer.get_mark("[")
         local last_pos = buffer.get_mark("]")
         if not (first_pos and last_pos) then
+            M.pending_surround = false
             return
         end
         first_pos = { first_pos[1], 1 }
@@ -266,6 +268,7 @@ M.normal_callback = function(mode)
         last_pos = buffer.get_mark("]"),
     }
     if not selection.first_pos or not selection.last_pos then
+        M.pending_surround = false
         return
     end
     -- Highlight the range and set a timer to clear it if necessary
@@ -282,6 +285,7 @@ M.normal_callback = function(mode)
         -- Get the delimiter pair based on the input character
         cache.normal.delimiters = cache.normal.delimiters or config.get_delimiters(char, cache.normal.line_mode)
         if not cache.normal.delimiters then
+            M.pending_surround = false
             buffer.clear_highlights()
             return
         end
