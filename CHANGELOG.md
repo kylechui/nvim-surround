@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/kylechui/nvim-surround/compare/v2.1.0...v2.1.1) (2023-08-05)
+
+
+### Bug Fixes
+
+* Respect `move_cursor = false` when dot-repeating. ([#254](https://github.com/kylechui/nvim-surround/issues/254)) ([ec6a721](https://github.com/kylechui/nvim-surround/commit/ec6a7215a5d1707f5bf9d80262f26e13bfacc757))
+
 ## [2.1.0](https://github.com/kylechui/nvim-surround/compare/v2.0.5...v2.1.0) (2023-05-28)
 
 
