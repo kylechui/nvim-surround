@@ -182,7 +182,7 @@ describe("dot-repeat", function()
 
     it("can perform a dot-repeat addition, moving the cursor to the beginning of the surround", function()
         require("nvim-surround").buffer_setup({
-            move_cursor = true,
+            move_cursor = "begin",
         })
 
         set_lines({

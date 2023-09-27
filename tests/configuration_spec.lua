@@ -162,6 +162,11 @@ describe("configuration", function()
         check_lines({
             [[And "jump forwards and backwards" to the (nearest) surround.]],
         })
+        vim.cmd("normal yss)")
+        assert.are.same(get_curpos(), { 1, 31 })
+        check_lines({
+            [[(And "jump forwards and backwards" to the (nearest) surround.)]],
+        })
     end)
 
     it("can move the cursor to the beginning of an action", function()
