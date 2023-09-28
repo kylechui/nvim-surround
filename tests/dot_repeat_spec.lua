@@ -178,6 +178,15 @@ describe("dot-repeat", function()
         vim.cmd("normal ysiwfhi" .. cr)
         vim.cmd("normal j.j.j.3k")
         check_curpos({ 1, 3 })
+        vim.cmd("normal yss]")
+        vim.cmd("normal j.j.j.3k")
+        check_curpos({ 1, 3 })
+        check_lines({
+            "[hi(here)]",
+            "[hi(there) is]",
+            "[hi(another)]",
+            "[hi(line)]",
+        })
     end)
 
     it("can perform a dot-repeat addition, moving the cursor to the beginning of the surround", function()
