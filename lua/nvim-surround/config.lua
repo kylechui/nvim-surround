@@ -638,13 +638,7 @@ M.set_keymaps = function(args)
         mode = "n",
         lhs = "<Plug>(nvim-surround-normal-cur)",
         rhs = function()
-            local count_string = ""
-            if vim.v.count1 > 1 then
-                count_string = vim.v.count1 - 1 .. "j"
-            end
-            return "<Plug>(nvim-surround-normal)<Cmd>lua vim.cmd.normal({'^v"
-                .. count_string
-                .. "g_', bang = true})<CR>"
+            return "<Plug>(nvim-surround-normal)Vg_"
         end,
         opts = {
             buffer = args.buffer,
