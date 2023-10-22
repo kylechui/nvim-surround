@@ -638,7 +638,7 @@ M.set_keymaps = function(args)
         mode = "n",
         lhs = "<Plug>(nvim-surround-normal-cur)",
         rhs = function()
-            return "^" .. tostring(vim.v.count1) .. "<Plug>(nvim-surround-normal)g_"
+            return "<Plug>(nvim-surround-normal)Vg_"
         end,
         opts = {
             buffer = args.buffer,
