@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.2](https://github.com/kylechui/nvim-surround/compare/v2.1.1...v2.1.2) (2023-10-22)
+
+
+### Bug Fixes
+
+* Dot-repeat line surrounds. ([#262](https://github.com/kylechui/nvim-surround/issues/262)) ([aa27de7](https://github.com/kylechui/nvim-surround/commit/aa27de7929710e781ac039dabf0ff739218eed65))
+
 ## [2.1.1](https://github.com/kylechui/nvim-surround/compare/v2.1.0...v2.1.1) (2023-08-05)
 
 
