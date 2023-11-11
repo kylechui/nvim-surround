@@ -6,12 +6,19 @@ on:
       - "*"
     pull_request:
       - "*"
+    release:
+      types:
+        - created
 
 jobs:
   luarocks-release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Required to count the commits
+      - name: Get Version
+        run: echo "LUAROCKS_VERSION=$(git describe --abbrev=0 --tags)" >> $GITHUB_ENV
       - name: LuaRocks Upload
         uses: nvim-neorocks/luarocks-tag-release@v5
         env:
@@ -19,3 +26,5 @@ jobs:
         with:
           summary: "Add/change/delete surrounding delimiter pairs with ease."
           licence: "MIT"
+          version: ${{ env.LUAROCKS_VERSION }}
+          test_interpreters: null
