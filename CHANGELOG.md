@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.3](https://github.com/kylechui/nvim-surround/compare/v2.1.2...v2.1.3) (2023-11-13)
+
+
+### Bug Fixes
+
+* Translate char to termcodes when reading input ([#271](https://github.com/kylechui/nvim-surround/issues/271)) ([#273](https://github.com/kylechui/nvim-surround/issues/273)) ([cfa2da7](https://github.com/kylechui/nvim-surround/commit/cfa2da7f469f1e759f2a961bc25fa4ccfe1795c2))
+
 ## [2.1.2](https://github.com/kylechui/nvim-surround/compare/v2.1.1...v2.1.2) (2023-10-22)
 
 
