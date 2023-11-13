@@ -2,12 +2,13 @@ name: luarocks-release
 
 on:
   push:
-    tags:
-      - "*"
-    pull_request:
     release:
       types:
         - created
+    tags:
+      - "*"
+    pull_request:
+  workflow_dispatch:
 
 jobs:
   luarocks-release:
