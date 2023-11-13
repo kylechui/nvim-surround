@@ -314,6 +314,7 @@ The default configuration is as follows:
         visual_line = "gS",
         delete = "ds",
         change = "cs",
+        change_line = "cS",
     },
 <
 
@@ -330,6 +331,7 @@ use to set up their own custom keymaps:
     <Plug>(nvim-surround-visual-line)
     <Plug>(nvim-surround-delete)
     <Plug>(nvim-surround-change)
+    <Plug>(nvim-surround-change-line)
 <
 --------------------------------------------------------------------------------
 3.2. Surrounds                                *nvim-surround.config.surrounds*
