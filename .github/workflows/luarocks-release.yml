@@ -25,6 +25,6 @@ jobs:
           LUAROCKS_API_KEY: ${{ secrets.LUAROCKS_API_KEY }}
         with:
           summary: "Add/change/delete surrounding delimiter pairs with ease."
-          licence: "MIT"
+          license: "MIT"
           version: ${{ env.LUAROCKS_VERSION }}
           test_interpreters: null
