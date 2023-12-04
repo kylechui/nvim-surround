@@ -823,7 +823,7 @@ M.set_keymaps = function(args)
         },
     })
     M.set_keymap({
-        name = "change",
+        name = "change_line",
         mode = "n",
         lhs = M.get_opts().keymaps.change_line,
         rhs = "<Plug>(nvim-surround-change-line)",
