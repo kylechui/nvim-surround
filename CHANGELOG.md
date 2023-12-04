@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.4](https://github.com/kylechui/nvim-surround/compare/v2.1.3...v2.1.4) (2023-12-04)
+
+
+### Bug Fixes
+
+* Keymap for `change_line`. ([#286](https://github.com/kylechui/nvim-surround/issues/286)) ([bd7bb26](https://github.com/kylechui/nvim-surround/commit/bd7bb26a0d264c886bae7e0a09dd5b56daf46376))
+
 ## [2.1.3](https://github.com/kylechui/nvim-surround/compare/v2.1.2...v2.1.3) (2023-11-13)
 
 
