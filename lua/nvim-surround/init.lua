@@ -64,12 +64,11 @@ M.normal_surround = function(args)
     local first_pos = args.selection.first_pos
     local last_pos = { args.selection.last_pos[1], args.selection.last_pos[2] + 1 }
 
-    local new_pos = M.normal_curpos
-    new_pos = buffer.insert_text(last_pos, args.delimiters[2], new_pos)
-    new_pos = buffer.insert_text(first_pos, args.delimiters[1], new_pos)
+    buffer.insert_text(last_pos, args.delimiters[2])
+    buffer.insert_text(first_pos, args.delimiters[1])
     buffer.restore_curpos({
         first_pos = first_pos,
-        old_pos = new_pos,
+        old_pos = M.normal_curpos,
     })
 
     if args.line_mode then
@@ -82,7 +81,7 @@ end
 ---@param args { line_mode: boolean } Whether or not the delimiters should get put on new lines.
 M.visual_surround = function(args)
     -- Save the current position of the cursor
-    local new_pos = buffer.get_curpos()
+    local curpos = buffer.get_curpos()
     -- Get a character and selection from the user
     local ins_char = input.get_char()
 
@@ -115,7 +114,7 @@ M.visual_surround = function(args)
             end
             -- Go to the end of the current character
             index = buffer.get_last_byte({ lnum, index })[2]
-            new_pos = buffer.insert_text({ lnum, index + 1 }, delimiters[2], new_pos)
+            buffer.insert_text({ lnum, index + 1 }, delimiters[2])
             index = 1
             -- The current display count should be <= the desired one
             while vim.fn.strdisplaywidth(line:sub(1, index - 1)) + 1 < mn_disp and index <= #line do
@@ -125,7 +124,7 @@ M.visual_surround = function(args)
                 -- Go to the beginning of the previous character
                 index = buffer.get_first_byte({ lnum, index - 1 })[2]
             end
-            new_pos = buffer.insert_text({ lnum, index }, delimiters[1], new_pos)
+            buffer.insert_text({ lnum, index }, delimiters[1])
         end
     else -- Regular visual mode case
         if vim.o.selection == "exclusive" then
@@ -136,13 +135,13 @@ M.visual_surround = function(args)
         if not last_pos then
             return
         end
-        new_pos = buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2], new_pos)
-        new_pos = buffer.insert_text(first_pos, delimiters[1], new_pos)
+        buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
+        buffer.insert_text(first_pos, delimiters[1])
     end
 
     buffer.restore_curpos({
         first_pos = first_pos,
-        old_pos = new_pos,
+        old_pos = curpos,
     })
     Preserve_cursor(config.get_opts().indent_lines, first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
 end
@@ -164,20 +163,19 @@ M.delete_surround = function(args)
     local selections = utils.get_nearest_selections(args.del_char, "delete")
 
     if selections then
-        local new_pos = args.curpos
         -- Delete the right selection first to ensure selection positions are correct
-        new_pos = buffer.delete_selection(selections.right, new_pos)
-        new_pos = buffer.delete_selection(selections.left, new_pos)
+        buffer.delete_selection(selections.right)
+        buffer.delete_selection(selections.left)
 
-        buffer.restore_curpos({
-            first_pos = selections.left.first_pos,
-            old_pos = new_pos,
-        })
         Preserve_cursor(
             config.get_opts().indent_lines,
             selections.left.first_pos[1],
             selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
         )
+        buffer.restore_curpos({
+            first_pos = selections.left.first_pos,
+            old_pos = args.curpos,
+        })
     end
 
     cache.set_callback("v:lua.require'nvim-surround'.delete_callback")
@@ -224,13 +222,11 @@ M.change_surround = function(args)
         end
 
         -- Change the right selection first to ensure selection positions are correct
-        local new_pos = args.curpos
-        new_pos = buffer.change_selection(selections.right, delimiters[2], new_pos)
-        new_pos = buffer.change_selection(selections.left, delimiters[1], new_pos)
-
+        buffer.change_selection(selections.right, delimiters[2])
+        buffer.change_selection(selections.left, delimiters[1])
         buffer.restore_curpos({
             first_pos = selections.left.first_pos,
-            old_pos = new_pos,
+            old_pos = args.curpos,
         })
 
         if args.line_mode then

@@ -30,7 +30,7 @@ M.restore_curpos = function(pos)
     if config.get_opts().move_cursor == "begin" then
         M.set_curpos(pos.first_pos)
     elseif not config.get_opts().move_cursor then
-        M.set_curpos(pos.old_pos)
+        -- M.set_curpos(pos.old_pos)
     end
 end
 
@@ -228,75 +228,27 @@ end
 -- Adds some text into the buffer at a given position.
 ---@param pos position The position to be inserted at.
 ---@param text text The text to be added.
-M.insert_text = function(pos, text, cursor)
+M.insert_text = function(pos, text)
     pos[2] = math.min(pos[2], #M.get_line(pos[1]) + 1)
     vim.api.nvim_buf_set_text(0, pos[1] - 1, pos[2] - 1, pos[1] - 1, pos[2] - 1, text)
-
-    if cursor then
-        if M.comes_before(pos, cursor) then
-            if text == {} then text = {''} end
-            local column = cursor[2]
-            if cursor[1] == pos[1] then
-                if #text == 1 then
-                    column = column + #text[#text]
-                else
-                    column = column - pos[2] + 1 + #text[#text]
-                end
-            end
-            return {cursor[1] + #text - 1, column}
-        else
-            return cursor
-        end
-    end
 end
 
 -- Deletes a given selection from the buffer.
 ---@param selection selection The given selection.
-M.delete_selection = function(selection, cursor)
+M.delete_selection = function(selection)
     local first_pos, last_pos = selection.first_pos, selection.last_pos
     vim.api.nvim_buf_set_text(0, first_pos[1] - 1, first_pos[2] - 1, last_pos[1] - 1, last_pos[2], {})
-    if cursor then
-        if M.comes_before(cursor, selection.first_pos) then
-            return cursor
-        elseif M.comes_before(cursor, selection.last_pos) then
-            return selection.first_pos
-        else
-            local column = cursor[2]
-            if cursor[1] == selection.last_pos[1] then
-                column = cursor[2] - (selection.last_pos[2] - selection.first_pos[2] + 1)
-            end
-            return {cursor[1] - (selection.last_pos[1] - selection.first_pos[1]), column}
-        end
-    end
 end
 
 -- Replaces a given selection with a set of lines.
 ---@param selection selection|nil The given selection.
 ---@param text text The given text to replace the selection.
-M.change_selection = function(selection, text, cursor)
+M.change_selection = function(selection, text)
     if not selection then
         return
     end
     local first_pos, last_pos = selection.first_pos, selection.last_pos
     vim.api.nvim_buf_set_text(0, first_pos[1] - 1, first_pos[2] - 1, last_pos[1] - 1, last_pos[2], text)
-    if cursor then
-        if M.comes_before(cursor, selection.first_pos) then
-            return cursor
-        elseif M.comes_before(cursor, selection.last_pos) then
-            return selection.first_pos
-        else
-            local column = cursor[2]
-            if text == {} then text = {''} end
-            if cursor[1] == selection.last_pos[1] then
-                if #text == 1 then
-                    column = cursor[2] - (selection.last_pos[2] - selection.first_pos[2] + 1) + #text[#text]
-                else
-                    column = cursor[2] - selection.last_pos[2] + #text[#text]
-                end
-            end
-            return  {cursor[1] + #text - 1 - (selection.last_pos[1] - selection.first_pos[1]), column}
-        end
-    end
 end
 
 --[====================================================================================================================[
