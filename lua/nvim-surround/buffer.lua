@@ -228,27 +228,66 @@ end
 -- Adds some text into the buffer at a given position.
 ---@param pos position The position to be inserted at.
 ---@param text text The text to be added.
-M.insert_text = function(pos, text)
+M.insert_text = function(pos, text, cursor)
     pos[2] = math.min(pos[2], #M.get_line(pos[1]) + 1)
     vim.api.nvim_buf_set_text(0, pos[1] - 1, pos[2] - 1, pos[1] - 1, pos[2] - 1, text)
+
+    if cursor then
+        if M.comes_before(pos, cursor) then
+            return {cursor[1] + math.min(#text - 1, 0), cursor[2] + #text[#text]}
+        else
+            return cursor
+        end
+    end
 end
 
 -- Deletes a given selection from the buffer.
 ---@param selection selection The given selection.
-M.delete_selection = function(selection)
+M.delete_selection = function(selection, cursor)
     local first_pos, last_pos = selection.first_pos, selection.last_pos
     vim.api.nvim_buf_set_text(0, first_pos[1] - 1, first_pos[2] - 1, last_pos[1] - 1, last_pos[2], {})
+    if cursor then
+        if M.comes_before(cursor, selection.first_pos) then
+            return cursor
+        elseif M.comes_before(cursor, selection.last_pos) then
+            return selection.first_pos
+        else
+            local column = cursor[2]
+            if cursor[1] == selection.last_pos[1] then
+                column = cursor[2] - (selection.last_pos[2] - selection.first_pos[2] + 1)
+            end
+            return {cursor[1] - (selection.last_pos[1] - selection.first_pos[1]), column}
+        end
+    end
 end
 
 -- Replaces a given selection with a set of lines.
 ---@param selection selection|nil The given selection.
 ---@param text text The given text to replace the selection.
-M.change_selection = function(selection, text)
+M.change_selection = function(selection, text, cursor)
     if not selection then
         return
     end
     local first_pos, last_pos = selection.first_pos, selection.last_pos
     vim.api.nvim_buf_set_text(0, first_pos[1] - 1, first_pos[2] - 1, last_pos[1] - 1, last_pos[2], text)
+    if cursor then
+        if M.comes_before(cursor, selection.first_pos) then
+            return cursor
+        elseif M.comes_before(cursor, selection.last_pos) then
+            return selection.first_pos
+        else
+            local column = cursor[2]
+            if cursor[1] == selection.last_pos[1] then
+                if text == {} then text = '' end
+                if #text == 1 then
+                    column = cursor[2] - (selection.last_pos[2] - selection.first_pos[2] + 1) + #text[#text]
+                else
+                    column = cursor[2] - selection.last_pos[2] + #text[#text]
+                end
+            end
+            return  {cursor[1] + math.max(#text - 1, 0) - (selection.last_pos[1] - selection.first_pos[1]), column}
+        end
+    end
 end
 
 --[====================================================================================================================[
