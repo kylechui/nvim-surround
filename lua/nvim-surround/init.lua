@@ -64,15 +64,16 @@ M.normal_surround = function(args)
     local first_pos = args.selection.first_pos
     local last_pos = { args.selection.last_pos[1], args.selection.last_pos[2] + 1 }
 
-    buffer.insert_text(last_pos, args.delimiters[2])
-    buffer.insert_text(first_pos, args.delimiters[1])
+    local new_pos = M.normal_curpos
+    new_pos = buffer.insert_text(last_pos, args.delimiters[2], new_pos)
+    new_pos = buffer.insert_text(first_pos, args.delimiters[1], new_pos)
     buffer.restore_curpos({
         first_pos = first_pos,
-        old_pos = M.normal_curpos,
+        old_pos = new_pos,
     })
 
     if args.line_mode then
-        config.get_opts().indent_lines(first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
+        preserve(config.get_opts().indent_lines, first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
     end
     M.pending_surround = false
 end
@@ -81,7 +82,7 @@ end
 ---@param args { line_mode: boolean } Whether or not the delimiters should get put on new lines.
 M.visual_surround = function(args)
     -- Save the current position of the cursor
-    local curpos = buffer.get_curpos()
+    local new_pos = buffer.get_curpos()
     -- Get a character and selection from the user
     local ins_char = input.get_char()
 
@@ -114,7 +115,7 @@ M.visual_surround = function(args)
             end
             -- Go to the end of the current character
             index = buffer.get_last_byte({ lnum, index })[2]
-            buffer.insert_text({ lnum, index + 1 }, delimiters[2])
+            new_pos = buffer.insert_text({ lnum, index + 1 }, delimiters[2], new_pos)
             index = 1
             -- The current display count should be <= the desired one
             while vim.fn.strdisplaywidth(line:sub(1, index - 1)) + 1 < mn_disp and index <= #line do
@@ -124,7 +125,7 @@ M.visual_surround = function(args)
                 -- Go to the beginning of the previous character
                 index = buffer.get_first_byte({ lnum, index - 1 })[2]
             end
-            buffer.insert_text({ lnum, index }, delimiters[1])
+            new_pos = buffer.insert_text({ lnum, index }, delimiters[1], new_pos)
         end
     else -- Regular visual mode case
         if vim.o.selection == "exclusive" then
@@ -135,14 +136,14 @@ M.visual_surround = function(args)
         if not last_pos then
             return
         end
-        buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
-        buffer.insert_text(first_pos, delimiters[1])
+        new_pos = buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2], new_pos)
+        new_pos = buffer.insert_text(first_pos, delimiters[1], new_pos)
     end
 
-    config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
+    Preserve_cusor(config.get_opts().indent_lines, first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.restore_curpos({
         first_pos = first_pos,
-        old_pos = curpos,
+        old_pos = new_pos,
     })
 end
 
@@ -163,17 +164,32 @@ M.delete_surround = function(args)
     local selections = utils.get_nearest_selections(args.del_char, "delete")
 
     if selections then
+        local new_pos = args.curpos
         -- Delete the right selection first to ensure selection positions are correct
-        buffer.delete_selection(selections.right)
-        buffer.delete_selection(selections.left)
-        config.get_opts().indent_lines(
+        new_pos = buffer.delete_selection(selections.right, new_pos)
+        new_pos = buffer.delete_selection(selections.left, new_pos)
+
+        local left_sel = selections.left
+        local new_pos = args.curpos
+        if left_sel == nil then return end
+        if buffer.comes_before(left_sel.first_pos, args.curpos) and
+            buffer.comes_before(args.curpos, left_sel.last_pos) then
+            new_pos = left_sel.first_pos
+        else
+            if new_pos[1] == left_sel.last_pos[1] then
+                new_pos[2] = new_pos[2] + left_sel.first_pos[2] - left_sel.last_pos[2] - 1
+            end
+            new_pos[1] = new_pos[1] - left_sel.last_pos[1] + left_sel.first_pos[1]
+        end
+        buffer.restore_curpos({
+            first_pos = selections.left.first_pos,
+            old_pos = new_pos,
+        })
+        Preserve_cusor(
+            config.get_opts().indent_lines,
             selections.left.first_pos[1],
             selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
         )
-        buffer.restore_curpos({
-            first_pos = selections.left.first_pos,
-            old_pos = args.curpos,
-        })
     end
 
     cache.set_callback("v:lua.require'nvim-surround'.delete_callback")
@@ -220,24 +236,39 @@ M.change_surround = function(args)
         end
 
         -- Change the right selection first to ensure selection positions are correct
-        buffer.change_selection(selections.right, delimiters[2])
-        buffer.change_selection(selections.left, delimiters[1])
+        local new_pos = args.curpos
+        new_pos = buffer.change_selection(selections.right, delimiters[2], new_pos)
+        new_pos = buffer.change_selection(selections.left, delimiters[1], new_pos)
+
         buffer.restore_curpos({
             first_pos = selections.left.first_pos,
-            old_pos = args.curpos,
+            old_pos = new_pos,
         })
 
         if args.line_mode then
             local first_pos = selections.left.first_pos
             local last_pos = selections.right.last_pos
 
-            config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
+            Preserve_cusor(config.get_opts().indent_lines, first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
         end
     end
 
     cache.set_callback("v:lua.require'nvim-surround'.change_callback")
 end
 
+function Preserve_cusor(func, ...)
+    -- local line, col = table.unpack(vim.api.nvim_win_get_cursor(0))
+    local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+    local len_before = vim.api.nvim_get_current_line():len()
+    local winview = vim.fn.winsaveview()
+
+    func(...)
+
+    vim.fn.winrestview(winview)
+    local len_after = vim.api.nvim_get_current_line():len()
+    local new_col = math.max(0, col - len_before + len_after)
+    vim.api.nvim_win_set_cursor(0, { line, new_col })
+end
 --[====================================================================================================================[
                                                    Callback Functions
 --]====================================================================================================================]
