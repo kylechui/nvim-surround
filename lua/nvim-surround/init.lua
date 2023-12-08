@@ -140,11 +140,11 @@ M.visual_surround = function(args)
         new_pos = buffer.insert_text(first_pos, delimiters[1], new_pos)
     end
 
-    Preserve_cusor(config.get_opts().indent_lines, first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.restore_curpos({
         first_pos = first_pos,
         old_pos = new_pos,
     })
+    Preserve_cusor(config.get_opts().indent_lines, first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
 end
 
 -- Delete a surrounding delimiter pair, if it exists.
