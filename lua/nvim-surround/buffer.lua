@@ -235,7 +235,15 @@ M.insert_text = function(pos, text, cursor)
     if cursor then
         if M.comes_before(pos, cursor) then
             if text == {} then text = {''} end
-            return {cursor[1] + #text - 1, cursor[2] + #text[#text]}
+            local column = cursor[2]
+            if cursor[1] == pos[1] then
+                if #text == 1 then
+                    column = column + #text[#text]
+                else
+                    column = column - pos[2] + 1 + #text[#text]
+                end
+            end
+            return {cursor[1] + #text - 1, column}
         else
             return cursor
         end
@@ -278,15 +286,15 @@ M.change_selection = function(selection, text, cursor)
             return selection.first_pos
         else
             local column = cursor[2]
+            if text == {} then text = {''} end
             if cursor[1] == selection.last_pos[1] then
-                if text == {} then text = {''} end
                 if #text == 1 then
                     column = cursor[2] - (selection.last_pos[2] - selection.first_pos[2] + 1) + #text[#text]
                 else
                     column = cursor[2] - selection.last_pos[2] + #text[#text]
                 end
             end
-            return  {cursor[1] + math.max(#text - 1, 0) - (selection.last_pos[1] - selection.first_pos[1]), column}
+            return  {cursor[1] + #text - 1 - (selection.last_pos[1] - selection.first_pos[1]), column}
         end
     end
 end

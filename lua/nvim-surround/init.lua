@@ -73,7 +73,7 @@ M.normal_surround = function(args)
     })
 
     if args.line_mode then
-        preserve(config.get_opts().indent_lines, first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
+        Preserve_cusor(config.get_opts().indent_lines, first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
     end
     M.pending_surround = false
 end
@@ -169,18 +169,6 @@ M.delete_surround = function(args)
         new_pos = buffer.delete_selection(selections.right, new_pos)
         new_pos = buffer.delete_selection(selections.left, new_pos)
 
-        local left_sel = selections.left
-        local new_pos = args.curpos
-        if left_sel == nil then return end
-        if buffer.comes_before(left_sel.first_pos, args.curpos) and
-            buffer.comes_before(args.curpos, left_sel.last_pos) then
-            new_pos = left_sel.first_pos
-        else
-            if new_pos[1] == left_sel.last_pos[1] then
-                new_pos[2] = new_pos[2] + left_sel.first_pos[2] - left_sel.last_pos[2] - 1
-            end
-            new_pos[1] = new_pos[1] - left_sel.last_pos[1] + left_sel.first_pos[1]
-        end
         buffer.restore_curpos({
             first_pos = selections.left.first_pos,
             old_pos = new_pos,
