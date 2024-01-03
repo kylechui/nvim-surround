@@ -47,7 +47,8 @@ The primary way of adding a new pair to the buffer is via the normal-mode *ys*
 operator, which stands for "you surround". It can be used via
 `ys{motion}{char}`, which surrounds a given {motion} with a delimiter pair
 associated with {char}. For example, `ysa")` means "you surround around quotes
-with parentheses".
+with parentheses". For more information on {motion}, check `:h motion` and 
+`:h text-objects`.
 
 In all of the following examples, the `*` denotes the cursor position:
 
