@@ -6,17 +6,23 @@ local M = {}
 ---@type user_options
 M.default_opts = {
     keymaps = {
-        insert = "<C-g>s",
-        insert_line = "<C-g>S",
-        normal = "ys",
-        normal_cur = "yss",
-        normal_line = "yS",
-        normal_cur_line = "ySS",
-        visual = "S",
-        visual_line = "gS",
-        delete = "ds",
-        change = "cs",
-        change_line = "cS",
+        insert = { mapping = "<C-g>s", desc = "Add a surrounding pair around the cursor (insert mode)" },
+        insert_line = {
+            mapping = "<C-g>S",
+            desc = "Add a surrounding pair around the cursor, on new lines (insert mode)",
+        },
+        normal = { mapping = "ys", desc = "Add a surrounding pair around a motion (normal mode)" },
+        normal_cur = { mapping = "yss", desc = "Add a surrounding pair around the current line (normal mode)" },
+        normal_line = { mapping = "yS", desc = "Add a surrounding pair around a motion, on new lines (normal mode)" },
+        normal_cur_line = {
+            mapping = "ySS",
+            desc = "Add a surrounding pair around the current line, on new lines (normal mode)",
+        },
+        visual = { mapping = "S", desc = "Add a surrounding pair around a visual selection" },
+        visual_line = { mapping = "gS", desc = "Add a surrounding pair around a visual selection, on new lines" },
+        delete = { mapping = "ds", desc = "Delete a surrounding pair" },
+        change = { mapping = "cs", desc = "Change a surrounding pair" },
+        change_line = { mapping = "cS", desc = "Change a surrounding pair, putting replacements on new lines" },
     },
     surrounds = {
         ["("] = {
@@ -541,27 +547,39 @@ M.translate_opts = function(user_opts)
     local opts = {}
     for key, value in pairs(user_opts) do
         if key == "surrounds" then
+            opts.surrounds = {}
+            for char, user_surround in pairs(user_opts.surrounds) do
+                -- Support Vim's notation for special characters
+                char = vim.api.nvim_replace_termcodes(char, true, true, true)
+                -- Special case translation for `invalid_key_behavior`
+                if type(user_surround) ~= "nil" then
+                    if char == "invalid_key_behavior" then
+                        opts.surrounds[char] = M.translate_invalid_key_behavior(user_surround)
+                    else
+                        opts.surrounds[char] = M.translate_surround(char, user_surround)
+                    end
+                end
+            end
         elseif key == "indent_lines" then
             opts[key] = value or function() end
+        elseif key == "keymaps" then
+            opts.keymaps = {}
+            for keymap, mapping in pairs(user_opts.keymaps) do
+                if type(mapping) == "string" then
+                    opts.keymaps[keymap] = {}
+                    opts.keymaps[keymap].mapping = mapping
+                    opts.keymaps[keymap].desc = M.default_opts.keymaps[keymap].desc
+                elseif type(mapping) == "table" then
+                    opts.keymaps[keymap] = mapping
+                    opts.keymaps[keymap].desc = mapping.desc or M.default_opts.keymaps[keymap].desc
+                elseif not mapping then
+                    -- disabled
+                    opts.keymaps[keymap] = {}
+                    opts.keymaps[keymap].mapping = mapping
+                end
+            end
         else
             opts[key] = value
-        end
-    end
-    if not user_opts.surrounds then
-        return opts
-    end
-
-    opts.surrounds = {}
-    for char, user_surround in pairs(user_opts.surrounds) do
-        -- Support Vim's notation for special characters
-        char = vim.api.nvim_replace_termcodes(char, true, true, true)
-        -- Special case translation for `invalid_key_behavior`
-        if type(user_surround) ~= "nil" then
-            if char == "invalid_key_behavior" then
-                opts.surrounds[char] = M.translate_invalid_key_behavior(user_surround)
-            else
-                opts.surrounds[char] = M.translate_surround(char, user_surround)
-            end
         end
     end
     return opts
@@ -583,11 +601,11 @@ M.set_keymap = function(args)
     -- If the keymap is disabled
     if not args.lhs then
         -- If the mapping is disabled globally, do nothing
-        if not M.user_opts.keymaps[args.name] then
+        if not M.user_opts.keymaps[args.name].mapping then
             return
         end
         -- Otherwise disable the global keymap
-        args.lhs = M.user_opts.keymaps[args.name]
+        args.lhs = M.user_opts.keymaps[args.name].mapping
         args.rhs = "<NOP>"
     end
     vim.keymap.set(args.mode, args.lhs, args.rhs, args.opts)
@@ -597,6 +615,7 @@ end
 ---@param args { buffer: boolean } Whether the keymaps should be set for the buffer or not.
 M.set_keymaps = function(args)
     -- Set up <Plug> keymaps
+    local defaults = M.default_opts.keymaps
     M.set_keymap({
         mode = "i",
         lhs = "<Plug>(nvim-surround-insert)",
@@ -605,7 +624,7 @@ M.set_keymaps = function(args)
         end,
         opts = {
             buffer = args.buffer,
-            desc = "Add a surrounding pair around the cursor (insert mode)",
+            desc = defaults.insert.desc,
             silent = true,
         },
     })
@@ -617,7 +636,7 @@ M.set_keymaps = function(args)
         end,
         opts = {
             buffer = args.buffer,
-            desc = "Add a surrounding pair around the cursor, on new lines (insert mode)",
+            desc = defaults.insert_line.desc,
             silent = true,
         },
     })
@@ -629,7 +648,7 @@ M.set_keymaps = function(args)
         end,
         opts = {
             buffer = args.buffer,
-            desc = "Add a surrounding pair around a motion (normal mode)",
+            desc = defaults.normal.desc,
             expr = true,
             silent = true,
         },
@@ -642,7 +661,7 @@ M.set_keymaps = function(args)
         end,
         opts = {
             buffer = args.buffer,
-            desc = "Add a surrounding pair around the current line (normal mode)",
+            desc = defaults.normal_cur.desc,
             expr = true,
             silent = true,
         },
@@ -655,7 +674,7 @@ M.set_keymaps = function(args)
         end,
         opts = {
             buffer = args.buffer,
-            desc = "Add a surrounding pair around a motion, on new lines (normal mode)",
+            desc = defaults.normal_line.desc,
             expr = true,
             silent = true,
         },
@@ -668,7 +687,7 @@ M.set_keymaps = function(args)
         end,
         opts = {
             buffer = args.buffer,
-            desc = "Add a surrounding pair around the current line, on new lines (normal mode)",
+            desc = defaults.normal_cur_line.desc,
             expr = true,
             silent = true,
         },
@@ -679,7 +698,7 @@ M.set_keymaps = function(args)
         rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround({ line_mode = false })<CR>",
         opts = {
             buffer = args.buffer,
-            desc = "Add a surrounding pair around a visual selection",
+            desc = defaults.visual.desc,
             silent = true,
         },
     })
@@ -689,7 +708,7 @@ M.set_keymaps = function(args)
         rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround({ line_mode = true })<CR>",
         opts = {
             buffer = args.buffer,
-            desc = "Add a surrounding pair around a visual selection, on new lines",
+            desc = defaults.visual_line.desc,
             silent = true,
         },
     })
@@ -699,7 +718,7 @@ M.set_keymaps = function(args)
         rhs = require("nvim-surround").delete_surround,
         opts = {
             buffer = args.buffer,
-            desc = "Delete a surrounding pair",
+            desc = defaults.delete.desc,
             expr = true,
             silent = true,
         },
@@ -712,7 +731,7 @@ M.set_keymaps = function(args)
         end,
         opts = {
             buffer = args.buffer,
-            desc = "Change a surrounding pair",
+            desc = defaults.change.desc,
             expr = true,
             silent = true,
         },
@@ -725,112 +744,36 @@ M.set_keymaps = function(args)
         end,
         opts = {
             buffer = args.buffer,
-            desc = "Change a surrounding pair, putting replacements on new lines",
+            desc = defaults.change_line.desc,
             expr = true,
             silent = true,
         },
     })
 
     -- Set up user-defined keymaps
-    M.set_keymap({
-        name = "insert",
-        mode = "i",
-        lhs = M.get_opts().keymaps.insert,
-        rhs = "<Plug>(nvim-surround-insert)",
-        opts = {
-            desc = "Add a surrounding pair around the cursor (insert mode)",
-        },
-    })
-    M.set_keymap({
-        name = "insert_line",
-        mode = "i",
-        lhs = M.get_opts().keymaps.insert_line,
-        rhs = "<Plug>(nvim-surround-insert-line)",
-        opts = {
-            desc = "Add a surrounding pair around the cursor, on new lines (insert mode)",
-        },
-    })
-    M.set_keymap({
-        name = "normal",
-        mode = "n",
-        lhs = M.get_opts().keymaps.normal,
-        rhs = "<Plug>(nvim-surround-normal)",
-        opts = {
-            desc = "Add a surrounding pair around a motion (normal mode)",
-        },
-    })
-    M.set_keymap({
-        name = "normal_cur",
-        mode = "n",
-        lhs = M.get_opts().keymaps.normal_cur,
-        rhs = "<Plug>(nvim-surround-normal-cur)",
-        opts = {
-            desc = "Add a surrounding pair around the current line (normal mode)",
-        },
-    })
-    M.set_keymap({
-        name = "normal_line",
-        mode = "n",
-        lhs = M.get_opts().keymaps.normal_line,
-        rhs = "<Plug>(nvim-surround-normal-line)",
-        opts = {
-            desc = "Add a surrounding pair around a motion, on new lines (normal mode)",
-        },
-    })
-    M.set_keymap({
-        name = "normal_cur_line",
-        mode = "n",
-        lhs = M.get_opts().keymaps.normal_cur_line,
-        rhs = "<Plug>(nvim-surround-normal-cur-line)",
-        opts = {
-            desc = "Add a surrounding pair around the current line, on new lines (normal mode)",
-        },
-    })
-    M.set_keymap({
-        name = "visual",
-        mode = "x",
-        lhs = M.get_opts().keymaps.visual,
-        rhs = "<Plug>(nvim-surround-visual)",
-        opts = {
-            desc = "Add a surrounding pair around a visual selection",
-        },
-    })
-    M.set_keymap({
-        name = "visual_line",
-        mode = "x",
-        lhs = M.get_opts().keymaps.visual_line,
-        rhs = "<Plug>(nvim-surround-visual-line)",
-        opts = {
-            desc = "Add a surrounding pair around a visual selection, on new lines",
-        },
-    })
-    M.set_keymap({
-        name = "delete",
-        mode = "n",
-        lhs = M.get_opts().keymaps.delete,
-        rhs = "<Plug>(nvim-surround-delete)",
-        opts = {
-            desc = "Delete a surrounding pair",
-        },
-    })
-    M.set_keymap({
-        name = "change",
-        mode = "n",
-        lhs = M.get_opts().keymaps.change,
-        rhs = "<Plug>(nvim-surround-change)",
-        opts = {
-            desc = "Change a surrounding pair",
-        },
-    })
-    M.set_keymap({
-        name = "change_line",
-        mode = "n",
-        lhs = M.get_opts().keymaps.change_line,
-        rhs = "<Plug>(nvim-surround-change-line)",
-        opts = {
-            desc = "Change a surrounding pair, putting replacements on new lines",
-        },
-    })
+    local keymaps = M.get_opts().keymaps
+    local set_user_keymap = function(mode, name, plug)
+        M.set_keymap({
+            name = name,
+            mode = mode,
+            lhs = keymaps[name].mapping,
+            rhs = plug,
+            opts = {
+                desc = keymaps[name].desc,
+            },
+        })
+    end
+    set_user_keymap("i", "insert", "<Plug>(nvim-surround-insert)")
+    set_user_keymap("i", "insert_line", "<Plug>(nvim-surround-insert-line)")
+    set_user_keymap("n", "normal", "<Plug>(nvim-surround-normal)")
+    set_user_keymap("n", "normal_cur", "<Plug>(nvim-surround-normal-cur)")
+    set_user_keymap("n", "normal_line", "<Plug>(nvim-surround-normal-line)")
+    set_user_keymap("n", "normal_cur_line", "<Plug>(nvim-surround-normal-cur-line)")
+    set_user_keymap("x", "visual", "<Plug>(nvim-surround-visual)")
+    set_user_keymap("x", "visual_line", "<Plug>(nvim-surround-visual-line)")
+    set_user_keymap("n", "delete", "<Plug>(nvim-surround-delete)")
+    set_user_keymap("n", "change", "<Plug>(nvim-surround-change)")
+    set_user_keymap("n", "change_line", "<Plug>(nvim-surround-change-line)")
 end
 
 -- Setup the global user options for all files.

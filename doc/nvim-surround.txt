@@ -299,7 +299,7 @@ the `(` surround, call:
 The `keymaps` table defines the keymaps used to perform surround actions. The
 general rule is that if the key ends in "_line", the delimiter pair is added
 on new lines. If the key ends in "_cur", the surround is performed around the
-current line.
+current line. Setting a key to `false` will disable it.
 
 The default configuration is as follows:
 >lua
@@ -316,6 +316,11 @@ The default configuration is as follows:
         change = "cs",
         change_line = "cS",
     },
+<
+
+You can also provide a table for a keymap to override the description:
+>lua
+  normal = { mapping = "ys", desc = "surround: motion" },
 <
 
 Additionally, there is a corresponding set of |<Plug>| mappings that one may
