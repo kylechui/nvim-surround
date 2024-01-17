@@ -106,7 +106,7 @@ M.set_operator_marks = function(motion)
     M.del_marks({ "[", "]" })
     -- Set the [ and ] marks by calling an operatorfunc
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
-    vim.cmd.normal("g@" .. motion)
+    vim.cmd.normal({ args = { "g@" .. motion }, bang = true })
     -- Adjust the marks to not reside on whitespace
     M.adjust_mark("[")
     M.adjust_mark("]")
