@@ -283,7 +283,7 @@ M.normal_callback = function(mode)
     if not cache.normal.delimiters then
         local char = input.get_char()
         -- Get the delimiter pair based on the input character
-        cache.normal.delimiters = cache.normal.delimiters or config.get_delimiters(char, cache.normal.line_mode)
+        cache.normal.delimiters = config.get_delimiters(char, cache.normal.line_mode)
         if not cache.normal.delimiters then
             M.pending_surround = false
             buffer.clear_highlights()
