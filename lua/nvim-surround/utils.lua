@@ -87,4 +87,22 @@ M.filter_selections_list = function(selections_list)
     return best_selections
 end
 
+--- Convert a 0-indexed position to 1-indexed
+---@param sel selection
+---@return selection
+M.convert_to_one_indexed = function(sel)
+    sel.first_pos[1] = sel.first_pos[1] + 1
+    sel.first_pos[2] = sel.first_pos[2] + 1
+    sel.last_pos[1] = sel.last_pos[1] + 1
+
+    return sel
+end
+
+--- Get a `selection` representation of a range (4 values: row_start, col_start, row_end, col_end)
+---@param range integer[]
+---@return selection
+M.as_selection = function(range)
+    return M.convert_to_one_indexed({ first_pos = { range[1], range[2] }, last_pos = { range[3], range[4] } })
+end
+
 return M

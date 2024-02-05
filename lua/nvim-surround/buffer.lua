@@ -34,6 +34,25 @@ M.restore_curpos = function(pos)
     end
 end
 
+-- Enter insert mode and move the cursor based on offsets
+---@param opts offsets?
+M.start_insert_and_move_to = function(opts)
+    if not opts then
+        return
+    end
+
+    local col_offset = opts.col_offset or 0
+    local row_offset = opts.row_offset or 0
+
+    local horizontal_key = vim.keycode(col_offset >= 0 and "<right>" or "<left>")
+    local vertical_key = vim.keycode(row_offset >= 0 and "<down>" or "<up>")
+
+    local horizontal_feed = string.rep(horizontal_key, math.abs(col_offset))
+    local vertical_feed = string.rep(vertical_key, math.abs(row_offset))
+
+    vim.api.nvim_feedkeys("i" .. horizontal_feed .. vertical_feed, "n", false)
+end
+
 --[====================================================================================================================[
                                                  Mark helper functions
 --]====================================================================================================================]
@@ -57,6 +76,11 @@ M.set_mark = function(mark, pos)
     if pos and M.is_valid_pos(pos) then
         vim.api.nvim_buf_set_mark(0, mark, pos[1], pos[2] - 1, {})
     end
+end
+
+--- using lua API does not work to set the ' mark
+M.mark_jump = function()
+    vim.cmd.normal({ "m'", bang = true })
 end
 
 -- Deletes a mark from the buffer.

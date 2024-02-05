@@ -242,6 +242,7 @@ M.default_opts = {
     highlight = {
         duration = 0,
     },
+    filetypes_extensions = false,
     move_cursor = "begin",
     indent_lines = function(start, stop)
         local b = vim.bo
@@ -363,7 +364,8 @@ M.get_delimiters = function(char, line_mode)
 
         -- Trim whitespace after the leading delimiter and before the trailing delimiter
         lhs[#lhs] = lhs[#lhs]:gsub("%s+$", "")
-        rhs[1] = rhs[1]:gsub("^%s+", "")
+        -- Take into account the possibility that there is no rhs delimiter
+        rhs[1] = rhs[1] and rhs[1]:gsub("^%s+", "")
 
         table.insert(rhs, 1, "")
         table.insert(lhs, "")
@@ -485,12 +487,18 @@ end
 
 -- Translates the user-provided surround into the internal form.
 ---@param char string The character used to activate the surround.
----@param user_surround false|user_surround The user-provided surround.
+---@param user_surround false|string|user_surround The user-provided surround.
 ---@return false|surround @The translated surround.
 M.translate_surround = function(char, user_surround)
     if not user_surround then
         return false
     end
+
+    if type(user_surround) == "string" then
+        user_surround = require("nvim-surround.treesitter_surrounds")[user_surround]
+        assert(user_surround ~= nil, "Invalid assignment for " .. char)
+    end
+
     return {
         add = M.translate_add(user_surround.add),
         find = M.translate_find(user_surround.find),
@@ -573,6 +581,12 @@ end
 ---@return options The merged options.
 M.merge_opts = function(base_opts, new_opts)
     new_opts = new_opts or {}
+
+    --- Merge the user custom filetype surrounds into the basics one
+    if new_opts.filetypes_extensions then
+        vim.tbl_deep_extend("force", require("nvim-surround.filetypes"), new_opts.filetypes_extensions)
+    end
+
     local opts = vim.tbl_deep_extend("force", base_opts, M.translate_opts(new_opts))
     return opts
 end
@@ -848,7 +862,7 @@ M.setup = function(user_opts)
     local nvim_surround = require("nvim-surround")
     vim.on_key(function(key)
         if key == "." and not nvim_surround.pending_surround then
-            nvim_surround.normal_curpos = buffer.get_curpos()
+            nvim_surround.old_pos = buffer.get_curpos()
         end
     end)
 end

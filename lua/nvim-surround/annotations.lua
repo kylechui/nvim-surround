@@ -19,6 +19,23 @@
 ---@field left selection|nil
 ---@field right selection|nil
 
+---@class offsets
+---@field col_offset integer?
+---@field row_offset integer?
+
+---@class delimiters_params
+---@field pair delimiter_pair
+---@field placeholder_offset offsets?
+
+---@alias regions selection[]
+---@alias regions_func fun(node: TSNode): regions
+---@alias delimiters_params_func fun(): delimiters_params
+---@alias filetype_spec table<string, regions_func|delimiters_params_func|boolean>
+
+---@class TS_kinds
+---@field fields string[] TS fields names
+---@field types string[] TS types names
+
 --[====================================================================================================================[
                                                     Internal Options
 --]====================================================================================================================]
@@ -37,6 +54,7 @@
 ---@field highlight { duration: integer }
 ---@field move_cursor false|"begin"|"end"
 ---@field indent_lines function
+---@field filetypes_extensions filetype_spec
 
 --[====================================================================================================================[
                                                  User-provided options
@@ -55,8 +73,9 @@
 
 ---@class user_options
 ---@field keymaps table<string, false|string>
----@field surrounds table<string, false|user_surround>
+---@field surrounds table<string, false|string|user_surround>
 ---@field aliases table<string, false|string|string[]>
 ---@field highlight { duration: false|integer }
 ---@field move_cursor false|"begin"|"end"
 ---@field indent_lines false|function
+---@field filetypes_extensions false|filetype_spec

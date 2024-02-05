@@ -1,3 +1,4 @@
+local utils = require("nvim-surround.utils")
 local M = {}
 
 -- Returns whether or not a target node type is found in a list of types.
@@ -23,7 +24,6 @@ M.get_selection = function(node_types)
         node_types = { node_types }
     end
 
-    local utils = require("nvim-surround.utils")
     local ok, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
     if not ok then
         return nil
@@ -70,6 +70,39 @@ M.get_selection = function(node_types)
             first_pos = best_selections.left.first_pos,
             last_pos = best_selections.right.last_pos,
         }
+end
+
+--- Traverse a TSNode and iterate on children. If a node from `kinds` is found, add its bounds to
+--- the resulting list. If `recurses` is present, then these nodes will be recursively visited.
+--- `capture_extra` is for whether or not to include stuff like comments.
+---@param node TSNode
+---@param kinds TS_kinds
+---@param opts {capture_extra?: boolean, recurses?: TS_kinds}?
+---@return regions
+M.get_regions = function(node, kinds, opts)
+    opts = opts or {}
+    local recurses = opts.recurses or { fields = {}, types = {} }
+    local capture_extra = opts.capture_extra == nil and true or opts.capture_extra
+    local regions = {}
+
+    for child, child_field in node:iter_children() do
+        local child_type = child:type()
+        local has_recurses_field = vim.list_contains(recurses.fields, child_field)
+        local has_recurses_type = vim.list_contains(recurses.types, child_type)
+
+        if has_recurses_field or has_recurses_type then
+            vim.list_extend(regions, M.get_regions(child, kinds, opts))
+        else
+            local has_kinds_field = vim.list_contains(kinds.fields, child_field)
+            local has_kinds_type = vim.list_contains(kinds.types, child_type)
+
+            if has_kinds_field or has_kinds_type or (capture_extra and child:extra()) then
+                table.insert(regions, utils.as_selection({ child:range() }))
+            end
+        end
+    end
+
+    return regions
 end
 
 return M
