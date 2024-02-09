@@ -248,6 +248,7 @@ M.default_opts = {
         -- Only re-indent the selection if a formatter is set up already
         if start < stop and (b.equalprg ~= "" or b.indentexpr ~= "" or b.cindent or b.smartindent or b.lisp) then
             vim.cmd(string.format("silent normal! %dG=%dG", start, stop))
+            require("nvim-surround.cache").set_callback("")
         end
     end,
 }
