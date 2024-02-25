@@ -147,13 +147,13 @@ M.visual_surround = function(args)
 end
 
 -- Delete a surrounding delimiter pair, if it exists.
----@param args { del_char: string, curpos: position }|nil
+---@param args { del_char: string, curpos: position, line_mode: boolean }|nil
 ---@return "g@l"|nil
 M.delete_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
-    if not args then
+    if not args or not args.del_char then
         -- Clear the delete cache (since it was user-called)
-        cache.delete = {}
+        cache.delete = args and { line_mode = args.line_mode } or {}
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.delete_callback"
         return "g@l"
@@ -163,6 +163,12 @@ M.delete_surround = function(args)
     local selections = utils.get_nearest_selections(args.del_char, "delete")
 
     if selections then
+        if cache.delete.line_mode then
+            selections.right.first_pos[2] = 1
+            selections.right.last_pos[2] = vim.fn.col({ selections.right.last_pos[1], "$" }) - 1
+            selections.left.first_pos[2] = 1
+            selections.left.last_pos[2] = vim.fn.col({ selections.left.last_pos[1], "$" }) - 1
+        end
         -- Delete the right selection first to ensure selection positions are correct
         buffer.delete_selection(selections.right)
         buffer.delete_selection(selections.left)
@@ -313,6 +319,7 @@ M.delete_callback = function()
     M.delete_surround({
         del_char = cache.delete.char,
         curpos = curpos,
+        line_mode = cache.delete.line_mode,
     })
 end
 

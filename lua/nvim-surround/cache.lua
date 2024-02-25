@@ -4,7 +4,7 @@ local M = {}
 
 ---@type { delimiters: string[][]|nil, line_mode: boolean }
 M.normal = {}
----@type { char: string }
+---@type { char: string, line_mode: boolean }
 M.delete = {}
 ---@type { del_char: string, add_delimiters: add_func, line_mode: boolean }
 M.change = {}

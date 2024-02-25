@@ -15,6 +15,7 @@ M.default_opts = {
         visual = "S",
         visual_line = "gS",
         delete = "ds",
+        delete_line = "dS",
         change = "cs",
         change_line = "cS",
     },
@@ -707,6 +708,19 @@ M.set_keymaps = function(args)
     })
     M.set_keymap({
         mode = "n",
+        lhs = "<Plug>(nvim-surround-delete-line)",
+        rhs = function()
+            return require("nvim-surround").delete_surround({ line_mode = true })
+        end,
+        opts = {
+            buffer = args.buffer,
+            expr = true,
+            desc = "Delete a surrounding pair linewise",
+            silent = true,
+        },
+    })
+    M.set_keymap({
+        mode = "n",
         lhs = "<Plug>(nvim-surround-change)",
         rhs = function()
             return require("nvim-surround").change_surround({ line_mode = false })
@@ -812,6 +826,15 @@ M.set_keymaps = function(args)
         rhs = "<Plug>(nvim-surround-delete)",
         opts = {
             desc = "Delete a surrounding pair",
+        },
+    })
+    M.set_keymap({
+        name = "delete_line",
+        mode = "n",
+        lhs = M.get_opts().keymaps.delete_line,
+        rhs = "<Plug>(nvim-surround-delete-line)",
+        opts = {
+            desc = "Delete a surrounding pair linewise",
         },
     })
     M.set_keymap({
