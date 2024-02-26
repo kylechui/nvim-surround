@@ -78,10 +78,8 @@ M.normal_surround = function(args)
 end
 
 -- Add delimiters around a visual selection.
----@param args { line_mode: boolean } Whether or not the delimiters should get put on new lines.
+---@param args { line_mode: boolean, curpos: position }
 M.visual_surround = function(args)
-    -- Save the current position of the cursor
-    local curpos = buffer.get_curpos()
     -- Get a character and selection from the user
     local ins_char = input.get_char()
 
@@ -142,7 +140,7 @@ M.visual_surround = function(args)
     config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.restore_curpos({
         first_pos = first_pos,
-        old_pos = curpos,
+        old_pos = args.curpos,
     })
 end
 
