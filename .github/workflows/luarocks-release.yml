@@ -6,7 +6,7 @@ on:
       - "*"
   release:
     types:
-      - created
+      - published
   pull_request:
   workflow_dispatch:
 
