@@ -30,7 +30,7 @@ M.restore_curpos = function(pos)
     if config.get_opts().move_cursor == "begin" then
         M.set_curpos(pos.first_pos)
     elseif not config.get_opts().move_cursor then
-        M.set_curpos(pos.old_pos)
+        -- M.set_curpos(pos.old_pos)
     end
 end
 

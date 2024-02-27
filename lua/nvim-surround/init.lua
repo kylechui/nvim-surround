@@ -72,7 +72,7 @@ M.normal_surround = function(args)
     })
 
     if args.line_mode then
-        config.get_opts().indent_lines(first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
+        Preserve_cursor(config.get_opts().indent_lines, first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
     end
     M.pending_surround = false
 end
@@ -137,11 +137,11 @@ M.visual_surround = function(args)
         buffer.insert_text(first_pos, delimiters[1])
     end
 
-    config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.restore_curpos({
         first_pos = first_pos,
         old_pos = args.curpos,
     })
+    Preserve_cursor(config.get_opts().indent_lines, first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
 end
 
 -- Delete a surrounding delimiter pair, if it exists.
@@ -164,7 +164,9 @@ M.delete_surround = function(args)
         -- Delete the right selection first to ensure selection positions are correct
         buffer.delete_selection(selections.right)
         buffer.delete_selection(selections.left)
-        config.get_opts().indent_lines(
+
+        Preserve_cursor(
+            config.get_opts().indent_lines,
             selections.left.first_pos[1],
             selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
         )
@@ -229,13 +231,26 @@ M.change_surround = function(args)
             local first_pos = selections.left.first_pos
             local last_pos = selections.right.last_pos
 
-            config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
+            Preserve_cursor(config.get_opts().indent_lines, first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
         end
     end
 
     cache.set_callback("v:lua.require'nvim-surround'.change_callback")
 end
 
+function Preserve_cursor(func, ...)
+    -- local line, col = table.unpack(vim.api.nvim_win_get_cursor(0))
+    local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+    local len_before = vim.api.nvim_get_current_line():len()
+    local winview = vim.fn.winsaveview()
+
+    func(...)
+
+    vim.fn.winrestview(winview)
+    local len_after = vim.api.nvim_get_current_line():len()
+    local new_col = math.max(0, col - len_before + len_after)
+    vim.api.nvim_win_set_cursor(0, { line, new_col })
+end
 --[====================================================================================================================[
                                                    Callback Functions
 --]====================================================================================================================]
