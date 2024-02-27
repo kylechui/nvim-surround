@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.1.5](https://github.com/kylechui/nvim-surround/compare/v2.1.4...v2.1.5) (2024-02-27)
+
+
+### Bug Fixes
+
+* Add bang to the `g@` normal command. ([#297](https://github.com/kylechui/nvim-surround/issues/297)) ([0c02c52](https://github.com/kylechui/nvim-surround/commit/0c02c52182a9c2a7fa7e122b4037f6408e98434a))
+* **dot-repeat:** Clear dot-repeat after indentation ([#306](https://github.com/kylechui/nvim-surround/issues/306)) ([8f2af76](https://github.com/kylechui/nvim-surround/commit/8f2af76134f37058dc4c27a24bc5f86c9cae76dc))
+* Visual selection highlight disappearing. ([#312](https://github.com/kylechui/nvim-surround/issues/312)) ([a72a97c](https://github.com/kylechui/nvim-surround/commit/a72a97c8ca697ad0000456a40bb931822fc06eab))
+
 ## [2.1.4](https://github.com/kylechui/nvim-surround/compare/v2.1.3...v2.1.4) (2023-12-04)
 
 
