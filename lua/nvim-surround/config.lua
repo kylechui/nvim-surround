@@ -677,21 +677,37 @@ M.set_keymaps = function(args)
     M.set_keymap({
         mode = "x",
         lhs = "<Plug>(nvim-surround-visual)",
-        rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround({ line_mode = false })<CR>",
+        rhs = function()
+            local curpos = require("nvim-surround.buffer").get_curpos()
+            return string.format(
+                ":lua require'nvim-surround'.visual_surround({ line_mode = false, curpos = { %d, %d } })<CR>",
+                curpos[1],
+                curpos[2]
+            )
+        end,
         opts = {
             buffer = args.buffer,
             desc = "Add a surrounding pair around a visual selection",
             silent = true,
+            expr = true,
         },
     })
     M.set_keymap({
         mode = "x",
         lhs = "<Plug>(nvim-surround-visual-line)",
-        rhs = "<Esc><Cmd>lua require'nvim-surround'.visual_surround({ line_mode = true })<CR>",
+        rhs = function()
+            local curpos = require("nvim-surround.buffer").get_curpos()
+            return string.format(
+                ":lua require'nvim-surround'.visual_surround({ line_mode = true, curpos = { %d, %d } })<CR>",
+                curpos[1],
+                curpos[2]
+            )
+        end,
         opts = {
             buffer = args.buffer,
             desc = "Add a surrounding pair around a visual selection, on new lines",
             silent = true,
+            expr = true,
         },
     })
     M.set_keymap({
