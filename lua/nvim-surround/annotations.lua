@@ -48,15 +48,15 @@
 ---@alias user_change false|{ target: user_delete, replacement: user_add|nil }
 
 ---@class user_surround
----@field add user_add
----@field find user_find
----@field delete user_delete
----@field change user_change
+---@field add? user_add
+---@field find? user_find
+---@field delete? user_delete
+---@field change? user_change
 
 ---@class user_options
----@field keymaps table<string, false|string>
----@field surrounds table<string, false|user_surround>
----@field aliases table<string, false|string|string[]>
----@field highlight { duration: false|integer }
----@field move_cursor false|"begin"|"end"
----@field indent_lines false|function
+---@field keymaps? table<string, false|string>
+---@field surrounds? table<string, false|user_surround>
+---@field aliases? table<string, false|string|string[]>
+---@field highlight? { duration: false|integer }
+---@field move_cursor? false|"begin"|"end"
+---@field indent_lines? false|function
