@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.6](https://github.com/kylechui/nvim-surround/compare/v2.1.5...v2.1.6) (2024-04-11)
+
+
+### Bug Fixes
+
+* Mark fields in user_option and user_surround as optional ([#308](https://github.com/kylechui/nvim-surround/issues/308)) ([f7bb9fc](https://github.com/kylechui/nvim-surround/commit/f7bb9fc4d68ad319d94b1d98ed16f279811f5cc8))
+
 ## [2.1.5](https://github.com/kylechui/nvim-surround/compare/v2.1.4...v2.1.5) (2024-02-27)
 
 
