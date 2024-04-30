@@ -130,9 +130,6 @@ M.visual_surround = function(args)
         end
 
         last_pos = buffer.get_last_byte(last_pos)
-        if not last_pos then
-            return
-        end
         buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
         buffer.insert_text(first_pos, delimiters[1])
     end
@@ -257,6 +254,7 @@ M.normal_callback = function(mode)
         buffer.set_mark("]", last_pos)
     end
     -- Move the last position to the last byte of the character, if necessary
+    ---@diagnostic disable-next-line
     buffer.set_mark("]", buffer.get_last_byte(buffer.get_mark("]")))
 
     buffer.adjust_mark("[")

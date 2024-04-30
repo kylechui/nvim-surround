@@ -30,6 +30,16 @@ M.pos_to_index = function(pos)
     return #table.concat(buffer.get_lines(1, pos[1] - 1), "\n") + pos[2] + 1
 end
 
+-- Expands a selection to properly contain multi-byte characters.
+---@param selection selection The given selection.
+---@return selection @The adjusted selection, handling multi-byte characters.
+---@nodiscard
+M.adjust_selection = function(selection)
+    selection.first_pos = buffer.get_first_byte(selection.first_pos)
+    selection.last_pos = buffer.get_last_byte(selection.last_pos)
+    return selection
+end
+
 -- Returns a selection in the buffer based on a Lua pattern.
 ---@param find string The Lua pattern to find in the buffer.
 ---@return selection|nil @The closest selection matching the pattern, if any.
@@ -58,10 +68,10 @@ M.get_selection = function(find)
     if not b_first or not b_last then
         return a_first
             and a_last
-            and {
+            and M.adjust_selection({
                 first_pos = M.index_to_pos(a_first),
                 last_pos = M.index_to_pos(a_last),
-            }
+            })
     end
     -- Adjust the selection character-wise
     local start_col, end_col = cursor_index, b_first
@@ -83,24 +93,24 @@ M.get_selection = function(find)
     end
     -- If the cursor is inside the range then return it
     if b_last and b_first and b_last >= cursor_index then
-        return {
+        return M.adjust_selection({
             first_pos = M.index_to_pos(b_first),
             last_pos = M.index_to_pos(b_last),
-        }
+        })
     end
     -- Else if there's a range found after the cursor, return it
     if a_first and a_last then
-        return {
+        return M.adjust_selection({
             first_pos = M.index_to_pos(a_first),
             last_pos = M.index_to_pos(a_last),
-        }
+        })
     end
     -- Otherwise return the range found before the cursor, if one exists
     if b_first and b_last then
-        return {
+        return M.adjust_selection({
             first_pos = M.index_to_pos(b_first),
             last_pos = M.index_to_pos(b_last),
-        }
+        })
     end
 end
 
@@ -142,14 +152,14 @@ M.get_selections = function(selection, pattern)
     local selections = {
         ---@cast first_index integer
         ---@cast last_index integer
-        left = {
+        left = M.adjust_selection({
             first_pos = M.index_to_pos(offset + first_index - left_len - 1),
             last_pos = M.index_to_pos(offset + first_index - 2),
-        },
-        right = {
+        }),
+        right = M.adjust_selection({
             first_pos = M.index_to_pos(offset + last_index - right_len - 1),
             last_pos = M.index_to_pos(offset + last_index - 2),
-        },
+        }),
     }
     -- Handle special case where the column is invalid
     if selections.left.last_pos[2] > #buffer.get_line(selections.left.last_pos[1]) then

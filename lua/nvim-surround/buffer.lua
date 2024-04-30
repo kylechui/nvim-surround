@@ -139,14 +139,10 @@ M.get_first_byte = function(pos)
 end
 
 -- Gets the position of the last byte of a character, according to the UTF-8 standard.
----@param pos position|nil The position of the beginning of the character.
----@return position|nil @The position of the last byte of the character.
+---@param pos position The position of the beginning of the character.
+---@return position @The position of the last byte of the character.
 ---@nodiscard
 M.get_last_byte = function(pos)
-    if not pos then
-        return nil
-    end
-
     local byte = string.byte(M.get_line(pos[1]):sub(pos[2], pos[2]))
     if not byte then
         return pos

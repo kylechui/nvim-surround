@@ -614,6 +614,37 @@ describe("nvim-surround", function()
             "。(。。。)。",
             "𐍈𐍈𐍈(𐍈𐍈𐍈𐍈)𐍈𐍈𐍈",
         })
+
+        require("nvim-surround").setup({
+            surrounds = {
+                ["x"] = {
+                    add = { "‘", "’" },
+                    find = "‘[^‘’]*’",
+                },
+                ["y"] = {
+                    add = { "‘‘", "’’" },
+                    find = "‘‘[^‘’]*’’",
+                    delete = "^(‘‘)().-(’’)()$",
+                },
+            },
+        })
+        set_lines({
+            "‘foo bar’",
+        })
+        set_curpos({ 1, 5 })
+        vim.cmd("normal csx_")
+        check_lines({
+            "_foo bar_",
+        })
+
+        set_lines({
+            "‘‘foo bar baz’’",
+        })
+        set_curpos({ 1, 3 })
+        vim.cmd("normal dsy")
+        check_lines({
+            "foo bar baz",
+        })
     end)
 
     it("can properly use line-wise surrounds", function()
