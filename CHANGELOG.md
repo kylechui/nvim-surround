@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.7](https://github.com/kylechui/nvim-surround/compare/v2.1.6...v2.1.7) (2024-04-30)
+
+
+### Bug Fixes
+
+* Handle multi-byte characters for change/delete. ([#318](https://github.com/kylechui/nvim-surround/issues/318)) ([f929665](https://github.com/kylechui/nvim-surround/commit/f9296652f5b9cf13c15919714e4e7b9349906c26))
+
 ## [2.1.6](https://github.com/kylechui/nvim-surround/compare/v2.1.5...v2.1.6) (2024-04-11)
 
 
