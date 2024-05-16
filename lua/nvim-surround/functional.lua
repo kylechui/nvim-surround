@@ -5,7 +5,7 @@ local M = {}
 ---@param t T|T[]|nil The input element.
 ---@return T[]|nil @The input wrapped in a list, if necessary.
 M.to_list = function(t)
-    if not t or vim.tbl_islist(t) then
+    if not t or type(t) == "table" then
         return t
     end
     return { t }
