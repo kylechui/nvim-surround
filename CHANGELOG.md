@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.8](https://github.com/kylechui/nvim-surround/compare/v2.1.7...v2.1.8) (2024-05-16)
+
+
+### Bug Fixes
+
+* replace deprecated `vim.tbl_islist` by native Lua function ([#323](https://github.com/kylechui/nvim-surround/issues/323)) ([38973ca](https://github.com/kylechui/nvim-surround/commit/38973caecd9f77e25227f8bc6cb11a73a0695d1c))
+
 ## [2.1.7](https://github.com/kylechui/nvim-surround/compare/v2.1.6...v2.1.7) (2024-04-30)
 
 
