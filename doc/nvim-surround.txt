@@ -107,7 +107,7 @@ The *<C-g>S* insert-mode operator is analogous to |<C-g>s|, but adds the
 delimiter pair on new lines.
 
     Old text                    Command         New text ~
-    func_name*                  <C-g>S)         func(
+    func_name*                  <C-g>S)         func_name(
                                                 	*
                                                 )
 
