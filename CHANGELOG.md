@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.9](https://github.com/kylechui/nvim-surround/compare/v2.1.8...v2.1.9) (2024-05-29)
+
+
+### Bug Fixes
+
+* Properly determine if `$` is used in a block surround. ([#328](https://github.com/kylechui/nvim-surround/issues/328)) ([23f4966](https://github.com/kylechui/nvim-surround/commit/23f4966aba1d90d9ea4e06dfe3dd7d07b8420611))
+
 ## [2.1.8](https://github.com/kylechui/nvim-surround/compare/v2.1.7...v2.1.8) (2024-05-16)
 
 
