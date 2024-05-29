@@ -680,9 +680,10 @@ M.set_keymaps = function(args)
         rhs = function()
             local curpos = require("nvim-surround.buffer").get_curpos()
             return string.format(
-                ":lua require'nvim-surround'.visual_surround({ line_mode = false, curpos = { %d, %d } })<CR>",
+                ":lua require'nvim-surround'.visual_surround({ line_mode = false, curpos = { %d, %d }, curswant = %d })<CR>",
                 curpos[1],
-                curpos[2]
+                curpos[2],
+                vim.fn.winsaveview().curswant
             )
         end,
         opts = {
@@ -698,7 +699,7 @@ M.set_keymaps = function(args)
         rhs = function()
             local curpos = require("nvim-surround.buffer").get_curpos()
             return string.format(
-                ":lua require'nvim-surround'.visual_surround({ line_mode = true, curpos = { %d, %d } })<CR>",
+                ":lua require'nvim-surround'.visual_surround({ line_mode = true, curpos = { %d, %d }, curswant = 0 })<CR>",
                 curpos[1],
                 curpos[2]
             )
