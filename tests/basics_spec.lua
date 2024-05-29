@@ -754,4 +754,19 @@ describe("nvim-surround", function()
             "  }",
         })
     end)
+
+    it("can handle $ for visual block surround", function()
+        set_lines({
+            "some more placeholder text",
+            "some more lines",
+            "hello world",
+        })
+        set_curpos({ 1, 1 })
+        vim.cmd("normal " .. ctrl_v .. "jj$S}")
+        check_lines({
+            "{some more placeholder text}",
+            "{some more lines}",
+            "{hello world}",
+        })
+    end)
 end)

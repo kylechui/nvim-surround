@@ -78,7 +78,7 @@ M.normal_surround = function(args)
 end
 
 -- Add delimiters around a visual selection.
----@param args { line_mode: boolean, curpos: position }
+---@param args { line_mode: boolean, curpos: position, curswant: number }
 M.visual_surround = function(args)
     -- Get a character and selection from the user
     local ins_char = input.get_char()
@@ -102,18 +102,25 @@ M.visual_surround = function(args)
         -- Find the min/max for some variables, since visual blocks can either go diagonally or anti-diagonally
         local mn_disp, mx_disp = math.min(first_disp, last_disp), math.max(first_disp, last_disp)
         local mn_lnum, mx_lnum = math.min(first_pos[1], last_pos[1]), math.max(first_pos[1], last_pos[1])
+        -- Check if $ was used in creating the block selection
+        local surround_to_end_of_line = args.curswant == vim.v.maxcol
         -- Surround each line with the delimiter pair, last to first (for indexing reasons)
         for lnum = mx_lnum, mn_lnum, -1 do
             local line = buffer.get_line(lnum)
-            local index = buffer.get_last_byte({ lnum, 1 })[2]
-            -- The current display count should be >= the desired one
-            while vim.fn.strdisplaywidth(line:sub(1, index)) < mx_disp and index <= #line do
-                index = buffer.get_last_byte({ lnum, index + 1 })[2]
+            if surround_to_end_of_line then
+                buffer.insert_text({ lnum, #buffer.get_line(lnum) + 1 }, delimiters[2])
+            else
+                local index = buffer.get_last_byte({ lnum, 1 })[2]
+                -- The current display count should be >= the desired one
+                while vim.fn.strdisplaywidth(line:sub(1, index)) < mx_disp and index <= #line do
+                    index = buffer.get_last_byte({ lnum, index + 1 })[2]
+                end
+                -- Go to the end of the current character
+                index = buffer.get_last_byte({ lnum, index })[2]
+                buffer.insert_text({ lnum, index + 1 }, delimiters[2])
             end
-            -- Go to the end of the current character
-            index = buffer.get_last_byte({ lnum, index })[2]
-            buffer.insert_text({ lnum, index + 1 }, delimiters[2])
-            index = 1
+
+            local index = 1
             -- The current display count should be <= the desired one
             while vim.fn.strdisplaywidth(line:sub(1, index - 1)) + 1 < mn_disp and index <= #line do
                 index = buffer.get_last_byte({ lnum, index })[2] + 1
