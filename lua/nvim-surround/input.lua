@@ -9,8 +9,7 @@ M.get_char = function()
     if not ok or char == "\27" then
         return nil
     end
-    -- Call this function, because config.translate_opts() does too
-    return vim.api.nvim_replace_termcodes(char, true, true, true)
+    return char
 end
 
 -- Gets a string input from the user.
