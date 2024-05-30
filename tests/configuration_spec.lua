@@ -54,6 +54,44 @@ describe("configuration", function()
         })
     end)
 
+    it("can define and use multi-byte mappings", function()
+        require("nvim-surround").setup({
+            surrounds = {
+                -- multi-byte quote
+                ["’"] = {
+                    add = { "’", "’" },
+                    delete = "^(’)().-(’)()$",
+                },
+            },
+        })
+        set_lines({ "hey! hello world" })
+        set_curpos({ 1, 7 })
+        vim.cmd("normal ysiw’")
+        check_lines({ "hey! ’hello’ world" })
+        vim.cmd("normal ds’")
+        check_lines({ "hey! hello world" })
+    end)
+
+    it("can define and use 'interpreted' multi-byte mappings", function()
+        require("nvim-surround").setup({
+            surrounds = {
+                -- interpreted multi-byte
+                ["<M-]>"] = {
+                    add = { "[[", "]]" },
+                    find = "%[%b[]%]",
+                    delete = "^(%[%[)().-(%]%])()$",
+                },
+            },
+        })
+        local meta_close_bracket = vim.api.nvim_replace_termcodes("<M-]>", true, false, true)
+        set_lines({ "hey! hello world" })
+        set_curpos({ 1, 7 })
+        vim.cmd("normal ysiw" .. meta_close_bracket)
+        check_lines({ "hey! [[hello]] world" })
+        vim.cmd("normal ds" .. meta_close_bracket)
+        check_lines({ "hey! hello world" })
+    end)
+
     it("can disable surrounds", function()
         require("nvim-surround").setup({
             surrounds = {
