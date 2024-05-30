@@ -92,6 +92,25 @@ describe("configuration", function()
         check_lines({ "hey! hello world" })
     end)
 
+    it("default deletes using invalid_key_behavior for an 'interpreted' multi-byte mapping", function()
+        require("nvim-surround").setup({
+            surrounds = {
+                -- interpreted multi-byte
+                ["<C-q>"] = {
+                    add = { "‘", "’" },
+                    find = "‘.-’",
+                },
+            },
+        })
+        local ctrl_q = vim.api.nvim_replace_termcodes("<C-q>", true, false, true)
+        set_lines({ "hey! hello world" })
+        set_curpos({ 1, 7 })
+        vim.cmd("normal ysiw" .. ctrl_q)
+        check_lines({ "hey! ‘hello’ world" })
+        vim.cmd("normal ds" .. ctrl_q)
+        check_lines({ "hey! hello world" })
+    end)
+
     it("can disable surrounds", function()
         require("nvim-surround").setup({
             surrounds = {

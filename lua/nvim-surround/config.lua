@@ -206,6 +206,9 @@ M.default_opts = {
             },
         },
         invalid_key_behavior = {
+            -- By default, we ignore control characters for adding/finding because they are more likely typos than
+            -- intentional. We choose NOT to for deletion, as users could have redefined the find key to something like
+            -- ‘.-’. In this case we should still trim a character from each side, instead of early returning nil.
             add = function(char)
                 if not char or char:find("%c") then
                     return nil
@@ -221,7 +224,7 @@ M.default_opts = {
                 })
             end,
             delete = function(char)
-                if not char or char:find("%c") then
+                if not char then
                     return nil
                 end
                 return M.get_selections({
