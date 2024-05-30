@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.1.10](https://github.com/kylechui/nvim-surround/compare/v2.1.9...v2.1.10) (2024-05-30)
+
+
+### Bug Fixes
+
+* Default delete should work if `find` key is sane. ([#331](https://github.com/kylechui/nvim-surround/issues/331)) ([6d2be37](https://github.com/kylechui/nvim-surround/commit/6d2be378dbccfed0b4db4abad007bb9ad33342b3))
+* Don't translate termcodes twice on input ([#326](https://github.com/kylechui/nvim-surround/issues/326)) ([de828d6](https://github.com/kylechui/nvim-surround/commit/de828d6a98a3617c8f6309ef0235148b698e4ee0))
+* Typo in help docs. ([fa5b365](https://github.com/kylechui/nvim-surround/commit/fa5b365e847909df35cea184e13b7b811f346cda))
+
 ## [2.1.9](https://github.com/kylechui/nvim-surround/compare/v2.1.8...v2.1.9) (2024-05-29)
 
 
