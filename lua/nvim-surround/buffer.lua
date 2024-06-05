@@ -30,7 +30,7 @@ end
 ---@return { first_pos: position, last_pos: position, sticky_pos: position }
 ---@nodiscard
 M.get_curpos_from_selection = function(cur_pos, selection, delimiters)
-    -- The cursor column depends on the delimiter length
+    -- Last position depends on the delimiter lengths
     local last_pos = vim.deepcopy(selection.last_pos)
     last_pos[1] = last_pos[1] + #delimiters[1] + #delimiters[2] - 2
     if #delimiters[1] == 1 then
@@ -44,10 +44,26 @@ M.get_curpos_from_selection = function(cur_pos, selection, delimiters)
         last_pos[2] = #delimiters[2][#delimiters[2]]
     end
 
+    -- Sticky position depends on whether or not we are inserting delimiters before/after the cursor
     local sticky_pos = vim.deepcopy(cur_pos)
-    sticky_pos[1] = sticky_pos[1] + #delimiters[1] - 1
-    if #delimiters[1] == 1 then
-        sticky_pos[2] = sticky_pos[2] + #delimiters[1][#delimiters[1]]
+    if M.comes_before(selection.first_pos, cur_pos) then
+        sticky_pos[1] = sticky_pos[1] + #delimiters[1] - 1
+        if #delimiters[1] == 1 then
+            sticky_pos[2] = sticky_pos[2] + #delimiters[1][#delimiters[1]]
+        else
+            local relative_col = cur_pos[2] - selection.first_pos[2] + 1
+            sticky_pos[2] = relative_col + #delimiters[1][#delimiters[1]]
+        end
+    end
+    -- Selections are inclusive, so we don't adjust the sticky position if the cursor is at the end of the selection
+    if M.comes_before({ selection.last_pos[1], selection.last_pos[2] + 1 }, cur_pos) then
+        sticky_pos[1] = sticky_pos[1] + #delimiters[2] - 1
+        if #delimiters[2] == 1 then
+            sticky_pos[2] = sticky_pos[2] + #delimiters[2][#delimiters[2]]
+        else
+            local relative_col = cur_pos[2] - selection.first_pos[2] + 1
+            sticky_pos[2] = relative_col + #delimiters[2][#delimiters[2]]
+        end
     end
 
     return {
@@ -62,10 +78,10 @@ end
 M.restore_curpos = function(pos)
     if config.get_opts().move_cursor == "begin" then
         M.set_curpos(pos.first_pos)
-    -- elseif config.get_opts().move_cursor == "end" then
-    --     M.set_curpos(pos.last_pos)
-    -- elseif config.get_opts().move_cursor == "sticky" then
-    --     M.set_curpos(pos.sticky_pos)
+    elseif config.get_opts().move_cursor == "end" then
+        M.set_curpos(pos.last_pos)
+    elseif config.get_opts().move_cursor == "sticky" then
+        M.set_curpos(pos.sticky_pos)
     elseif not config.get_opts().move_cursor then
         M.set_curpos(pos.old_pos)
     end

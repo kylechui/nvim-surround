@@ -278,6 +278,9 @@ describe("configuration", function()
             move_cursor = "end",
             surrounds = {
                 ["c"] = { add = { "singleline", "surr" } },
+                ["d"] = { add = { { "multiline", "f" }, "" } },
+                ["e"] = { add = { { "multiline", "f" }, { "", "shouldbethislength" } } },
+                ["f"] = { add = { "singleline", { "", "multilinehere" } } },
             },
         })
 
@@ -287,6 +290,79 @@ describe("configuration", function()
         set_curpos({ 1, 9 })
         vim.cmd("normal ysiwc")
         check_curpos({ 1, 23 })
+
+        set_lines({
+            "this is a line",
+        })
+        set_curpos({ 1, 9 })
+        vim.cmd("normal ysiwd")
+        check_curpos({ 2, 1 })
+
+        set_lines({
+            "this is a line",
+        })
+        set_curpos({ 1, 9 })
+        vim.cmd("normal ysiwe")
+        check_curpos({ 3, 18 })
+
+        set_lines({
+            "this is a line",
+        })
+        set_curpos({ 1, 9 })
+        vim.cmd("normal ysiwf")
+        check_curpos({ 2, 13 })
+    end)
+
+    it("can make the cursor 'stick' to the text", function()
+        require("nvim-surround").buffer_setup({
+            move_cursor = "sticky",
+            surrounds = {
+                ["c"] = { add = { "singleline", "surr" } },
+                ["d"] = { add = { { "multiline", "f" }, "" } },
+                ["e"] = { add = { { "multiline", "f" }, { "", "shouldbethislength" } } },
+                ["f"] = { add = { "singleline", { "", "multilinehere" } } },
+            },
+        })
+
+        -- Sticks to the text if the cursor is inside the selection
+        set_lines({
+            "this is a line",
+        })
+        set_curpos({ 1, 9 })
+        vim.cmd("normal ysiwc")
+        check_curpos({ 1, 19 })
+
+        set_lines({
+            "this is a line",
+        })
+        set_curpos({ 1, 4 })
+        vim.cmd("normal ysiwd")
+        check_curpos({ 2, 5 })
+
+        set_lines({
+            "this is another line",
+        })
+        set_curpos({ 1, 14 })
+        vim.cmd("normal ysiwe")
+        check_curpos({ 2, 7 })
+
+        set_lines({
+            "this is a line",
+        })
+        set_curpos({ 1, 9 })
+        vim.cmd("normal ysiwf")
+        check_curpos({ 1, 19 })
+
+        -- Doesn't move if the cursor is before the selection
+        set_lines({
+            "this 'is' a line",
+        })
+        set_curpos({ 1, 2 })
+        vim.cmd("normal ysa'c")
+        vim.cmd("normal ysa'd")
+        vim.cmd("normal ysa'e")
+        vim.cmd("normal ysa'f")
+        check_curpos({ 1, 2 })
     end)
 
     it("can partially define surrounds", function()

@@ -145,8 +145,13 @@ M.visual_surround = function(args)
     end
 
     config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
+
+    local positions =
+        buffer.get_curpos_from_selection(M.normal_curpos, { first_pos = first_pos, last_pos = last_pos }, delimiters)
     buffer.restore_curpos({
-        first_pos = first_pos,
+        first_pos = positions.first_pos,
+        last_pos = positions.last_pos,
+        sticky_pos = positions.sticky_pos,
         old_pos = args.curpos,
     })
 end
@@ -175,6 +180,13 @@ M.delete_surround = function(args)
             selections.left.first_pos[1],
             selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
         )
+        -- TODO: Figure out deletion
+        -- buffer.restore_curpos({
+        --     first_pos = selections.left.first_pos,
+        --     last_pos = selections.right.first_pos,
+        --     sticky_pos = nil,
+        --     old_pos = args.curpos,
+        -- })
         buffer.restore_curpos({
             first_pos = selections.left.first_pos,
             old_pos = args.curpos,
