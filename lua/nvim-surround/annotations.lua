@@ -35,7 +35,7 @@
 ---@field surrounds table<string, surround>
 ---@field aliases table<string, string|string[]>
 ---@field highlight { duration: integer }
----@field move_cursor false|"begin"|"end"
+---@field move_cursor false|"begin"|"end"|"sticky"
 ---@field indent_lines function
 
 --[====================================================================================================================[

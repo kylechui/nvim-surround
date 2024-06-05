@@ -23,12 +23,49 @@ M.set_curpos = function(pos)
     vim.api.nvim_win_set_cursor(0, { pos[1], pos[2] - 1 })
 end
 
+-- Get notable cursor positions from a selection, taking delimiters into account.
+---@param cur_pos position The original cursor position.
+---@param selection selection The selection to get positions from.
+---@param delimiters string[][] The delimiters to get positions from.
+---@return { first_pos: position, last_pos: position, sticky_pos: position }
+---@nodiscard
+M.get_curpos_from_selection = function(cur_pos, selection, delimiters)
+    -- The cursor column depends on the delimiter length
+    local last_pos = vim.deepcopy(selection.last_pos)
+    last_pos[1] = last_pos[1] + #delimiters[1] + #delimiters[2] - 2
+    if #delimiters[1] == 1 then
+        last_pos[2] = last_pos[2] + #delimiters[1][#delimiters[1]]
+    else
+        last_pos[2] = #delimiters[1][#delimiters[1]]
+    end
+    if #delimiters[2] == 1 then
+        last_pos[2] = last_pos[2] + #delimiters[2][#delimiters[2]]
+    else
+        last_pos[2] = #delimiters[2][#delimiters[2]]
+    end
+
+    local sticky_pos = vim.deepcopy(cur_pos)
+    sticky_pos[1] = sticky_pos[1] + #delimiters[1] - 1
+    if #delimiters[1] == 1 then
+        sticky_pos[2] = sticky_pos[2] + #delimiters[1][#delimiters[1]]
+    end
+
+    return {
+        first_pos = vim.deepcopy(selection.first_pos),
+        last_pos = last_pos,
+        sticky_pos = sticky_pos,
+    }
+end
+
 -- Move the cursor to a location in the buffer, depending on the `move_cursor` setting.
----@param pos { first_pos: position, old_pos: position } Various positions in the buffer.
+---@param pos { first_pos: position, last_pos: position, sticky_pos: position, old_pos: position } Various positions in the buffer.
 M.restore_curpos = function(pos)
-    -- TODO: Add a `last_pos` field for if `move_cursor` is set to "end"
     if config.get_opts().move_cursor == "begin" then
         M.set_curpos(pos.first_pos)
+    -- elseif config.get_opts().move_cursor == "end" then
+    --     M.set_curpos(pos.last_pos)
+    -- elseif config.get_opts().move_cursor == "sticky" then
+    --     M.set_curpos(pos.sticky_pos)
     elseif not config.get_opts().move_cursor then
         M.set_curpos(pos.old_pos)
     end

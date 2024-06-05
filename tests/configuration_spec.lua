@@ -7,6 +7,9 @@ end
 local set_curpos = function(pos)
     vim.api.nvim_win_set_cursor(0, { pos[1], pos[2] - 1 })
 end
+local check_curpos = function(pos)
+    assert.are.same({ pos[1], pos[2] - 1 }, vim.api.nvim_win_get_cursor(0))
+end
 local set_lines = function(lines)
     vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
 end
@@ -21,7 +24,7 @@ describe("configuration", function()
     end)
 
     it("can define own add mappings", function()
-        require("nvim-surround").setup({
+        require("nvim-surround").buffer_setup({
             surrounds = {
                 ["1"] = { add = { "1", "1" } },
                 ["2"] = { add = { "2", { "2" } } },
@@ -75,7 +78,7 @@ describe("configuration", function()
     end)
 
     it("can define and use 'interpreted' multi-byte mappings", function()
-        require("nvim-surround").setup({
+        require("nvim-surround").buffer_setup({
             surrounds = {
                 -- interpreted multi-byte
                 ["<M-]>"] = {
@@ -95,7 +98,7 @@ describe("configuration", function()
     end)
 
     it("default deletes using invalid_key_behavior for an 'interpreted' multi-byte mapping", function()
-        require("nvim-surround").setup({
+        require("nvim-surround").buffer_setup({
             surrounds = {
                 -- interpreted multi-byte
                 ["<C-q>"] = {
@@ -114,7 +117,7 @@ describe("configuration", function()
     end)
 
     it("can disable surrounds", function()
-        require("nvim-surround").setup({
+        require("nvim-surround").buffer_setup({
             surrounds = {
                 ["("] = false,
             },
@@ -130,7 +133,7 @@ describe("configuration", function()
     end)
 
     it("can change invalid_key_behavior", function()
-        require("nvim-surround").setup({
+        require("nvim-surround").buffer_setup({
             surrounds = {
                 invalid_key_behavior = {
                     add = function(char)
@@ -150,7 +153,7 @@ describe("configuration", function()
     end)
 
     it("can disable indent_lines", function()
-        require("nvim-surround").setup({
+        require("nvim-surround").buffer_setup({
             indent_lines = false,
         })
 
@@ -166,7 +169,7 @@ describe("configuration", function()
     end)
 
     it("can disable invalid_key_behavior", function()
-        require("nvim-surround").setup({
+        require("nvim-surround").buffer_setup({
             surrounds = {
                 invalid_key_behavior = false,
             },
@@ -268,6 +271,22 @@ describe("configuration", function()
         check_lines({
             [[And jump ("forwards and backwards" to the nearest) surround.]],
         })
+    end)
+
+    it("can move the cursor to the end of an action", function()
+        require("nvim-surround").buffer_setup({
+            move_cursor = "end",
+            surrounds = {
+                ["c"] = { add = { "singleline", "surr" } },
+            },
+        })
+
+        set_lines({
+            "this is a line",
+        })
+        set_curpos({ 1, 9 })
+        vim.cmd("normal ysiwc")
+        check_curpos({ 1, 23 })
     end)
 
     it("can partially define surrounds", function()

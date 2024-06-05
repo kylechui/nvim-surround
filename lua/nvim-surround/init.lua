@@ -66,8 +66,11 @@ M.normal_surround = function(args)
 
     buffer.insert_text(last_pos, args.delimiters[2])
     buffer.insert_text(first_pos, args.delimiters[1])
+    local positions = buffer.get_curpos_from_selection(M.normal_curpos, args.selection, args.delimiters)
     buffer.restore_curpos({
-        first_pos = first_pos,
+        first_pos = positions.first_pos,
+        last_pos = positions.last_pos,
+        sticky_pos = positions.sticky_pos,
         old_pos = M.normal_curpos,
     })
 
