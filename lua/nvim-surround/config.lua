@@ -557,8 +557,7 @@ M.translate_opts = function(user_opts)
 
     opts.surrounds = {}
     for char, user_surround in pairs(user_opts.surrounds) do
-        -- Support Vim's notation for special characters
-        char = vim.api.nvim_replace_termcodes(char, true, true, true)
+        char = input.replace_termcodes(char)
         -- Special case translation for `invalid_key_behavior`
         if type(user_surround) ~= "nil" then
             if char == "invalid_key_behavior" then
