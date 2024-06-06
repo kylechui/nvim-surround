@@ -325,7 +325,46 @@ describe("configuration", function()
         check_curpos({ 1, 2 })
     end)
 
-    it("can make the cursor 'stick' to the text (delete)", function() end)
+    it("can make the cursor 'stick' to the text (delete)", function()
+        require("nvim-surround").buffer_setup({
+            move_cursor = "sticky",
+            surrounds = {
+                ["c"] = { add = { "singleline", "surr" } },
+                ["d"] = { add = { { "multiline", "f" }, "" } },
+                ["e"] = { add = { { "multiline", "f" }, { "", "shouldbethislength" } } },
+            },
+        })
+
+        set_lines({
+            "func_name(foobar)",
+        })
+        set_curpos({ 1, 14 })
+        vim.cmd("normal dsf")
+        check_curpos({ 1, 4 })
+
+        set_lines({
+            "<div id='foobar'>",
+            "    hello",
+            "</div>",
+        })
+        set_curpos({ 2, 7 })
+        vim.cmd("normal dst")
+        check_curpos({ 2, 7 })
+
+        set_lines({
+            "hello 'world'",
+        })
+        set_curpos({ 1, 2 })
+        vim.cmd("normal dsq")
+        check_curpos({ 1, 2 })
+
+        set_lines({
+            "func(hello) world",
+        })
+        set_curpos({ 1, 14 })
+        vim.cmd("normal dsf")
+        check_curpos({ 1, 8 })
+    end)
 
     it("can partially define surrounds", function()
         require("nvim-surround").buffer_setup({

@@ -170,22 +170,18 @@ M.delete_surround = function(args)
     local selections = utils.get_nearest_selections(args.del_char, "delete")
 
     if selections then
+        local sticky_mark = buffer.set_extmark(args.curpos)
         -- Delete the right selection first to ensure selection positions are correct
         buffer.delete_selection(selections.right)
         buffer.delete_selection(selections.left)
+
         config.get_opts().indent_lines(
             selections.left.first_pos[1],
             selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
         )
-        -- TODO: Figure out deletion
-        -- buffer.restore_curpos({
-        --     first_pos = selections.left.first_pos,
-        --     last_pos = selections.right.first_pos,
-        --     sticky_pos = nil,
-        --     old_pos = args.curpos,
-        -- })
         buffer.restore_curpos({
             first_pos = selections.left.first_pos,
+            sticky_pos = buffer.get_extmark(sticky_mark),
             old_pos = args.curpos,
         })
     end
@@ -233,11 +229,13 @@ M.change_surround = function(args)
             selections.right.first_pos[2] = space_end + 1
         end
 
+        local sticky_mark = buffer.set_extmark(args.curpos)
         -- Change the right selection first to ensure selection positions are correct
         buffer.change_selection(selections.right, delimiters[2])
         buffer.change_selection(selections.left, delimiters[1])
         buffer.restore_curpos({
             first_pos = selections.left.first_pos,
+            sticky_pos = buffer.get_extmark(sticky_mark),
             old_pos = args.curpos,
         })
 
