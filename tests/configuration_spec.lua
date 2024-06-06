@@ -328,11 +328,6 @@ describe("configuration", function()
     it("can make the cursor 'stick' to the text (delete)", function()
         require("nvim-surround").buffer_setup({
             move_cursor = "sticky",
-            surrounds = {
-                ["c"] = { add = { "singleline", "surr" } },
-                ["d"] = { add = { { "multiline", "f" }, "" } },
-                ["e"] = { add = { { "multiline", "f" }, { "", "shouldbethislength" } } },
-            },
         })
 
         set_lines({
@@ -364,6 +359,44 @@ describe("configuration", function()
         set_curpos({ 1, 14 })
         vim.cmd("normal dsf")
         check_curpos({ 1, 8 })
+    end)
+
+    it("can make the cursor 'stick' to the text (change)", function()
+        require("nvim-surround").buffer_setup({
+            move_cursor = "sticky",
+        })
+
+        set_lines({
+            "func_name(foobar)",
+        })
+        set_curpos({ 1, 14 })
+        vim.cmd("normal csff" .. cr)
+        check_curpos({ 1, 6 })
+
+        set_lines({
+            "<div id='foobar'>",
+            "    hello",
+            "</div>",
+        })
+        set_curpos({ 2, 7 })
+        vim.cmd("normal csth1" .. cr)
+        check_curpos({ 2, 7 })
+        vim.cmd("normal csTbutton" .. cr)
+        check_curpos({ 2, 7 })
+
+        set_lines({
+            "hello 'world'",
+        })
+        set_curpos({ 1, 2 })
+        vim.cmd("normal csqffoobar" .. cr)
+        check_curpos({ 1, 2 })
+
+        set_lines({
+            "<div className='container'>hello</div> world",
+        })
+        set_curpos({ 1, 41 })
+        vim.cmd("normal csTb" .. cr)
+        check_curpos({ 1, 15 })
     end)
 
     it("can partially define surrounds", function()
