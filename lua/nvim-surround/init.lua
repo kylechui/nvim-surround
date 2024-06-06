@@ -64,13 +64,13 @@ M.normal_surround = function(args)
     local first_pos = args.selection.first_pos
     local last_pos = { args.selection.last_pos[1], args.selection.last_pos[2] + 1 }
 
+    local sticky_mark = buffer.set_extmark(M.normal_curpos)
     buffer.insert_text(last_pos, args.delimiters[2])
     buffer.insert_text(first_pos, args.delimiters[1])
-    local positions = buffer.get_curpos_from_selection(M.normal_curpos, args.selection, args.delimiters)
+
     buffer.restore_curpos({
-        first_pos = positions.first_pos,
-        last_pos = positions.last_pos,
-        sticky_pos = positions.sticky_pos,
+        first_pos = first_pos,
+        sticky_pos = buffer.get_extmark(sticky_mark),
         old_pos = M.normal_curpos,
     })
 
@@ -146,8 +146,11 @@ M.visual_surround = function(args)
 
     config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
 
-    local positions =
-        buffer.get_curpos_from_selection(M.normal_curpos, { first_pos = first_pos, last_pos = last_pos }, delimiters)
+    local positions = buffer.get_last_pos_after_adding_delimiters(
+        M.normal_curpos,
+        { first_pos = first_pos, last_pos = last_pos },
+        delimiters
+    )
     buffer.restore_curpos({
         first_pos = positions.first_pos,
         last_pos = positions.last_pos,

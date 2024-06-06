@@ -23,66 +23,14 @@ M.set_curpos = function(pos)
     vim.api.nvim_win_set_cursor(0, { pos[1], pos[2] - 1 })
 end
 
--- Get notable cursor positions from a selection, taking delimiters into account.
----@param cur_pos position The original cursor position.
----@param selection selection The selection to get positions from.
----@param delimiters string[][] The delimiters to get positions from.
----@return { first_pos: position, last_pos: position, sticky_pos: position }
----@nodiscard
-M.get_curpos_from_selection = function(cur_pos, selection, delimiters)
-    -- Last position depends on the delimiter lengths
-    local last_pos = vim.deepcopy(selection.last_pos)
-    last_pos[1] = last_pos[1] + #delimiters[1] + #delimiters[2] - 2
-    if #delimiters[1] == 1 then
-        last_pos[2] = last_pos[2] + #delimiters[1][#delimiters[1]]
-    else
-        last_pos[2] = #delimiters[1][#delimiters[1]]
-    end
-    if #delimiters[2] == 1 then
-        last_pos[2] = last_pos[2] + #delimiters[2][#delimiters[2]]
-    else
-        last_pos[2] = #delimiters[2][#delimiters[2]]
-    end
-
-    -- Sticky position depends on whether or not we are inserting delimiters before/after the cursor
-    local sticky_pos = vim.deepcopy(cur_pos)
-    if M.comes_before(selection.first_pos, cur_pos) then
-        sticky_pos[1] = sticky_pos[1] + #delimiters[1] - 1
-        if #delimiters[1] == 1 then
-            sticky_pos[2] = sticky_pos[2] + #delimiters[1][#delimiters[1]]
-        else
-            local relative_col = cur_pos[2] - selection.first_pos[2] + 1
-            sticky_pos[2] = relative_col + #delimiters[1][#delimiters[1]]
-        end
-    end
-    -- Selections are inclusive, so we don't adjust the sticky position if the cursor is at the end of the selection
-    if M.comes_before({ selection.last_pos[1], selection.last_pos[2] + 1 }, cur_pos) then
-        sticky_pos[1] = sticky_pos[1] + #delimiters[2] - 1
-        if #delimiters[2] == 1 then
-            sticky_pos[2] = sticky_pos[2] + #delimiters[2][#delimiters[2]]
-        else
-            local relative_col = cur_pos[2] - selection.first_pos[2] + 1
-            sticky_pos[2] = relative_col + #delimiters[2][#delimiters[2]]
-        end
-    end
-
-    return {
-        first_pos = vim.deepcopy(selection.first_pos),
-        last_pos = last_pos,
-        sticky_pos = sticky_pos,
-    }
-end
-
 -- Move the cursor to a location in the buffer, depending on the `move_cursor` setting.
 ---@param pos { first_pos: position, last_pos: position, sticky_pos: position, old_pos: position } Various positions in the buffer.
 M.restore_curpos = function(pos)
     if config.get_opts().move_cursor == "begin" then
         M.set_curpos(pos.first_pos)
-    elseif config.get_opts().move_cursor == "end" then
-        M.set_curpos(pos.last_pos)
     elseif config.get_opts().move_cursor == "sticky" then
         M.set_curpos(pos.sticky_pos)
-    elseif not config.get_opts().move_cursor then
+    elseif config.get_opts().move_cursor then
         M.set_curpos(pos.old_pos)
     end
 end
@@ -168,6 +116,25 @@ M.set_operator_marks = function(motion)
     M.set_curpos(curpos)
     M.set_mark("<", visual_marks[1])
     M.set_mark(">", visual_marks[2])
+end
+
+-- Gets extmark position for the current buffer.
+---@param extmark integer The extmark ID number.
+---@return position @The position of the extmark in the buffer.
+---@nodiscard
+M.get_extmark = function(extmark)
+    local ns = vim.api.nvim_create_namespace("nvim-surround")
+    local pos = vim.api.nvim_buf_get_extmark_by_id(0, ns, extmark, {})
+    return { pos[1] + 1, pos[2] + 1 }
+end
+
+-- Creates an extmark for the given position.
+---@param pos position The position in the buffer.
+---@return integer @The extmark ID.
+---@nodiscard
+M.set_extmark = function(pos)
+    local ns = vim.api.nvim_create_namespace("nvim-surround")
+    return vim.api.nvim_buf_set_extmark(0, ns, pos[1] - 1, pos[2] - 1, {})
 end
 
 --[====================================================================================================================[

@@ -273,47 +273,7 @@ describe("configuration", function()
         })
     end)
 
-    it("can move the cursor to the end of an action", function()
-        require("nvim-surround").buffer_setup({
-            move_cursor = "end",
-            surrounds = {
-                ["c"] = { add = { "singleline", "surr" } },
-                ["d"] = { add = { { "multiline", "f" }, "" } },
-                ["e"] = { add = { { "multiline", "f" }, { "", "shouldbethislength" } } },
-                ["f"] = { add = { "singleline", { "", "multilinehere" } } },
-            },
-        })
-
-        set_lines({
-            "this is a line",
-        })
-        set_curpos({ 1, 9 })
-        vim.cmd("normal ysiwc")
-        check_curpos({ 1, 23 })
-
-        set_lines({
-            "this is a line",
-        })
-        set_curpos({ 1, 9 })
-        vim.cmd("normal ysiwd")
-        check_curpos({ 2, 1 })
-
-        set_lines({
-            "this is a line",
-        })
-        set_curpos({ 1, 9 })
-        vim.cmd("normal ysiwe")
-        check_curpos({ 3, 18 })
-
-        set_lines({
-            "this is a line",
-        })
-        set_curpos({ 1, 9 })
-        vim.cmd("normal ysiwf")
-        check_curpos({ 2, 13 })
-    end)
-
-    it("can make the cursor 'stick' to the text", function()
+    it("can make the cursor 'stick' to the text (normal)", function()
         require("nvim-surround").buffer_setup({
             move_cursor = "sticky",
             surrounds = {
@@ -363,7 +323,17 @@ describe("configuration", function()
         vim.cmd("normal ysa'e")
         vim.cmd("normal ysa'f")
         check_curpos({ 1, 2 })
+
+        -- Sticks to the text if the cursor comes after the selection
+        set_lines({
+            "this 'is' a line",
+        })
+        set_curpos({ 1, 13 })
+        vim.cmd("normal ysa'b")
+        check_curpos({ 1, 15 })
     end)
+
+    it("can make the cursor 'stick' to the text (delete)", function() end)
 
     it("can partially define surrounds", function()
         require("nvim-surround").buffer_setup({
