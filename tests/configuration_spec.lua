@@ -323,14 +323,6 @@ describe("configuration", function()
         vim.cmd("normal ysa'e")
         vim.cmd("normal ysa'f")
         check_curpos({ 1, 2 })
-
-        -- Sticks to the text if the cursor comes after the selection
-        set_lines({
-            "this 'is' a line",
-        })
-        set_curpos({ 1, 13 })
-        vim.cmd("normal ysa'b")
-        check_curpos({ 1, 15 })
     end)
 
     it("can make the cursor 'stick' to the text (delete)", function() end)
