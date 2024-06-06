@@ -146,15 +146,9 @@ M.visual_surround = function(args)
 
     config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
 
-    local positions = buffer.get_last_pos_after_adding_delimiters(
-        M.normal_curpos,
-        { first_pos = first_pos, last_pos = last_pos },
-        delimiters
-    )
+    -- TODO: We should be updating the cursor after every insertion, in case the cursor is sticky.
     buffer.restore_curpos({
-        first_pos = positions.first_pos,
-        last_pos = positions.last_pos,
-        sticky_pos = positions.sticky_pos,
+        first_pos = first_pos,
         old_pos = args.curpos,
     })
 end

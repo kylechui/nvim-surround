@@ -24,13 +24,13 @@ M.set_curpos = function(pos)
 end
 
 -- Move the cursor to a location in the buffer, depending on the `move_cursor` setting.
----@param pos { first_pos: position, last_pos: position, sticky_pos: position, old_pos: position } Various positions in the buffer.
+---@param pos { first_pos: position, sticky_pos: position, old_pos: position } Various positions in the buffer.
 M.restore_curpos = function(pos)
     if config.get_opts().move_cursor == "begin" then
         M.set_curpos(pos.first_pos)
     elseif config.get_opts().move_cursor == "sticky" then
         M.set_curpos(pos.sticky_pos)
-    elseif config.get_opts().move_cursor then
+    elseif not config.get_opts().move_cursor then
         M.set_curpos(pos.old_pos)
     end
 end
