@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.11](https://github.com/kylechui/nvim-surround/compare/v2.1.10...v2.1.11) (2024-06-06)
+
+
+### Bug Fixes
+
+* UTF-8 characters in surround table. ([#333](https://github.com/kylechui/nvim-surround/issues/333)) ([f93d56d](https://github.com/kylechui/nvim-surround/commit/f93d56d423eb4ffd6a4d4d864c9d3a8fb25809a7))
+
 ## [2.1.10](https://github.com/kylechui/nvim-surround/compare/v2.1.9...v2.1.10) (2024-05-30)
 
 
