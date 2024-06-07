@@ -95,6 +95,7 @@ M.visual_surround = function(args)
         return
     end
 
+    local sticky_mark = buffer.set_extmark(args.curpos)
     if vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
         if vim.o.selection == "exclusive" then
             last_pos[2] = last_pos[2] - 1
@@ -144,13 +145,12 @@ M.visual_surround = function(args)
         buffer.insert_text(first_pos, delimiters[1])
     end
 
-    config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
-
-    -- TODO: We should be updating the cursor after every insertion, in case the cursor is sticky.
     buffer.restore_curpos({
         first_pos = first_pos,
+        sticky_pos = buffer.get_extmark(sticky_mark),
         old_pos = args.curpos,
     })
+    config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
 end
 
 -- Delete a surrounding delimiter pair, if it exists.

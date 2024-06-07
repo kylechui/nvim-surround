@@ -1,5 +1,6 @@
 local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
 local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
+local ctrl_v = vim.api.nvim_replace_termcodes("<C-v>", true, false, true)
 local get_curpos = function()
     local curpos = vim.api.nvim_win_get_cursor(0)
     return { curpos[1], curpos[2] + 1 }
@@ -323,6 +324,86 @@ describe("configuration", function()
         vim.cmd("normal ysa'e")
         vim.cmd("normal ysa'f")
         check_curpos({ 1, 2 })
+    end)
+
+    it("can make the cursor 'stick' to the text (visual)", function()
+        require("nvim-surround").buffer_setup({
+            move_cursor = "sticky",
+        })
+
+        set_lines({
+            "this is a line",
+        })
+        set_curpos({ 1, 9 })
+        vim.cmd("normal vllS'")
+        check_curpos({ 1, 12 })
+
+        set_lines({
+            "this is a line",
+            "with some more text",
+        })
+        set_curpos({ 1, 6 })
+        vim.cmd("normal vjeSb")
+        check_curpos({ 2, 9 })
+
+        set_lines({
+            "this is a line",
+            "with some more text",
+        })
+        set_curpos({ 1, 6 })
+        vim.cmd("normal vjeoSb")
+        check_curpos({ 1, 7 })
+    end)
+
+    it("can make the cursor 'stick' to the text (visual line)", function()
+        require("nvim-surround").buffer_setup({
+            move_cursor = "sticky",
+        })
+
+        set_lines({
+            "this is a line",
+        })
+        set_curpos({ 1, 9 })
+        vim.cmd("normal VSb")
+        check_curpos({ 2, 9 })
+
+        set_lines({
+            "this is a line",
+            "with some more text",
+        })
+        set_curpos({ 1, 6 })
+        vim.cmd("normal VjStdiv" .. cr)
+        check_curpos({ 3, 6 })
+    end)
+
+    it("can make the cursor 'stick' to the text (visual block)", function()
+        require("nvim-surround").buffer_setup({
+            move_cursor = "sticky",
+            surrounds = {
+                ["x"] = {
+                    add = { { "|", "" }, { "", "|" } },
+                },
+            },
+        })
+
+        set_lines({
+            "this is a line",
+            "this is another line",
+        })
+        set_curpos({ 1, 5 })
+        vim.cmd("normal! " .. ctrl_v .. "jf ")
+        vim.cmd("normal Sb")
+        check_curpos({ 2, 9 })
+
+        set_lines({
+            "this is a line",
+            "this is another line",
+            "some more random text",
+        })
+        set_curpos({ 1, 4 })
+        vim.cmd("normal! " .. ctrl_v .. "jjww")
+        vim.cmd("normal Sx")
+        set_curpos({ 8, 8 })
     end)
 
     it("can make the cursor 'stick' to the text (delete)", function()
