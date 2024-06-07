@@ -613,16 +613,29 @@ configured separately. The default highlight group used is `Visual`:
 --------------------------------------------------------------------------------
 3.6. Cursor                                 *nvim-surround.config.move_cursor*
 
-By default, when a surround action is performed, the cursor moves to the
-beginning of the action.
+By default (or when `move_cursor = "begin"`), when a surround action is
+performed, the cursor moves to the beginning of the action.
 
     Old text                    Command         New text ~
     some_t*ext                  ysiw[           *[ some_text ]
     another { sample *}         ds{             another *sample
     (hello* world)              csbB            *{hello world}
 
-This behavior can be disabled by setting `move_cursor = false` in one of the
-setup functions.
+If `move_cursor` is set to `"sticky"`, the cursor will "stick" to the current
+character, and move with the text as the buffer changes.
+
+    Old text                    Command         New text ~
+    some_t*ext                  ysiw[           [ some_t*ext ]
+    another { sample *}         ds{             another sampl*e
+    (hello* world)              csbffoo<CR>     foo(hello* world)
+
+If `move_cursor` is set to `false`, the cursor won't move at all, regardless
+of how the buffer changes.
+
+    Old text                    Command         New text ~
+    some_t*ext                  ysiw[           [ some_*text ]
+    another { *sample }         ds{             another sa*mple
+    (hello* world)              csbffoo<CR>     foo(he*llo world)
 
 --------------------------------------------------------------------------------
 3.7. Indentation                           *nvim-surround.config.indent_lines*
