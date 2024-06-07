@@ -17,6 +17,9 @@ end
 local check_lines = function(lines)
     assert.are.same(lines, vim.api.nvim_buf_get_lines(0, 0, -1, false))
 end
+local get_extmarks = function()
+    return vim.api.nvim_buf_get_extmarks(0, require("nvim-surround.buffer").namespace.extmark, 0, -1, {})
+end
 
 describe("configuration", function()
     before_each(function()
@@ -324,6 +327,8 @@ describe("configuration", function()
         vim.cmd("normal ysa'e")
         vim.cmd("normal ysa'f")
         check_curpos({ 1, 2 })
+
+        assert.are.same(get_extmarks(), {})
     end)
 
     it("can make the cursor 'stick' to the text (visual)", function()
@@ -353,6 +358,8 @@ describe("configuration", function()
         set_curpos({ 1, 6 })
         vim.cmd("normal vjeoSb")
         check_curpos({ 1, 7 })
+
+        assert.are.same(get_extmarks(), {})
     end)
 
     it("can make the cursor 'stick' to the text (visual line)", function()
@@ -374,6 +381,8 @@ describe("configuration", function()
         set_curpos({ 1, 6 })
         vim.cmd("normal VjStdiv" .. cr)
         check_curpos({ 3, 6 })
+
+        assert.are.same(get_extmarks(), {})
     end)
 
     it("can make the cursor 'stick' to the text (visual block)", function()
@@ -404,6 +413,8 @@ describe("configuration", function()
         vim.cmd("normal! " .. ctrl_v .. "jjww")
         vim.cmd("normal Sx")
         set_curpos({ 8, 8 })
+
+        assert.are.same(get_extmarks(), {})
     end)
 
     it("can make the cursor 'stick' to the text (delete)", function()
@@ -440,6 +451,8 @@ describe("configuration", function()
         set_curpos({ 1, 14 })
         vim.cmd("normal dsf")
         check_curpos({ 1, 8 })
+
+        assert.are.same(get_extmarks(), {})
     end)
 
     it("can make the cursor 'stick' to the text (change)", function()
@@ -478,6 +491,8 @@ describe("configuration", function()
         set_curpos({ 1, 41 })
         vim.cmd("normal csTb" .. cr)
         check_curpos({ 1, 15 })
+
+        assert.are.same(get_extmarks(), {})
     end)
 
     it("can partially define surrounds", function()
