@@ -140,6 +140,12 @@ M.set_extmark = function(pos)
     return vim.api.nvim_buf_set_extmark(0, M.namespace.extmark, pos[1] - 1, pos[2] - 1, {})
 end
 
+-- Deletes an extmark from the buffer.
+---@param extmark integer The extmark ID number.
+M.del_extmark = function(extmark)
+    vim.api.nvim_buf_del_extmark(0, M.namespace.extmark, extmark)
+end
+
 --[====================================================================================================================[
                                              Byte indexing helper functions
 --]====================================================================================================================]
