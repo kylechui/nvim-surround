@@ -2,6 +2,11 @@ local config = require("nvim-surround.config")
 
 local M = {}
 
+M.namespace = {
+    highlight = vim.api.nvim_create_namespace("nvim-surround-highlight"),
+    extmark = vim.api.nvim_create_namespace("nvim-surround-extmark"),
+}
+
 --[====================================================================================================================[
                                                 Cursor helper functions
 --]====================================================================================================================]
@@ -123,8 +128,7 @@ end
 ---@return position @The position of the extmark in the buffer.
 ---@nodiscard
 M.get_extmark = function(extmark)
-    local ns = vim.api.nvim_create_namespace("nvim-surround")
-    local pos = vim.api.nvim_buf_get_extmark_by_id(0, ns, extmark, {})
+    local pos = vim.api.nvim_buf_get_extmark_by_id(0, M.namespace.extmark, extmark, {})
     return { pos[1] + 1, pos[2] + 1 }
 end
 
@@ -133,8 +137,7 @@ end
 ---@return integer @The extmark ID.
 ---@nodiscard
 M.set_extmark = function(pos)
-    local ns = vim.api.nvim_create_namespace("nvim-surround")
-    return vim.api.nvim_buf_set_extmark(0, ns, pos[1] - 1, pos[2] - 1, {})
+    return vim.api.nvim_buf_set_extmark(0, M.namespace.extmark, pos[1] - 1, pos[2] - 1, {})
 end
 
 --[====================================================================================================================[
@@ -277,11 +280,10 @@ M.highlight_selection = function(selection)
     if not selection then
         return
     end
-    local namespace = vim.api.nvim_create_namespace("NvimSurround")
 
     vim.highlight.range(
         0,
-        namespace,
+        M.namespace.highlight,
         "NvimSurroundHighlight",
         { selection.first_pos[1] - 1, selection.first_pos[2] - 1 },
         { selection.last_pos[1] - 1, selection.last_pos[2] - 1 },
@@ -293,8 +295,7 @@ end
 
 -- Clears all nvim-surround highlights for the buffer.
 M.clear_highlights = function()
-    local namespace = vim.api.nvim_create_namespace("NvimSurround")
-    vim.api.nvim_buf_clear_namespace(0, namespace, 0, -1)
+    vim.api.nvim_buf_clear_namespace(0, M.namespace.highlight, 0, -1)
     -- Force the screen to clear the highlight immediately
     vim.cmd.redraw()
 end
