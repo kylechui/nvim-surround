@@ -2,6 +2,11 @@ local config = require("nvim-surround.config")
 
 local M = {}
 
+M.namespace = {
+    highlight = vim.api.nvim_create_namespace("nvim-surround-highlight"),
+    extmark = vim.api.nvim_create_namespace("nvim-surround-extmark"),
+}
+
 --[====================================================================================================================[
                                                 Cursor helper functions
 --]====================================================================================================================]
@@ -24,11 +29,12 @@ M.set_curpos = function(pos)
 end
 
 -- Move the cursor to a location in the buffer, depending on the `move_cursor` setting.
----@param pos { first_pos: position, old_pos: position } Various positions in the buffer.
+---@param pos { first_pos: position, sticky_pos: position, old_pos: position } Various positions in the buffer.
 M.restore_curpos = function(pos)
-    -- TODO: Add a `last_pos` field for if `move_cursor` is set to "end"
     if config.get_opts().move_cursor == "begin" then
         M.set_curpos(pos.first_pos)
+    elseif config.get_opts().move_cursor == "sticky" then
+        M.set_curpos(pos.sticky_pos)
     elseif not config.get_opts().move_cursor then
         M.set_curpos(pos.old_pos)
     end
@@ -115,6 +121,29 @@ M.set_operator_marks = function(motion)
     M.set_curpos(curpos)
     M.set_mark("<", visual_marks[1])
     M.set_mark(">", visual_marks[2])
+end
+
+-- Gets extmark position for the current buffer.
+---@param extmark integer The extmark ID number.
+---@return position @The position of the extmark in the buffer.
+---@nodiscard
+M.get_extmark = function(extmark)
+    local pos = vim.api.nvim_buf_get_extmark_by_id(0, M.namespace.extmark, extmark, {})
+    return { pos[1] + 1, pos[2] + 1 }
+end
+
+-- Creates an extmark for the given position.
+---@param pos position The position in the buffer.
+---@return integer @The extmark ID.
+---@nodiscard
+M.set_extmark = function(pos)
+    return vim.api.nvim_buf_set_extmark(0, M.namespace.extmark, pos[1] - 1, pos[2] - 1, {})
+end
+
+-- Deletes an extmark from the buffer.
+---@param extmark integer The extmark ID number.
+M.del_extmark = function(extmark)
+    vim.api.nvim_buf_del_extmark(0, M.namespace.extmark, extmark)
 end
 
 --[====================================================================================================================[
@@ -257,11 +286,10 @@ M.highlight_selection = function(selection)
     if not selection then
         return
     end
-    local namespace = vim.api.nvim_create_namespace("NvimSurround")
 
     vim.highlight.range(
         0,
-        namespace,
+        M.namespace.highlight,
         "NvimSurroundHighlight",
         { selection.first_pos[1] - 1, selection.first_pos[2] - 1 },
         { selection.last_pos[1] - 1, selection.last_pos[2] - 1 },
@@ -273,8 +301,7 @@ end
 
 -- Clears all nvim-surround highlights for the buffer.
 M.clear_highlights = function()
-    local namespace = vim.api.nvim_create_namespace("NvimSurround")
-    vim.api.nvim_buf_clear_namespace(0, namespace, 0, -1)
+    vim.api.nvim_buf_clear_namespace(0, M.namespace.highlight, 0, -1)
     -- Force the screen to clear the highlight immediately
     vim.cmd.redraw()
 end
