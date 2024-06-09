@@ -64,16 +64,15 @@ M.normal_surround = function(args)
     local first_pos = args.selection.first_pos
     local last_pos = { args.selection.last_pos[1], args.selection.last_pos[2] + 1 }
 
-    local sticky_mark = buffer.set_extmark(M.normal_curpos)
-    buffer.insert_text(last_pos, args.delimiters[2])
-    buffer.insert_text(first_pos, args.delimiters[1])
-
+    local sticky_pos = buffer.with_extmark(M.normal_curpos, function()
+        buffer.insert_text(last_pos, args.delimiters[2])
+        buffer.insert_text(first_pos, args.delimiters[1])
+    end)
     buffer.restore_curpos({
         first_pos = first_pos,
-        sticky_pos = buffer.get_extmark(sticky_mark),
+        sticky_pos = sticky_pos,
         old_pos = M.normal_curpos,
     })
-    buffer.del_extmark(sticky_mark)
 
     if args.line_mode then
         config.get_opts().indent_lines(first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
@@ -84,7 +83,6 @@ end
 -- Add delimiters around a visual selection.
 ---@param args { line_mode: boolean, curpos: position, curswant: number }
 M.visual_surround = function(args)
-    -- Get a character and selection from the user
     local ins_char = input.get_char()
 
     if vim.fn.visualmode() == "V" then
@@ -96,63 +94,59 @@ M.visual_surround = function(args)
         return
     end
 
-    local sticky_mark = buffer.set_extmark(args.curpos)
-    if vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
-        if vim.o.selection == "exclusive" then
-            last_pos[2] = last_pos[2] - 1
-        end
-        -- Get (visually) what columns the start and end are located at
-        local first_disp = vim.fn.strdisplaywidth(buffer.get_line(first_pos[1]):sub(1, first_pos[2] - 1)) + 1
-        local last_disp = vim.fn.strdisplaywidth(buffer.get_line(last_pos[1]):sub(1, last_pos[2] - 1)) + 1
-        -- Find the min/max for some variables, since visual blocks can either go diagonally or anti-diagonally
-        local mn_disp, mx_disp = math.min(first_disp, last_disp), math.max(first_disp, last_disp)
-        local mn_lnum, mx_lnum = math.min(first_pos[1], last_pos[1]), math.max(first_pos[1], last_pos[1])
-        -- Check if $ was used in creating the block selection
-        local surround_to_end_of_line = args.curswant == vim.v.maxcol
-        -- Surround each line with the delimiter pair, last to first (for indexing reasons)
-        for lnum = mx_lnum, mn_lnum, -1 do
-            local line = buffer.get_line(lnum)
-            if surround_to_end_of_line then
-                buffer.insert_text({ lnum, #buffer.get_line(lnum) + 1 }, delimiters[2])
-            else
-                local index = buffer.get_last_byte({ lnum, 1 })[2]
-                -- The current display count should be >= the desired one
-                while vim.fn.strdisplaywidth(line:sub(1, index)) < mx_disp and index <= #line do
-                    index = buffer.get_last_byte({ lnum, index + 1 })[2]
-                end
-                -- Go to the end of the current character
-                index = buffer.get_last_byte({ lnum, index })[2]
-                buffer.insert_text({ lnum, index + 1 }, delimiters[2])
-            end
-
-            local index = 1
-            -- The current display count should be <= the desired one
-            while vim.fn.strdisplaywidth(line:sub(1, index - 1)) + 1 < mn_disp and index <= #line do
-                index = buffer.get_last_byte({ lnum, index })[2] + 1
-            end
-            if vim.fn.strdisplaywidth(line:sub(1, index - 1)) + 1 > mn_disp then
-                -- Go to the beginning of the previous character
-                index = buffer.get_first_byte({ lnum, index - 1 })[2]
-            end
-            buffer.insert_text({ lnum, index }, delimiters[1])
-        end
-    else -- Regular visual mode case
-        if vim.o.selection == "exclusive" then
-            last_pos[2] = last_pos[2] - 1
-        end
-
-        last_pos = buffer.get_last_byte(last_pos)
-        buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
-        buffer.insert_text(first_pos, delimiters[1])
+    if vim.o.selection == "exclusive" then
+        last_pos[2] = last_pos[2] - 1
     end
+    local sticky_pos = buffer.with_extmark(args.curpos, function()
+        if vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
+            -- Get (visually) what columns the start and end are located at
+            local first_disp = vim.fn.strdisplaywidth(buffer.get_line(first_pos[1]):sub(1, first_pos[2] - 1)) + 1
+            local last_disp = vim.fn.strdisplaywidth(buffer.get_line(last_pos[1]):sub(1, last_pos[2] - 1)) + 1
+            -- Find the min/max for some variables, since visual blocks can either go diagonally or anti-diagonally
+            local mn_disp, mx_disp = math.min(first_disp, last_disp), math.max(first_disp, last_disp)
+            local mn_lnum, mx_lnum = math.min(first_pos[1], last_pos[1]), math.max(first_pos[1], last_pos[1])
+            -- Check if $ was used in creating the block selection
+            local surround_to_end_of_line = args.curswant == vim.v.maxcol
+            -- Surround each line with the delimiter pair, last to first (for indexing reasons)
+            for lnum = mx_lnum, mn_lnum, -1 do
+                local line = buffer.get_line(lnum)
+                if surround_to_end_of_line then
+                    buffer.insert_text({ lnum, #buffer.get_line(lnum) + 1 }, delimiters[2])
+                else
+                    local index = buffer.get_last_byte({ lnum, 1 })[2]
+                    -- The current display count should be >= the desired one
+                    while vim.fn.strdisplaywidth(line:sub(1, index)) < mx_disp and index <= #line do
+                        index = buffer.get_last_byte({ lnum, index + 1 })[2]
+                    end
+                    -- Go to the end of the current character
+                    index = buffer.get_last_byte({ lnum, index })[2]
+                    buffer.insert_text({ lnum, index + 1 }, delimiters[2])
+                end
+
+                local index = 1
+                -- The current display count should be <= the desired one
+                while vim.fn.strdisplaywidth(line:sub(1, index - 1)) + 1 < mn_disp and index <= #line do
+                    index = buffer.get_last_byte({ lnum, index })[2] + 1
+                end
+                if vim.fn.strdisplaywidth(line:sub(1, index - 1)) + 1 > mn_disp then
+                    -- Go to the beginning of the previous character
+                    index = buffer.get_first_byte({ lnum, index - 1 })[2]
+                end
+                buffer.insert_text({ lnum, index }, delimiters[1])
+            end
+        else -- Regular visual mode case
+            last_pos = buffer.get_last_byte(last_pos)
+            buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
+            buffer.insert_text(first_pos, delimiters[1])
+        end
+    end)
 
     config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.restore_curpos({
         first_pos = first_pos,
-        sticky_pos = buffer.get_extmark(sticky_mark),
+        sticky_pos = sticky_pos,
         old_pos = args.curpos,
     })
-    buffer.del_extmark(sticky_mark)
 end
 
 -- Delete a surrounding delimiter pair, if it exists.
@@ -168,25 +162,21 @@ M.delete_surround = function(args)
         return "g@l"
     end
 
-    -- Get the selections to delete
     local selections = utils.get_nearest_selections(args.del_char, "delete")
-
     if selections then
-        local sticky_mark = buffer.set_extmark(args.curpos)
-        -- Delete the right selection first to ensure selection positions are correct
-        buffer.delete_selection(selections.right)
-        buffer.delete_selection(selections.left)
-
+        local sticky_pos = buffer.with_extmark(args.curpos, function()
+            buffer.delete_selection(selections.right)
+            buffer.delete_selection(selections.left)
+        end)
         config.get_opts().indent_lines(
             selections.left.first_pos[1],
             selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
         )
         buffer.restore_curpos({
             first_pos = selections.left.first_pos,
-            sticky_pos = buffer.get_extmark(sticky_mark),
+            sticky_pos = sticky_pos,
             old_pos = args.curpos,
         })
-        buffer.del_extmark(sticky_mark)
     end
 
     cache.set_callback("v:lua.require'nvim-surround'.delete_callback")
@@ -232,22 +222,20 @@ M.change_surround = function(args)
             selections.right.first_pos[2] = space_end + 1
         end
 
-        local sticky_mark = buffer.set_extmark(args.curpos)
-        -- Change the right selection first to ensure selection positions are correct
-        buffer.change_selection(selections.right, delimiters[2])
-        buffer.change_selection(selections.left, delimiters[1])
+        local sticky_pos = buffer.with_extmark(args.curpos, function()
+            buffer.change_selection(selections.right, delimiters[2])
+            buffer.change_selection(selections.left, delimiters[1])
+        end)
         buffer.restore_curpos({
             first_pos = selections.left.first_pos,
-            sticky_pos = buffer.get_extmark(sticky_mark),
+            sticky_pos = sticky_pos,
             old_pos = args.curpos,
         })
-        buffer.del_extmark(sticky_mark)
 
         if args.line_mode then
-            local first_pos = selections.left.first_pos
-            local last_pos = selections.right.last_pos
-
-            config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
+            local first_line = selections.left.first_pos[1]
+            local last_line = selections.right.last_pos[1]
+            config.get_opts().indent_lines(first_line, last_line + #delimiters[1] + #delimiters[2] - 2)
         end
     end
 
