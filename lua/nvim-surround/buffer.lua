@@ -148,12 +148,12 @@ end
 
 -- Runs a callback function with an extmark.
 ---@param pos position The initial position of the extmark.
----@param callback fun(extmark: integer): nil
+---@param callback fun(): nil
 ---@return position
 ---@nodiscard
 M.with_extmark = function(pos, callback)
     local extmark = M.set_extmark(pos)
-    callback(extmark)
+    callback()
     local extmark_pos = M.get_extmark(extmark)
     M.del_extmark(extmark)
     return extmark_pos
