@@ -64,16 +64,15 @@ M.normal_surround = function(args)
     local first_pos = args.selection.first_pos
     local last_pos = { args.selection.last_pos[1], args.selection.last_pos[2] + 1 }
 
-    local sticky_mark = buffer.set_extmark(M.normal_curpos)
-    buffer.insert_text(last_pos, args.delimiters[2])
-    buffer.insert_text(first_pos, args.delimiters[1])
-
+    local sticky_pos = buffer.with_extmark(M.normal_curpos, function()
+        buffer.insert_text(last_pos, args.delimiters[2])
+        buffer.insert_text(first_pos, args.delimiters[1])
+    end)
     buffer.restore_curpos({
         first_pos = first_pos,
-        sticky_pos = buffer.get_extmark(sticky_mark),
+        sticky_pos = sticky_pos,
         old_pos = M.normal_curpos,
     })
-    buffer.del_extmark(sticky_mark)
 
     if args.line_mode then
         config.get_opts().indent_lines(first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
@@ -163,25 +162,21 @@ M.delete_surround = function(args)
         return "g@l"
     end
 
-    -- Get the selections to delete
     local selections = utils.get_nearest_selections(args.del_char, "delete")
-
     if selections then
-        local sticky_mark = buffer.set_extmark(args.curpos)
-        -- Delete the right selection first to ensure selection positions are correct
-        buffer.delete_selection(selections.right)
-        buffer.delete_selection(selections.left)
-
+        local sticky_pos = buffer.with_extmark(args.curpos, function()
+            buffer.delete_selection(selections.right)
+            buffer.delete_selection(selections.left)
+        end)
         config.get_opts().indent_lines(
             selections.left.first_pos[1],
             selections.left.first_pos[1] + selections.right.first_pos[1] - selections.left.last_pos[1]
         )
         buffer.restore_curpos({
             first_pos = selections.left.first_pos,
-            sticky_pos = buffer.get_extmark(sticky_mark),
+            sticky_pos = sticky_pos,
             old_pos = args.curpos,
         })
-        buffer.del_extmark(sticky_mark)
     end
 
     cache.set_callback("v:lua.require'nvim-surround'.delete_callback")
@@ -227,22 +222,20 @@ M.change_surround = function(args)
             selections.right.first_pos[2] = space_end + 1
         end
 
-        local sticky_mark = buffer.set_extmark(args.curpos)
-        -- Change the right selection first to ensure selection positions are correct
-        buffer.change_selection(selections.right, delimiters[2])
-        buffer.change_selection(selections.left, delimiters[1])
+        local sticky_pos = buffer.with_extmark(args.curpos, function()
+            buffer.change_selection(selections.right, delimiters[2])
+            buffer.change_selection(selections.left, delimiters[1])
+        end)
         buffer.restore_curpos({
             first_pos = selections.left.first_pos,
-            sticky_pos = buffer.get_extmark(sticky_mark),
+            sticky_pos = sticky_pos,
             old_pos = args.curpos,
         })
-        buffer.del_extmark(sticky_mark)
 
         if args.line_mode then
-            local first_pos = selections.left.first_pos
-            local last_pos = selections.right.last_pos
-
-            config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
+            local first_line = selections.left.first_pos[1]
+            local last_line = selections.right.last_pos[1]
+            config.get_opts().indent_lines(first_line, last_line + #delimiters[1] + #delimiters[2] - 2)
         end
     end
 

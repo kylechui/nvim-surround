@@ -146,6 +146,19 @@ M.del_extmark = function(extmark)
     vim.api.nvim_buf_del_extmark(0, M.namespace.extmark, extmark)
 end
 
+-- Runs a callback function with an extmark.
+---@param pos position The initial position of the extmark.
+---@param callback fun(extmark: integer): nil
+---@return position
+---@nodiscard
+M.with_extmark = function(pos, callback)
+    local extmark = M.set_extmark(pos)
+    callback(extmark)
+    local extmark_pos = M.get_extmark(extmark)
+    M.del_extmark(extmark)
+    return extmark_pos
+end
+
 --[====================================================================================================================[
                                              Byte indexing helper functions
 --]====================================================================================================================]
