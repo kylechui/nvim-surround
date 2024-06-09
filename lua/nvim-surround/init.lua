@@ -97,56 +97,56 @@ M.visual_surround = function(args)
     if vim.o.selection == "exclusive" then
         last_pos[2] = last_pos[2] - 1
     end
-    local sticky_mark = buffer.set_extmark(args.curpos)
-    if vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
-        -- Get (visually) what columns the start and end are located at
-        local first_disp = vim.fn.strdisplaywidth(buffer.get_line(first_pos[1]):sub(1, first_pos[2] - 1)) + 1
-        local last_disp = vim.fn.strdisplaywidth(buffer.get_line(last_pos[1]):sub(1, last_pos[2] - 1)) + 1
-        -- Find the min/max for some variables, since visual blocks can either go diagonally or anti-diagonally
-        local mn_disp, mx_disp = math.min(first_disp, last_disp), math.max(first_disp, last_disp)
-        local mn_lnum, mx_lnum = math.min(first_pos[1], last_pos[1]), math.max(first_pos[1], last_pos[1])
-        -- Check if $ was used in creating the block selection
-        local surround_to_end_of_line = args.curswant == vim.v.maxcol
-        -- Surround each line with the delimiter pair, last to first (for indexing reasons)
-        for lnum = mx_lnum, mn_lnum, -1 do
-            local line = buffer.get_line(lnum)
-            if surround_to_end_of_line then
-                buffer.insert_text({ lnum, #buffer.get_line(lnum) + 1 }, delimiters[2])
-            else
-                local index = buffer.get_last_byte({ lnum, 1 })[2]
-                -- The current display count should be >= the desired one
-                while vim.fn.strdisplaywidth(line:sub(1, index)) < mx_disp and index <= #line do
-                    index = buffer.get_last_byte({ lnum, index + 1 })[2]
+    local sticky_pos = buffer.with_extmark(args.curpos, function()
+        if vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
+            -- Get (visually) what columns the start and end are located at
+            local first_disp = vim.fn.strdisplaywidth(buffer.get_line(first_pos[1]):sub(1, first_pos[2] - 1)) + 1
+            local last_disp = vim.fn.strdisplaywidth(buffer.get_line(last_pos[1]):sub(1, last_pos[2] - 1)) + 1
+            -- Find the min/max for some variables, since visual blocks can either go diagonally or anti-diagonally
+            local mn_disp, mx_disp = math.min(first_disp, last_disp), math.max(first_disp, last_disp)
+            local mn_lnum, mx_lnum = math.min(first_pos[1], last_pos[1]), math.max(first_pos[1], last_pos[1])
+            -- Check if $ was used in creating the block selection
+            local surround_to_end_of_line = args.curswant == vim.v.maxcol
+            -- Surround each line with the delimiter pair, last to first (for indexing reasons)
+            for lnum = mx_lnum, mn_lnum, -1 do
+                local line = buffer.get_line(lnum)
+                if surround_to_end_of_line then
+                    buffer.insert_text({ lnum, #buffer.get_line(lnum) + 1 }, delimiters[2])
+                else
+                    local index = buffer.get_last_byte({ lnum, 1 })[2]
+                    -- The current display count should be >= the desired one
+                    while vim.fn.strdisplaywidth(line:sub(1, index)) < mx_disp and index <= #line do
+                        index = buffer.get_last_byte({ lnum, index + 1 })[2]
+                    end
+                    -- Go to the end of the current character
+                    index = buffer.get_last_byte({ lnum, index })[2]
+                    buffer.insert_text({ lnum, index + 1 }, delimiters[2])
                 end
-                -- Go to the end of the current character
-                index = buffer.get_last_byte({ lnum, index })[2]
-                buffer.insert_text({ lnum, index + 1 }, delimiters[2])
-            end
 
-            local index = 1
-            -- The current display count should be <= the desired one
-            while vim.fn.strdisplaywidth(line:sub(1, index - 1)) + 1 < mn_disp and index <= #line do
-                index = buffer.get_last_byte({ lnum, index })[2] + 1
+                local index = 1
+                -- The current display count should be <= the desired one
+                while vim.fn.strdisplaywidth(line:sub(1, index - 1)) + 1 < mn_disp and index <= #line do
+                    index = buffer.get_last_byte({ lnum, index })[2] + 1
+                end
+                if vim.fn.strdisplaywidth(line:sub(1, index - 1)) + 1 > mn_disp then
+                    -- Go to the beginning of the previous character
+                    index = buffer.get_first_byte({ lnum, index - 1 })[2]
+                end
+                buffer.insert_text({ lnum, index }, delimiters[1])
             end
-            if vim.fn.strdisplaywidth(line:sub(1, index - 1)) + 1 > mn_disp then
-                -- Go to the beginning of the previous character
-                index = buffer.get_first_byte({ lnum, index - 1 })[2]
-            end
-            buffer.insert_text({ lnum, index }, delimiters[1])
+        else -- Regular visual mode case
+            last_pos = buffer.get_last_byte(last_pos)
+            buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
+            buffer.insert_text(first_pos, delimiters[1])
         end
-    else -- Regular visual mode case
-        last_pos = buffer.get_last_byte(last_pos)
-        buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
-        buffer.insert_text(first_pos, delimiters[1])
-    end
+    end)
 
     config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
     buffer.restore_curpos({
         first_pos = first_pos,
-        sticky_pos = buffer.get_extmark(sticky_mark),
+        sticky_pos = sticky_pos,
         old_pos = args.curpos,
     })
-    buffer.del_extmark(sticky_mark)
 end
 
 -- Delete a surrounding delimiter pair, if it exists.
