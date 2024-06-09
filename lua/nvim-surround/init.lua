@@ -84,7 +84,6 @@ end
 -- Add delimiters around a visual selection.
 ---@param args { line_mode: boolean, curpos: position, curswant: number }
 M.visual_surround = function(args)
-    -- Get a character and selection from the user
     local ins_char = input.get_char()
 
     if vim.fn.visualmode() == "V" then
@@ -96,11 +95,11 @@ M.visual_surround = function(args)
         return
     end
 
+    if vim.o.selection == "exclusive" then
+        last_pos[2] = last_pos[2] - 1
+    end
     local sticky_mark = buffer.set_extmark(args.curpos)
     if vim.fn.visualmode() == "\22" then -- Visual block mode case (add delimiters to every line)
-        if vim.o.selection == "exclusive" then
-            last_pos[2] = last_pos[2] - 1
-        end
         -- Get (visually) what columns the start and end are located at
         local first_disp = vim.fn.strdisplaywidth(buffer.get_line(first_pos[1]):sub(1, first_pos[2] - 1)) + 1
         local last_disp = vim.fn.strdisplaywidth(buffer.get_line(last_pos[1]):sub(1, last_pos[2] - 1)) + 1
@@ -137,10 +136,6 @@ M.visual_surround = function(args)
             buffer.insert_text({ lnum, index }, delimiters[1])
         end
     else -- Regular visual mode case
-        if vim.o.selection == "exclusive" then
-            last_pos[2] = last_pos[2] - 1
-        end
-
         last_pos = buffer.get_last_byte(last_pos)
         buffer.insert_text({ last_pos[1], last_pos[2] + 1 }, delimiters[2])
         buffer.insert_text(first_pos, delimiters[1])
