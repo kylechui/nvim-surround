@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/kylechui/nvim-surround/compare/v2.2.0...v2.3.0) (2024-06-24)
+
+
+### Features
+
+* **config:** Automatically wrap `add` key in a table. ([#342](https://github.com/kylechui/nvim-surround/issues/342)) ([00d591c](https://github.com/kylechui/nvim-surround/commit/00d591c9044c967b2e37b597566576edd9d2b9b2))
+
 ## [2.2.0](https://github.com/kylechui/nvim-surround/compare/v2.1.11...v2.2.0) (2024-06-08)
 
 
