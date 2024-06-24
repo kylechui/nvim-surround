@@ -120,6 +120,26 @@ describe("configuration", function()
         check_lines({ "hey! hello world" })
     end)
 
+    it("can use 'syntactic sugar' for add functions", function()
+        require("nvim-surround").buffer_setup({
+            surrounds = {
+                ["("] = {
+                    add = function()
+                        return { "<<", ">>" }
+                    end,
+                },
+            },
+        })
+
+        set_lines({
+            "hello world",
+        })
+        vim.cmd("normal yss(")
+        check_lines({
+            "<<hello world>>",
+        })
+    end)
+
     it("can disable surrounds", function()
         require("nvim-surround").buffer_setup({
             surrounds = {

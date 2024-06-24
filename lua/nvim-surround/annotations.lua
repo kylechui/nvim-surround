@@ -6,7 +6,7 @@
 ---@alias position integer[] A 1-indexed position in the buffer
 ---@alias delimiter string[] The text representation of a delimiter
 ---@alias delimiter_pair delimiter[] A pair of delimiters
----@alias add_func fun(char: string|nil): delimiter_pair|nil
+---@alias add_func fun(char: string|nil): delimiter_pair|string[]|nil
 ---@alias find_func fun(char: string|nil): selection|nil
 ---@alias delete_func fun(char: string|nil): selections|nil
 ---@alias change_table { target: delete_func, replacement: add_func|nil }

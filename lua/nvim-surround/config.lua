@@ -360,11 +360,18 @@ M.get_delimiters = function(char, line_mode)
     char = M.get_alias(char)
     -- Get the delimiters, using invalid_key_behavior if the add function is undefined for the character
     local delimiters = M.get_add(char)(char)
-    -- Add new lines if the addition is done line-wise
-    if delimiters and line_mode then
-        local lhs = delimiters[1]
-        local rhs = delimiters[2]
+    if delimiters == nil then
+        return nil
+    end
+    local lhs = type(delimiters[1]) == "string" and { delimiters[1] } or delimiters[1]
+    local rhs = type(delimiters[2]) == "string" and { delimiters[2] } or delimiters[2]
+    -- These casts are needed because LuaLS doesn't narrow types in ternaries properly
+    -- https://github.com/LuaLS/lua-language-server/issues/2233
+    ---@cast lhs string[]
+    ---@cast rhs string[]
 
+    -- Add new lines if the addition is done line-wise
+    if line_mode then
         -- Trim whitespace after the leading delimiter and before the trailing delimiter
         lhs[#lhs] = lhs[#lhs]:gsub("%s+$", "")
         rhs[1] = rhs[1]:gsub("^%s+", "")
@@ -373,7 +380,7 @@ M.get_delimiters = function(char, line_mode)
         table.insert(lhs, "")
     end
 
-    return delimiters
+    return { lhs, rhs }
 end
 
 -- Returns the add key for the surround associated with a given character, if one exists.
@@ -437,12 +444,9 @@ M.translate_add = function(user_add)
     if type(user_add) ~= "table" then
         return user_add
     end
-    -- If the input is given as a pair of strings, or pair of string lists, wrap it in a function
+
     return function()
-        return {
-            functional.to_list(user_add[1]),
-            functional.to_list(user_add[2]),
-        }
+        return user_add
     end
 end
 
