@@ -1,6 +1,3 @@
-local input = require("nvim-surround.input")
-local functional = require("nvim-surround.functional")
-
 local M = {}
 
 ---@type user_options
@@ -265,6 +262,7 @@ M.default_opts = {
 ---@return string|nil @The user input.
 ---@nodiscard
 M.get_input = function(prompt)
+    local input = require("nvim-surround.input")
     return input.get_input(prompt)
 end
 
@@ -546,6 +544,7 @@ end
 ---@param user_opts user_options The user-provided options.
 ---@return options @The translated options.
 M.translate_opts = function(user_opts)
+    local input = require("nvim-surround.input")
     local opts = {}
     for key, value in pairs(user_opts) do
         if key == "surrounds" then
