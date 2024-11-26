@@ -14,15 +14,33 @@ M.replace_termcodes = function(char)
 end
 
 -- Gets a character input from the user.
----@return string|nil @The input character, or nil if an escape character is pressed.
+---@return {char: string, count: integer}|nil @The input character, or nil if an escape character is pressed.
 ---@nodiscard
 M.get_char = function()
-    local ok, char = pcall(vim.fn.getcharstr)
-    -- Return nil if input is cancelled (e.g. <C-c> or <Esc>)
-    if not ok or char == "\27" then
-        return nil
-    end
-    return M.replace_termcodes(char)
+    local has_count = false
+    local count = 0
+    local char = nil
+
+    repeat
+        local ok, input_char = pcall(vim.fn.getcharstr)
+        -- Return nil if input is cancelled (e.g. <C-c> or <Esc>)
+        if not ok or input_char == "\27" then
+            return nil
+        end
+
+        local digit = tonumber(input_char)
+        if digit ~= nil then
+            has_count = true
+            count = 10 * count + digit
+        else
+            char = M.replace_termcodes(input_char)
+        end
+    until char ~= nil
+
+    return {
+        count = has_count and count or 1,
+        char = char,
+    }
 end
 
 -- Gets a string input from the user.

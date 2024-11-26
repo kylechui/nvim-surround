@@ -18,13 +18,17 @@ M.insert_surround = function(args)
     local config = require("nvim-surround.config")
     local buffer = require("nvim-surround.buffer")
     local input = require("nvim-surround.input")
-    local char = input.get_char()
-    local curpos = buffer.get_curpos()
-    local delimiters = config.get_delimiters(char, args.line_mode)
+    local user_input = input.get_char()
+    if not user_input then
+        return
+    end
+    -- TODO: Handle repeating!
+    local delimiters = config.get_delimiters(user_input.char, args.line_mode)
     if not delimiters then
         return
     end
 
+    local curpos = buffer.get_curpos()
     buffer.insert_text(curpos, delimiters[2])
     buffer.insert_text(curpos, delimiters[1])
     buffer.set_curpos({ curpos[1] + #delimiters[1] - 1, curpos[2] + #delimiters[1][#delimiters[1]] })
@@ -53,7 +57,7 @@ M.normal_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args.selection then
         -- Clear the normal cache (since it was user-called)
-        cache.normal = { line_mode = args.line_mode }
+        cache.normal = { delimiters = nil, line_mode = args.line_mode }
         M.normal_curpos = buffer.get_curpos()
         M.pending_surround = true
 
@@ -86,12 +90,15 @@ M.visual_surround = function(args)
     local config = require("nvim-surround.config")
     local buffer = require("nvim-surround.buffer")
     local input = require("nvim-surround.input")
-    local ins_char = input.get_char()
+    local user_input = input.get_char()
+    if user_input == nil then
+        return
+    end
 
     if vim.fn.visualmode() == "V" then
         args.line_mode = true
     end
-    local delimiters = config.get_delimiters(ins_char, args.line_mode)
+    local delimiters = config.get_delimiters(user_input.char, args.line_mode)
     local first_pos, last_pos = buffer.get_mark("<"), buffer.get_mark(">")
     if not delimiters or not first_pos or not last_pos then
         return
@@ -163,7 +170,7 @@ M.delete_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args then
         -- Clear the delete cache (since it was user-called)
-        cache.delete = {}
+        cache.delete = nil
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.delete_callback"
         return "g@l"
@@ -301,9 +308,14 @@ M.normal_callback = function(mode)
     end
     -- Get a character input and the delimiters (if not cached)
     if not cache.normal.delimiters then
-        local char = input.get_char()
+        local user_input = input.get_char()
+        if user_input == nil then
+            M.pending_surround = false
+            buffer.clear_highlights()
+            return
+        end
         -- Get the delimiter pair based on the input character
-        cache.normal.delimiters = config.get_delimiters(char, cache.normal.line_mode)
+        cache.normal.delimiters = config.get_delimiters(user_input.char, cache.normal.line_mode)
         if not cache.normal.delimiters then
             M.pending_surround = false
             buffer.clear_highlights()
@@ -328,9 +340,11 @@ M.delete_callback = function()
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
     -- Get a character input if not cached
-    cache.delete.char = cache.delete.char or input.get_char()
-    if not cache.delete.char then
-        return
+    if cache.delete == nil then
+        cache.delete = input.get_char()
+        if cache.delete == nil then
+            return
+        end
     end
 
     M.delete_surround({
@@ -348,7 +362,12 @@ M.change_callback = function()
     -- Save the current position of the cursor
     local curpos = buffer.get_curpos()
     if not cache.change.del_char or not cache.change.add_delimiters then
-        local del_char = config.get_alias(input.get_char())
+        local user_input = input.get_char()
+        if user_input == nil then
+            return
+        end
+
+        local del_char = config.get_alias(user_input.char)
         local change = config.get_change(del_char)
         local selections = utils.get_nearest_selections(del_char, "change")
         if not (del_char and change and selections) then
@@ -366,12 +385,15 @@ M.change_callback = function()
         end
 
         -- Get the new surrounding pair, querying the user for more input if no replacement is provided
-        local ins_char, delimiters
+        local delimiters
         if change and change.replacement then
             delimiters = change.replacement()
         else
-            ins_char = input.get_char()
-            delimiters = config.get_delimiters(ins_char, cache.change.line_mode)
+            local user_input = input.get_char()
+            if user_input == nil then
+                return
+            end
+            delimiters = config.get_delimiters(user_input.char, cache.change.line_mode)
         end
 
         -- Clear the highlights after getting the replacement surround

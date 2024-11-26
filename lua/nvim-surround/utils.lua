@@ -7,6 +7,22 @@ local M = {}
 -- Do nothing.
 M.NOOP = function() end
 
+-- Repeats a delimiter pair n times.
+---@param delimiters delimiter_pair The delimiters to be repeated.
+---@param n integer The number of times to repeat the delimiters.
+---@return delimiter_pair @The repeated delimiters.
+---@nodiscard
+M.repeat_delimiters = function(delimiters, n)
+    local acc = { { "" }, { "" } }
+    for _ = 1, n do
+        acc[1][#acc[1]] = acc[1][#acc[1]] .. delimiters[1][1]
+        vim.list_extend(acc[1], delimiters[1], 2)
+        acc[2][#acc[2]] = acc[2][#acc[2]] .. delimiters[2][1]
+        vim.list_extend(acc[2], delimiters[2], 2)
+    end
+    return acc
+end
+
 -- Gets the nearest two selections for the left and right surrounding pair.
 ---@param char string|nil A character representing what kind of surrounding pair is to be selected.
 ---@param action "delete"|"change" A string representing what action is being performed.

@@ -547,8 +547,7 @@ M.translate_opts = function(user_opts)
     local input = require("nvim-surround.input")
     local opts = {}
     for key, value in pairs(user_opts) do
-        if key == "surrounds" then
-        elseif key == "indent_lines" then
+        if key == "indent_lines" then
             opts[key] = value or function() end
         else
             opts[key] = value

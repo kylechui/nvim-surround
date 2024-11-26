@@ -30,9 +30,9 @@ describe("configuration", function()
     it("can define own add mappings", function()
         require("nvim-surround").buffer_setup({
             surrounds = {
-                ["1"] = { add = { "1", "1" } },
-                ["2"] = { add = { "2", { "2" } } },
-                ["3"] = { add = { { "3" }, "3" } },
+                ["q"] = { add = { "1", "1" } },
+                ["w"] = { add = { "2", { "2" } } },
+                ["e"] = { add = { { "3" }, "3" } },
                 ["f"] = { add = { { "int main() {", "    " }, { "", "}" } } },
             },
         })
@@ -44,11 +44,11 @@ describe("configuration", function()
             "interesting stuff",
         })
         set_curpos({ 1, 1 })
-        vim.cmd("normal yss1")
+        vim.cmd("normal yssq")
         set_curpos({ 2, 1 })
-        vim.cmd("normal yss2")
+        vim.cmd("normal yssw")
         set_curpos({ 3, 1 })
-        vim.cmd("normal yss3")
+        vim.cmd("normal ysse")
         set_curpos({ 4, 1 })
         vim.cmd("normal yssf")
         check_lines({
