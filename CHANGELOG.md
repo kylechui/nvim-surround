@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/kylechui/nvim-surround/compare/v2.3.0...v2.3.1) (2024-11-28)
+
+
+### Bug Fixes
+
+* Support multi-byte mappings for aliases. ([d66b6a2](https://github.com/kylechui/nvim-surround/commit/d66b6a206f269e46637f16315d2defc35fc3647e))
+
 ## [2.3.0](https://github.com/kylechui/nvim-surround/compare/v2.2.0...v2.3.0) (2024-06-24)
 
 
