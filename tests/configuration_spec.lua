@@ -71,6 +71,9 @@ describe("configuration", function()
                     delete = "^(„)().-(“)()$",
                 },
             },
+            aliases = {
+                ["•"] = ")",
+            },
         })
 
         set_lines({ "hey! hello world" })
@@ -78,6 +81,11 @@ describe("configuration", function()
         vim.cmd("normal ysiw“")
         check_lines({ "hey! „hello“ world" })
         vim.cmd("normal ds“")
+        check_lines({ "hey! hello world" })
+
+        vim.cmd("normal yss•")
+        check_lines({ "(hey! hello world)" })
+        vim.cmd("normal ds•")
         check_lines({ "hey! hello world" })
     end)
 
@@ -91,6 +99,9 @@ describe("configuration", function()
                     delete = "^(%[%[)().-(%]%])()$",
                 },
             },
+            aliases = {
+                ["<CR>"] = ")",
+            },
         })
         local meta_close_bracket = vim.api.nvim_replace_termcodes("<M-]>", true, false, true)
         set_lines({ "hey! hello world" })
@@ -98,6 +109,11 @@ describe("configuration", function()
         vim.cmd("normal ysiw" .. meta_close_bracket)
         check_lines({ "hey! [[hello]] world" })
         vim.cmd("normal ds" .. meta_close_bracket)
+        check_lines({ "hey! hello world" })
+
+        vim.cmd("normal yss" .. cr)
+        check_lines({ "(hey! hello world)" })
+        vim.cmd("normal ds" .. cr)
         check_lines({ "hey! hello world" })
     end)
 

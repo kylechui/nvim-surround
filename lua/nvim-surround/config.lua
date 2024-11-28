@@ -540,6 +540,16 @@ M.translate_invalid_key_behavior = function(invalid_surround)
     return invalid
 end
 
+-- Translates `alias` into the internal form.
+---@param user_alias false|string|string[] The user-provided `alias`.
+---@return string|string[]|nil @The translated `alias`.
+M.translate_alias = function(user_alias)
+    if not user_alias then
+        return nil
+    end
+    return user_alias
+end
+
 -- Translates the user-provided configuration into the internal form.
 ---@param user_opts user_options The user-provided options.
 ---@return options @The translated options.
@@ -547,27 +557,32 @@ M.translate_opts = function(user_opts)
     local input = require("nvim-surround.input")
     local opts = {}
     for key, value in pairs(user_opts) do
-        if key == "surrounds" then
+        if key == "surrounds" or key == "aliases" then
         elseif key == "indent_lines" then
             opts[key] = value or function() end
         else
             opts[key] = value
         end
     end
-    if not user_opts.surrounds then
-        return opts
-    end
-
-    opts.surrounds = {}
-    for char, user_surround in pairs(user_opts.surrounds) do
-        char = input.replace_termcodes(char)
-        -- Special case translation for `invalid_key_behavior`
-        if type(user_surround) ~= "nil" then
-            if char == "invalid_key_behavior" then
-                opts.surrounds[char] = M.translate_invalid_key_behavior(user_surround)
-            else
-                opts.surrounds[char] = M.translate_surround(char, user_surround)
+    if user_opts.surrounds then
+        opts.surrounds = {}
+        for char, user_surround in pairs(user_opts.surrounds) do
+            char = input.replace_termcodes(char)
+            -- Special case translation for `invalid_key_behavior`
+            if type(user_surround) ~= "nil" then
+                if char == "invalid_key_behavior" then
+                    opts.surrounds[char] = M.translate_invalid_key_behavior(user_surround)
+                else
+                    opts.surrounds[char] = M.translate_surround(char, user_surround)
+                end
             end
+        end
+    end
+    if user_opts.aliases then
+        opts.aliases = {}
+        for char, user_alias in pairs(user_opts.aliases) do
+            char = input.replace_termcodes(char)
+            opts.aliases[char] = M.translate_alias(user_alias)
         end
     end
     return opts
