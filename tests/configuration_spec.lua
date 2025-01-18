@@ -571,4 +571,25 @@ describe("configuration", function()
         assert.are.same(get_curpos(), { 1, 5 })
         check_lines({ "(some 'text')" })
     end)
+
+    it("will clamp cursor position if deleting a surround invalidates the old position", function()
+        require("nvim-surround").setup({
+            move_cursor = false,
+            surrounds = {
+                ["c"] = {
+                    add = function()
+                        return { { "```", "" }, { "", "```" } }
+                    end,
+                    find = "(```[a-zA-Z]*\n)().-(\n```)()",
+                    delete = "(```[a-zA-Z]*\n)().-(\n```)()",
+                },
+            },
+        })
+
+        set_lines({ "```lua", "print('foo')", "```" })
+        set_curpos({ 3, 1 }) -- If we delete the ```, the cursor position won't be valid
+        vim.cmd("normal dsc")
+        assert.are.same(get_curpos(), { 1, 1 })
+        check_lines({ "print('foo')" })
+    end)
 end)

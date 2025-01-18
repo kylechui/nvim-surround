@@ -26,10 +26,9 @@ M.set_curpos = function(pos)
         return
     end
 
-    local line = math.min(pos[1], vim.api.nvim_buf_line_count(0))
+    local lnum = math.min(pos[1], vim.api.nvim_buf_line_count(0))
     local column = pos[2] - 1
-
-    vim.api.nvim_win_set_cursor(0, { line, column })
+    vim.api.nvim_win_set_cursor(0, { lnum, column })
 end
 
 -- Move the cursor to a location in the buffer, depending on the `move_cursor` setting.
