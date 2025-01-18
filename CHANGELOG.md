@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.2](https://github.com/kylechui/nvim-surround/compare/v2.3.1...v2.3.2) (2025-01-18)
+
+
+### Bug Fixes
+
+* Bounds check when restoring cursor position. ([#365](https://github.com/kylechui/nvim-surround/issues/365)) ([3994651](https://github.com/kylechui/nvim-surround/commit/39946511840a0b4c3a284b904825272467ff9bc7))
+
 ## [2.3.1](https://github.com/kylechui/nvim-surround/compare/v2.3.0...v2.3.1) (2024-11-28)
 
 
