@@ -97,17 +97,19 @@ M.visual_surround = function(args)
     local config = require("nvim-surround.config")
     local buffer = require("nvim-surround.buffer")
     local input = require("nvim-surround.input")
+    local utils = require("nvim-surround.utils")
     local ins_char = input.get_char()
 
     if vim.fn.visualmode() == "V" then
         args.line_mode = true
     end
-    local delimiters = config.get_delimiters(ins_char, args.line_mode)
     local first_pos, last_pos = buffer.get_mark("<"), buffer.get_mark(">")
-    if not delimiters or not first_pos or not last_pos then
+    local raw_delimiters = config.get_delimiters(ins_char, args.line_mode)
+    if not raw_delimiters or not first_pos or not last_pos then
         return
     end
 
+    local delimiters = utils.repeat_delimiters(raw_delimiters, vim.v.count1)
     if vim.o.selection == "exclusive" then
         last_pos[2] = last_pos[2] - 1
     end
