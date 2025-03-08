@@ -59,8 +59,16 @@ M.normal_surround = function(args)
         M.pending_surround = true
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.normal_callback"
-        -- TODO: Very hacky way of supporting just 1 digit, need to find better way to set v:count to 1
-        return "<Del>g@"
+
+        -- Very jank way of resetting v:count to 1 before getting the motion, to ensure that the count
+        -- does not multiply against the motion
+        local del_str = ""
+        local n = vim.v.count1
+        while n > 1 do
+            del_str = del_str .. "<Del>"
+            n = n / 10
+        end
+        return del_str .. "g@"
     end
 
     local first_pos = args.selection.first_pos
