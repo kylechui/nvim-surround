@@ -85,7 +85,7 @@ describe("nvim-surround", function()
         set_lines({ "here", "we", "have", "several", "lines" })
         set_curpos({ 2, 2 })
         vim.cmd("normal 3ySS`")
-        check_lines({ "here", "`", "we", "have", "several", "`", "lines" })
+        check_lines({ "here", "`", "`", "`", "we", "`", "`", "`", "have", "several", "lines" })
     end)
 
     it("can surround empty lines", function()
@@ -767,6 +767,103 @@ describe("nvim-surround", function()
             "{some more placeholder text}",
             "{some more lines}",
             "{hello world}",
+        })
+    end)
+
+    it("can handle number prefixing for normal surround", function()
+        set_lines({
+            "some more placeholder text",
+            "some more lines",
+            "hello world",
+        })
+        set_curpos({ 2, 7 })
+        vim.cmd("normal 2ysiw*")
+        check_lines({
+            "some more placeholder text",
+            "some **more** lines",
+            "hello world",
+        })
+
+        vim.cmd("normal 3yssa")
+        check_lines({
+            "some more placeholder text",
+            "<<<some **more** lines>>>",
+            "hello world",
+        })
+
+        set_curpos({ 1, 6 })
+        vim.cmd("normal 2ys2wb")
+        check_lines({
+            "some ((more placeholder)) text",
+            "<<<some **more** lines>>>",
+            "hello world",
+        })
+
+        set_curpos({ 3, 1 })
+        vim.cmd("normal 20ysw'")
+        check_lines({
+            "some ((more placeholder)) text",
+            "<<<some **more** lines>>>",
+            "''''''''''''''''''''hello'''''''''''''''''''' world",
+        })
+    end)
+
+    it("can handle number prefixing for visual surround", function()
+        set_lines({
+            "some more placeholder text",
+            "some more lines",
+            "hello world",
+        })
+        set_curpos({ 1, 6 })
+        vim.cmd("normal! v")
+        set_curpos({ 2, 11 })
+        vim.cmd("normal 3Sr")
+        check_lines({
+            "some [[[more placeholder text",
+            "some more l]]]ines",
+            "hello world",
+        })
+
+        set_curpos({ 3, 8 })
+        vim.cmd("normal! v")
+        set_curpos({ 2, 3 })
+        vim.cmd("normal 2Sa")
+        check_lines({
+            "some [[[more placeholder text",
+            "so<<me more l]]]ines",
+            "hello wo>>rld",
+        })
+    end)
+
+    it("can handle number prefixing for visual surround (line mode)", function()
+        set_lines({
+            "some more placeholder text",
+        })
+        set_curpos({ 1, 6 })
+        vim.cmd("normal V3Sa")
+        check_lines({
+            "<",
+            "<",
+            "<",
+            "some more placeholder text",
+            ">",
+            ">",
+            ">",
+        })
+    end)
+
+    it("can handle number prefixing for visual surround (block mode)", function()
+        set_lines({
+            "some more placeholder text",
+            "a short line",
+            "a slightly longer line",
+        })
+        set_curpos({ 1, 6 })
+        vim.cmd("normal " .. ctrl_v .. "jj2w3Sa")
+        check_lines({
+            "some <<<more placehold>>>er text",
+            "a sho<<<rt line>>>",
+            "a sli<<<ghtly longer l>>>ine",
         })
     end)
 end)

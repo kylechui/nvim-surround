@@ -50,23 +50,34 @@ M.normal_surround = function(args)
     local config = require("nvim-surround.config")
     local buffer = require("nvim-surround.buffer")
     local cache = require("nvim-surround.cache")
+    local utils = require("nvim-surround.utils")
     -- Call the operatorfunc if it has not been called yet
     if not args.selection then
-        -- Clear the normal cache (since it was user-called)
-        cache.normal = { line_mode = args.line_mode }
+        -- Clear the normal cache's delimiters (since it was user-called)
+        cache.normal = { line_mode = args.line_mode, count = vim.v.count1 }
         M.normal_curpos = buffer.get_curpos()
         M.pending_surround = true
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.normal_callback"
-        return "g@"
+
+        -- Very jank way of resetting v:count to 1 before getting the motion, to ensure that the count
+        -- does not multiply against the motion
+        local del_str = ""
+        local n = vim.v.count1
+        while n > 1 do
+            del_str = del_str .. "<Del>"
+            n = n / 10
+        end
+        return del_str .. "g@"
     end
 
     local first_pos = args.selection.first_pos
     local last_pos = { args.selection.last_pos[1], args.selection.last_pos[2] + 1 }
 
+    local delimiters = utils.repeat_delimiters(args.delimiters, cache.normal.count)
     local sticky_pos = buffer.with_extmark(M.normal_curpos, function()
-        buffer.insert_text(last_pos, args.delimiters[2])
-        buffer.insert_text(first_pos, args.delimiters[1])
+        buffer.insert_text(last_pos, delimiters[2])
+        buffer.insert_text(first_pos, delimiters[1])
     end)
     buffer.restore_curpos({
         first_pos = first_pos,
@@ -75,7 +86,7 @@ M.normal_surround = function(args)
     })
 
     if args.line_mode then
-        config.get_opts().indent_lines(first_pos[1], last_pos[1] + #args.delimiters[1] + #args.delimiters[2] - 2)
+        config.get_opts().indent_lines(first_pos[1], last_pos[1] + #delimiters[1] + #delimiters[2] - 2)
     end
     M.pending_surround = false
 end
@@ -86,17 +97,19 @@ M.visual_surround = function(args)
     local config = require("nvim-surround.config")
     local buffer = require("nvim-surround.buffer")
     local input = require("nvim-surround.input")
+    local utils = require("nvim-surround.utils")
     local ins_char = input.get_char()
 
     if vim.fn.visualmode() == "V" then
         args.line_mode = true
     end
-    local delimiters = config.get_delimiters(ins_char, args.line_mode)
     local first_pos, last_pos = buffer.get_mark("<"), buffer.get_mark(">")
-    if not delimiters or not first_pos or not last_pos then
+    local raw_delimiters = config.get_delimiters(ins_char, args.line_mode)
+    if not raw_delimiters or not first_pos or not last_pos then
         return
     end
 
+    local delimiters = utils.repeat_delimiters(raw_delimiters, vim.v.count1)
     if vim.o.selection == "exclusive" then
         last_pos[2] = last_pos[2] - 1
     end
