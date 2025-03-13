@@ -1,5 +1,22 @@
 # Changelog
 
+## [3.0.0](https://github.com/kylechui/nvim-surround/compare/v2.3.2...v3.0.0) (2025-03-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* Repeat operations for adding delimiters. ([#360](https://github.com/kylechui/nvim-surround/issues/360)) ([ded28a6](https://github.com/kylechui/nvim-surround/commit/ded28a62aebc91e490bcfc3b5c7c4bb6160f2b08))
+  * See an explanation/example of what changed [here](https://github.com/kylechui/nvim-surround/issues/77#issuecomment-2719745907)
+
+### Features
+
+* Repeat operations for adding delimiters. ([#360](https://github.com/kylechui/nvim-surround/issues/360)) ([ded28a6](https://github.com/kylechui/nvim-surround/commit/ded28a62aebc91e490bcfc3b5c7c4bb6160f2b08))
+
+
+### Documentation
+
+* Recommend v3 to new users. ([f081cd0](https://github.com/kylechui/nvim-surround/commit/f081cd0a3be56bde880f366bf8a5ec17b1756b31))
+
 ## [2.3.2](https://github.com/kylechui/nvim-surround/compare/v2.3.1...v2.3.2) (2025-01-18)
 
 
