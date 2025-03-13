@@ -5,7 +5,8 @@
 
 ### ⚠ BREAKING CHANGES
 
-* Recommend v3 to new users.
+* Repeat operations for adding delimiters. ([#360](https://github.com/kylechui/nvim-surround/issues/360)) ([ded28a6](https://github.com/kylechui/nvim-surround/commit/ded28a62aebc91e490bcfc3b5c7c4bb6160f2b08))
+  * See an explanation/example of what changed [here](https://github.com/kylechui/nvim-surround/issues/77#issuecomment-2719745907)
 
 ### Features
 
