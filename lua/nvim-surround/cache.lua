@@ -4,7 +4,7 @@ local M = {}
 
 ---@type { delimiters: string[][]|nil, line_mode: boolean, count: integer }
 M.normal = {}
----@type { char: string }
+---@type { char: string, count: integer }
 M.delete = {}
 ---@type { del_char: string, add_delimiters: add_func, line_mode: boolean }
 M.change = {}
@@ -13,7 +13,7 @@ M.change = {}
 ---@param func_name string A string representing the callback function's name.
 M.set_callback = function(func_name)
     vim.go.operatorfunc = "v:lua.require'nvim-surround.utils'.NOOP"
-    vim.cmd.normal({ "g@l", bang = true })
+    vim.cmd.normal({ [1] = "g@l", bang = true })
     vim.go.operatorfunc = func_name
 end
 

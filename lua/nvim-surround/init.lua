@@ -176,7 +176,7 @@ M.delete_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args then
         -- Clear the delete cache (since it was user-called)
-        cache.delete = {}
+        cache.delete = { count = vim.v.count1 }
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.delete_callback"
         return "g@l"
@@ -338,18 +338,18 @@ M.delete_callback = function()
     local buffer = require("nvim-surround.buffer")
     local cache = require("nvim-surround.cache")
     local input = require("nvim-surround.input")
-    -- Save the current position of the cursor
-    local curpos = buffer.get_curpos()
     -- Get a character input if not cached
     cache.delete.char = cache.delete.char or input.get_char()
     if not cache.delete.char then
         return
     end
 
-    M.delete_surround({
-        del_char = cache.delete.char,
-        curpos = curpos,
-    })
+    for _ = 1, cache.delete.count do
+        M.delete_surround({
+            del_char = cache.delete.char,
+            curpos = buffer.get_curpos(),
+        })
+    end
 end
 
 M.change_callback = function()
