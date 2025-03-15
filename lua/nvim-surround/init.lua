@@ -222,45 +222,48 @@ M.change_surround = function(args)
     buffer.set_curpos(args.curpos)
     -- Get the selections to change, as well as the delimiters to replace those selections
     local selections = utils.get_nearest_selections(args.del_char, "change")
-    local delimiters = args.add_delimiters()
-    if selections and delimiters then
-        -- Avoid adding any, and remove any existing whitespace after the
-        -- opening delimiter if only whitespace exists between it and the end
-        -- of the line. Avoid adding or removing leading whitespace before the
-        -- closing delimiter if only whitespace exists between it and the
-        -- beginning of the line.
+    local raw_delimiters = args.add_delimiters()
+    if not (selections and raw_delimiters) then
+        cache.set_callback("v:lua.require'nvim-surround'.change_callback")
+        return
+    end
+    local delimiters = utils.normalize_delimiters(raw_delimiters)
+    -- Avoid adding any, and remove any existing whitespace after the
+    -- opening delimiter if only whitespace exists between it and the end
+    -- of the line. Avoid adding or removing leading whitespace before the
+    -- closing delimiter if only whitespace exists between it and the
+    -- beginning of the line.
 
-        local space_begin, space_end = buffer.get_line(selections.left.last_pos[1]):find("%s*$")
-        if space_begin - 1 <= selections.left.last_pos[2] then -- Whitespace is adjacent to opening delimiter
-            -- Trim trailing whitespace from opening delimiter
-            delimiters[1][#delimiters[1]] = delimiters[1][#delimiters[1]]:gsub("%s+$", "")
-            -- Grow selection end to include trailing whitespace, so it gets removed
-            selections.left.last_pos[2] = space_end
-        end
+    local space_begin, space_end = buffer.get_line(selections.left.last_pos[1]):find("%s*$")
+    if space_begin - 1 <= selections.left.last_pos[2] then -- Whitespace is adjacent to opening delimiter
+        -- Trim trailing whitespace from opening delimiter
+        delimiters[1][#delimiters[1]] = delimiters[1][#delimiters[1]]:gsub("%s+$", "")
+        -- Grow selection end to include trailing whitespace, so it gets removed
+        selections.left.last_pos[2] = space_end
+    end
 
-        space_begin, space_end = buffer.get_line(selections.right.first_pos[1]):find("^%s*")
-        if space_end + 1 >= selections.right.first_pos[2] then -- Whitespace is adjacent to closing delimiter
-            -- Trim leading whitespace from closing delimiter
-            delimiters[2][1] = delimiters[2][1]:gsub("^%s+", "")
-            -- Shrink selection beginning to exclude leading whitespace, so it remains unchanged
-            selections.right.first_pos[2] = space_end + 1
-        end
+    space_begin, space_end = buffer.get_line(selections.right.first_pos[1]):find("^%s*")
+    if space_end + 1 >= selections.right.first_pos[2] then -- Whitespace is adjacent to closing delimiter
+        -- Trim leading whitespace from closing delimiter
+        delimiters[2][1] = delimiters[2][1]:gsub("^%s+", "")
+        -- Shrink selection beginning to exclude leading whitespace, so it remains unchanged
+        selections.right.first_pos[2] = space_end + 1
+    end
 
-        local sticky_pos = buffer.with_extmark(args.curpos, function()
-            buffer.change_selection(selections.right, delimiters[2])
-            buffer.change_selection(selections.left, delimiters[1])
-        end)
-        buffer.restore_curpos({
-            first_pos = selections.left.first_pos,
-            sticky_pos = sticky_pos,
-            old_pos = args.curpos,
-        })
+    local sticky_pos = buffer.with_extmark(args.curpos, function()
+        buffer.change_selection(selections.right, delimiters[2])
+        buffer.change_selection(selections.left, delimiters[1])
+    end)
+    buffer.restore_curpos({
+        first_pos = selections.left.first_pos,
+        sticky_pos = sticky_pos,
+        old_pos = args.curpos,
+    })
 
-        if args.line_mode then
-            local first_line = selections.left.first_pos[1]
-            local last_line = selections.right.last_pos[1]
-            config.get_opts().indent_lines(first_line, last_line + #delimiters[1] + #delimiters[2] - 2)
-        end
+    if args.line_mode then
+        local first_line = selections.left.first_pos[1]
+        local last_line = selections.right.last_pos[1]
+        config.get_opts().indent_lines(first_line, last_line + #delimiters[1] + #delimiters[2] - 2)
     end
 
     cache.set_callback("v:lua.require'nvim-surround'.change_callback")
@@ -365,7 +368,9 @@ M.change_callback = function()
         return
     end
 
+    -- To handle number prefixing properly, we just run the replacement algorithm multiple times
     for _ = 1, cache.change.count do
+        -- If at any point we are unable to find a surrounding pair to change, early exit
         local selections = utils.get_nearest_selections(del_char, "change")
         if not selections then
             return
@@ -382,6 +387,8 @@ M.change_callback = function()
         end
 
         -- Get the new surrounding delimiter pair, prioritizing any delimiters in the cache
+        -- NB: This must occur between drawing the highlights and clearing them, so the selections are properly
+        --     highlighted if the user is providing (blocking) input
         local delimiters = cache.change.add_delimiters and cache.change.add_delimiters()
         if not delimiters then
             if change and change.replacement then
@@ -398,20 +405,19 @@ M.change_callback = function()
             return
         end
 
+        local add_delimiters = function()
+            return delimiters
+        end
         -- Set the cache
         cache.change = {
             del_char = del_char,
-            add_delimiters = function()
-                return delimiters
-            end,
+            add_delimiters = add_delimiters,
             line_mode = cache.change.line_mode,
             count = cache.change.count,
         }
         M.change_surround({
             del_char = del_char,
-            add_delimiters = function()
-                return delimiters
-            end,
+            add_delimiters = add_delimiters,
             line_mode = cache.change.line_mode,
             count = cache.change.count,
             curpos = buffer.get_curpos(),
