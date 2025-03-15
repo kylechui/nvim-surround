@@ -213,7 +213,7 @@ M.change_surround = function(args)
     -- Call the operatorfunc if it has not been called yet
     if not args.del_char or not args.add_delimiters then
         -- Clear the change cache (since it was user-called)
-        cache.change = { line_mode = args.line_mode }
+        cache.change = { line_mode = args.line_mode, count = vim.v.count1 }
 
         vim.go.operatorfunc = "v:lua.require'nvim-surround'.change_callback"
         return "g@l"
@@ -358,13 +358,16 @@ M.change_callback = function()
     local cache = require("nvim-surround.cache")
     local input = require("nvim-surround.input")
     local utils = require("nvim-surround.utils")
-    -- Save the current position of the cursor
-    local curpos = buffer.get_curpos()
-    if not cache.change.del_char or not cache.change.add_delimiters then
-        local del_char = config.get_alias(input.get_char())
-        local change = config.get_change(del_char)
+
+    local del_char = cache.change.del_char or config.get_alias(input.get_char())
+    local change = config.get_change(del_char)
+    if not (del_char and change) then
+        return
+    end
+
+    for _ = 1, cache.change.count do
         local selections = utils.get_nearest_selections(del_char, "change")
-        if not (del_char and change and selections) then
+        if not selections then
             return
         end
 
@@ -378,13 +381,15 @@ M.change_callback = function()
             end
         end
 
-        -- Get the new surrounding pair, querying the user for more input if no replacement is provided
-        local ins_char, delimiters
-        if change and change.replacement then
-            delimiters = change.replacement()
-        else
-            ins_char = input.get_char()
-            delimiters = config.get_delimiters(ins_char, cache.change.line_mode)
+        -- Get the new surrounding delimiter pair, prioritizing any delimiters in the cache
+        local delimiters = cache.change.add_delimiters and cache.change.add_delimiters()
+        if not delimiters then
+            if change and change.replacement then
+                delimiters = delimiters or change.replacement()
+            else
+                local ins_char = input.get_char()
+                delimiters = delimiters or config.get_delimiters(ins_char, cache.change.line_mode)
+            end
         end
 
         -- Clear the highlights after getting the replacement surround
@@ -400,11 +405,18 @@ M.change_callback = function()
                 return delimiters
             end,
             line_mode = cache.change.line_mode,
+            count = cache.change.count,
         }
+        M.change_surround({
+            del_char = del_char,
+            add_delimiters = function()
+                return delimiters
+            end,
+            line_mode = cache.change.line_mode,
+            count = cache.change.count,
+            curpos = buffer.get_curpos(),
+        })
     end
-    local args = vim.deepcopy(cache.change)
-    args.curpos = curpos
-    M.change_surround(args) ---@diagnostic disable-line: param-type-mismatch
 end
 
 return M

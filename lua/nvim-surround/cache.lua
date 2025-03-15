@@ -6,7 +6,7 @@ local M = {}
 M.normal = {}
 ---@type { char: string, count: integer }
 M.delete = {}
----@type { del_char: string, add_delimiters: add_func, line_mode: boolean }
+---@type { del_char: string, add_delimiters: add_func, line_mode: boolean, count: integer }
 M.change = {}
 
 -- Sets the callback function for dot-repeating.
