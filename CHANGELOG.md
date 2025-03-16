@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.1](https://github.com/kylechui/nvim-surround/compare/v3.0.0...v3.0.1) (2025-03-15)
+
+
+### Bug Fixes
+
+* Try to trigger luarocks release for all tags. ([72a11ef](https://github.com/kylechui/nvim-surround/commit/72a11ef57241fd9c0fc810bb662eea6182f8da77))
+
 ## [3.0.0](https://github.com/kylechui/nvim-surround/compare/v2.3.2...v3.0.0) (2025-03-13)
 
 
