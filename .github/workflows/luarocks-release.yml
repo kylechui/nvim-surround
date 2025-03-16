@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - "*"
+  release:
+    types:
+      - created
   pull_request:
   workflow_dispatch:
 
