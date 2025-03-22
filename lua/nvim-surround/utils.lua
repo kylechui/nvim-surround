@@ -23,6 +23,19 @@ M.repeat_delimiters = function(delimiters, n)
     return acc
 end
 
+-- Normalizes a pair of delimiters to use a string[] for both the left and right delimiters
+---@param raw_delimiters (string|string[])[] The delimiters to be repeated.
+---@return delimiter_pair @The normalized delimiters.
+---@nodiscard
+M.normalize_delimiters = function(raw_delimiters)
+    local lhs = raw_delimiters[1]
+    local rhs = raw_delimiters[2]
+    return {
+        type(lhs) == "string" and { lhs } or lhs,
+        type(rhs) == "string" and { rhs } or rhs,
+    }
+end
+
 -- Gets the nearest two selections for the left and right surrounding pair.
 ---@param char string|nil A character representing what kind of surrounding pair is to be selected.
 ---@param action "delete"|"change" A string representing what action is being performed.

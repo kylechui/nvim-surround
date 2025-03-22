@@ -592,4 +592,33 @@ describe("configuration", function()
         assert.are.same(get_curpos(), { 1, 1 })
         check_lines({ "print('foo')" })
     end)
+
+    it("will handle number prefixing as if the user used dot-repeat", function()
+        require("nvim-surround").setup({ move_cursor = "sticky" })
+        set_lines({ "foo bar baz" })
+        set_curpos({ 1, 5 })
+        vim.cmd("normal 3ysiwb")
+        check_lines({ "foo (((bar))) baz" })
+        check_curpos({ 1, 8 })
+        vim.cmd("normal 2ySSa")
+        check_lines({
+            "<",
+            "<",
+            "foo (((bar))) baz",
+            ">",
+            ">",
+        })
+
+        set_lines({ "((foo) bar (baz))" })
+        set_curpos({ 1, 9 })
+        vim.cmd("normal 2dsb")
+        check_lines({ "(foo) bar baz" })
+        check_curpos({ 1, 8 })
+
+        set_lines({ "((foo) bar (baz))" })
+        set_curpos({ 1, 9 })
+        vim.cmd("normal 2csbr")
+        check_lines({ "[(foo) bar [baz]]" })
+        check_curpos({ 1, 9 })
+    end)
 end)

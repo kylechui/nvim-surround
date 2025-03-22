@@ -355,18 +355,17 @@ end
 ---@return delimiter_pair|nil @A pair of delimiters for the given input, or nil if not applicable.
 ---@nodiscard
 M.get_delimiters = function(char, line_mode)
+    local utils = require("nvim-surround.utils")
+
     char = M.get_alias(char)
     -- Get the delimiters, using invalid_key_behavior if the add function is undefined for the character
-    local delimiters = M.get_add(char)(char)
-    if delimiters == nil then
+    local raw_delimiters = M.get_add(char)(char)
+    if raw_delimiters == nil then
         return nil
     end
-    local lhs = type(delimiters[1]) == "string" and { delimiters[1] } or delimiters[1]
-    local rhs = type(delimiters[2]) == "string" and { delimiters[2] } or delimiters[2]
-    -- These casts are needed because LuaLS doesn't narrow types in ternaries properly
-    -- https://github.com/LuaLS/lua-language-server/issues/2233
-    ---@cast lhs string[]
-    ---@cast rhs string[]
+    local delimiters = utils.normalize_delimiters(raw_delimiters)
+    local lhs = delimiters[1]
+    local rhs = delimiters[2]
 
     -- Add new lines if the addition is done line-wise
     if line_mode then
