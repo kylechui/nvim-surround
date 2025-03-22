@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/kylechui/nvim-surround/compare/v3.0.2...v3.1.0) (2025-03-22)
+
+
+### Features
+
+* Repeat delete/change operations using number prefix. ([#373](https://github.com/kylechui/nvim-surround/issues/373)) ([4534f28](https://github.com/kylechui/nvim-surround/commit/4534f28c1e7accdb50aca214e6bb12db8d6a8866))
+
 ## [3.0.2](https://github.com/kylechui/nvim-surround/compare/v3.0.1...v3.0.2) (2025-03-16)
 
 
