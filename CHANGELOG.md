@@ -1,5 +1,19 @@
 # Changelog
 
+## [3.0.2](https://github.com/kylechui/nvim-surround/compare/v3.0.1...v3.0.2) (2025-03-16)
+
+
+### Bug Fixes
+
+* Attempt to unblock `luarocks-release`. ([#376](https://github.com/kylechui/nvim-surround/issues/376)) ([7977592](https://github.com/kylechui/nvim-surround/commit/79775929fad39de0db321ebdef32e08f25e3cc07))
+
+## [3.0.1](https://github.com/kylechui/nvim-surround/compare/v3.0.0...v3.0.1) (2025-03-15)
+
+
+### Bug Fixes
+
+* Try to trigger luarocks release for all tags. ([72a11ef](https://github.com/kylechui/nvim-surround/commit/72a11ef57241fd9c0fc810bb662eea6182f8da77))
+
 ## [3.0.0](https://github.com/kylechui/nvim-surround/compare/v2.3.2...v3.0.0) (2025-03-13)
 
 

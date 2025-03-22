@@ -13,7 +13,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: google-github-actions/release-please-action@v3
+      - uses: googleapis/release-please-action@v4
         with:
-          release-type: node
-          package-name: release-please-action
+          release-type: simple
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
