@@ -541,10 +541,10 @@ end
 
 -- Translates `alias` into the internal form.
 ---@param user_alias false|string|string[] The user-provided `alias`.
----@return string|string[]|nil @The translated `alias`.
+---@return false|string|string[] @The translated `alias`.
 M.translate_alias = function(user_alias)
     if not user_alias then
-        return nil
+        return user_alias
     end
     return user_alias
 end

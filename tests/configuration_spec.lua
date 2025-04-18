@@ -557,6 +557,18 @@ describe("configuration", function()
         check_lines({ "wbHello, world!" })
     end)
 
+    it("can disable aliases", function()
+        require("nvim-surround").buffer_setup({
+            aliases = {
+                s = false,
+            },
+        })
+
+        set_lines({ "([{<>}])" })
+        vim.cmd("normal dss")
+        check_lines({ "([{<>}])" })
+    end)
+
     it("can cancel surrounds, without moving the cursor", function()
         require("nvim-surround").buffer_setup({
             move_cursor = false,
