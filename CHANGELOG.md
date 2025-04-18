@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.1](https://github.com/kylechui/nvim-surround/compare/v3.1.0...v3.1.1) (2025-04-18)
+
+
+### Bug Fixes
+
+* Allow disabling aliases. ([2c3edae](https://github.com/kylechui/nvim-surround/commit/2c3edae284c174cc3a2eff15512babd90f7b506d))
+
 ## [3.1.0](https://github.com/kylechui/nvim-surround/compare/v3.0.2...v3.1.0) (2025-03-22)
 
 
