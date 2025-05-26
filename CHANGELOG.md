@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.2](https://github.com/kylechui/nvim-surround/compare/v3.1.1...v3.1.2) (2025-05-26)
+
+
+### Bug Fixes
+
+* use `vim.hl` if available ([#387](https://github.com/kylechui/nvim-surround/issues/387)) ([8babd98](https://github.com/kylechui/nvim-surround/commit/8babd98ca227521b484c45eb5fa1bb75d87993d8))
+
 ## [3.1.1](https://github.com/kylechui/nvim-surround/compare/v3.1.0...v3.1.1) (2025-04-18)
 
 
