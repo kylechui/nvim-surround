@@ -303,7 +303,10 @@ M.highlight_selection = function(selection)
         return
     end
 
-    vim.highlight.range(
+    -- Use the non-deprecated module if available.
+    local highlight = vim.hl or vim.highlight
+
+    highlight.range(
         0,
         M.namespace.highlight,
         "NvimSurroundHighlight",
