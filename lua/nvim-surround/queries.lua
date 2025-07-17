@@ -1,5 +1,8 @@
 local M = {}
 
+-- Some compatibility shims over the builtin `vim.treesitter` functions
+local get_query = vim.treesitter.get_query or vim.treesitter.query.get
+
 -- Retrieves the node that corresponds exactly to a given selection.
 ---@param selection selection The given selection.
 ---@return TSNode|nil @The corresponding node.
@@ -37,27 +40,40 @@ end
 M.get_selection = function(capture, type)
     local utils = require("nvim-surround.utils")
     local treesitter = require("nvim-surround.treesitter")
-    local ts_query = require("nvim-treesitter.query")
 
-    -- Get a table of all nodes that match the query
-    local table_list = ts_query.get_capture_matches_recursively(0, capture, type)
-    -- Convert the list of nodes into a list of selections
-    local selections_list = {}
-    for _, tab in ipairs(table_list) do
-        local selection = treesitter.get_node_selection(tab.node)
-
-        local range = { selection.first_pos[1], selection.first_pos[2], selection.last_pos[1], selection.last_pos[2] }
-        selections_list[#selections_list + 1] = {
-            left = {
-                first_pos = { range[1], range[2] },
-                last_pos = { range[3], range[4] },
-            },
-            right = {
-                first_pos = { range[3], range[4] + 1 },
-                last_pos = { range[3], range[4] },
-            },
-        }
+    local root = treesitter.get_root()
+    local query = get_query(vim.bo.filetype, type)
+    if root == nil or query == nil then
+        return nil
     end
+
+    -- Get a list of all selections in the query that match the capture group
+    local selections_list = {}
+    for id, node in query:iter_captures(root, 0) do
+        local name = query.captures[id]
+        -- TODO: Figure out why sometimes the name from a capture group like `@call.outer` is missing the `@`
+        if capture:sub(1, 1) == "@" then
+            capture = capture:sub(1 - capture:len())
+        end
+
+        if name == capture then
+            local selection = treesitter.get_node_selection(node)
+
+            local range =
+                { selection.first_pos[1], selection.first_pos[2], selection.last_pos[1], selection.last_pos[2] }
+            selections_list[#selections_list + 1] = {
+                left = {
+                    first_pos = { range[1], range[2] },
+                    last_pos = { range[3], range[4] },
+                },
+                right = {
+                    first_pos = { range[3], range[4] + 1 },
+                    last_pos = { range[3], range[4] },
+                },
+            }
+        end
+    end
+
     -- Filter out the best pair of selections from the list
     local best_selections = utils.filter_selections_list(selections_list)
     return best_selections

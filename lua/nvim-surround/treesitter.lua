@@ -1,5 +1,20 @@
 local M = {}
 
+-- Some compatibility shims over the builtin `vim.treesitter` functions
+local get_node = function(opts)
+    if vim.treesitter.get_node_at_pos then
+        local buffer = require("nvim-surround.buffer")
+
+        opts = opts or {}
+        -- The input position is (0, 0) indexed
+        local pos = opts.pos or { buffer.get_curpos()[1] - 1, buffer.get_curpos()[2] - 1 }
+        local bufnr = opts.bufnr or 0
+        return vim.treesitter.get_node_at_pos(bufnr, pos[1], pos[2], opts)
+    end
+
+    return vim.treesitter.get_node(opts)
+end
+
 -- Returns whether or not a target node type is found in a list of types.
 ---@param target string The target type to be found.
 ---@param types string[] The list of types to search through.
@@ -18,20 +33,23 @@ end
 ---@return TSNode|nil @The root node for the buffer.
 ---@nodiscard
 M.get_root = function()
-    if vim.treesitter then
-        return vim.treesitter.get_node():tree():root()
-    end
-
-    local ok, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
-    if not ok then
-        return nil
-    end
-
-    local node = ts_utils.get_node_at_cursor()
+    local node = get_node()
     if node == nil then
         return nil
     end
-    return ts_utils.get_root_for_node(node)
+
+    while node:parent() ~= nil do
+        node = node:parent()
+    end
+
+    return node
+end
+
+-- Gets the current smallest node at the cursor.
+---@return TSNode|nil @The smallest node containing the cursor, in the current buffer.
+---@nodiscard
+M.get_node_at_cursor = function()
+    return get_node({ ignore_injections = false })
 end
 
 -- Gets the selection that a TreeSitter node spans.
