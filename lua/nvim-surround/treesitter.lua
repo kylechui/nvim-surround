@@ -1,6 +1,9 @@
 local M = {}
 
--- Some compatibility shims over the builtin `vim.treesitter` functions
+-- Gets a TreeSitter node from the buffer. A thin compatibility shim over `vim.treesitter.get_node`.
+---@param opts vim.treesitter.get_node.Opts
+---@return TSNode|nil @The smallest named node at the given position.
+---@nodiscard
 local get_node = function(opts)
     if vim.treesitter.get_node_at_pos then
         local buffer = require("nvim-surround.buffer")

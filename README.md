@@ -25,10 +25,6 @@ Surround selections, stylishly :sunglasses:
 
 - [Neovim 0.8+](https://github.com/neovim/neovim/releases)
 - \[Recommended] If
-  [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) is
-  installed, then Tree-sitter nodes may be surrounded and modified, in addition
-  to just Vim motions and Lua patterns
-- \[Recommended] If
   [nvim-treesitter-textobjects](https://github.com/nvim-treesitter/nvim-treesitter-textobjects)
   is installed, then Tree-sitter text-objects can be used to define surrounds,
   simplifying configuration
