@@ -1,33 +1,25 @@
-local utils = require("nvim-surround.utils")
-local ts_query = require("nvim-treesitter.query")
-local ts_utils = require("nvim-treesitter.ts_utils")
-local ts_parsers = require("nvim-treesitter.parsers")
-
 local M = {}
+
+-- Some compatibility shims over the builtin `vim.treesitter` functions
+local get_query = vim.treesitter.get_query or vim.treesitter.query.get
 
 -- Retrieves the node that corresponds exactly to a given selection.
 ---@param selection selection The given selection.
----@return _ @The corresponding node.
+---@return TSNode|nil @The corresponding node.
 ---@nodiscard
 M.get_node = function(selection)
-    -- Convert the selection into a list
-    local range = {
-        selection.first_pos[1],
-        selection.first_pos[2],
-        selection.last_pos[1],
-        selection.last_pos[2],
-    }
+    local treesitter = require("nvim-surround.treesitter")
 
-    -- Get the root node of the current tree
-    local lang_tree = ts_parsers.get_parser(0)
-    local tree = lang_tree:trees()[1]
-    local root = tree:root()
+    local root = treesitter.get_root()
+    if root == nil then
+        return nil
+    end
     -- DFS through the tree and find all nodes that have the given type
     local stack = { root }
     while #stack > 0 do
         local cur = stack[#stack]
         -- If the current node's range is equal to the desired selection, return the node
-        if vim.deep_equal(range, { ts_utils.get_vim_range({ cur:range() }) }) then
+        if vim.deep_equal(selection, treesitter.get_node_selection(cur)) then
             return cur
         end
         -- Pop off of the stack
@@ -40,59 +32,48 @@ M.get_node = function(selection)
     return nil
 end
 
--- Filters an existing parent selection down to a capture.
----@param sexpr string The given S-expression containing the capture.
----@param capture string The name of the capture to be returned.
----@param parent_selection selection The parent selection to be filtered down.
-M.filter_selection = function(sexpr, capture, parent_selection)
-    local parent_node = M.get_node(parent_selection)
-
-    local range = { ts_utils.get_vim_range({ parent_node:range() }) }
-    local lang_tree = ts_parsers.get_parser(0)
-    local ok, parsed_query = pcall(function()
-        return vim.treesitter.query.parse and vim.treesitter.query.parse(lang_tree:lang(), sexpr)
-            or vim.treesitter.parse_query(lang_tree:lang(), sexpr)
-    end)
-    if not ok or not parent_node then
-        return {}
-    end
-
-    for id, node in parsed_query:iter_captures(parent_node, 0, 0, -1) do
-        local name = parsed_query.captures[id]
-        if name == capture then
-            range = { ts_utils.get_vim_range({ node:range() }) }
-            return {
-                first_pos = { range[1], range[2] },
-                last_pos = { range[3], range[4] },
-            }
-        end
-    end
-    return nil
-end
-
 -- Finds the nearest selection of a given query capture and its source.
 ---@param capture string The capture to be retrieved.
 ---@param type string The type of query to get the capture from.
 ---@return selection|nil @The selection of the capture.
 ---@nodiscard
 M.get_selection = function(capture, type)
-    -- Get a table of all nodes that match the query
-    local table_list = ts_query.get_capture_matches_recursively(0, capture, type)
-    -- Convert the list of nodes into a list of selections
-    local selections_list = {}
-    for _, tab in ipairs(table_list) do
-        local range = { ts_utils.get_vim_range({ tab.node:range() }) }
-        selections_list[#selections_list + 1] = {
-            left = {
-                first_pos = { range[1], range[2] },
-                last_pos = { range[3], range[4] },
-            },
-            right = {
-                first_pos = { range[3], range[4] + 1 },
-                last_pos = { range[3], range[4] },
-            },
-        }
+    local utils = require("nvim-surround.utils")
+    local treesitter = require("nvim-surround.treesitter")
+
+    local root = treesitter.get_root()
+    local query = get_query(vim.bo.filetype, type)
+    if root == nil or query == nil then
+        return nil
     end
+
+    -- Get a list of all selections in the query that match the capture group
+    local selections_list = {}
+    for id, node in query:iter_captures(root, 0) do
+        local name = query.captures[id]
+        -- TODO: Figure out why sometimes the name from a capture group like `@call.outer` is missing the `@`
+        if capture:sub(1, 1) == "@" then
+            capture = capture:sub(1 - capture:len())
+        end
+
+        if name == capture then
+            local selection = treesitter.get_node_selection(node)
+
+            local range =
+                { selection.first_pos[1], selection.first_pos[2], selection.last_pos[1], selection.last_pos[2] }
+            selections_list[#selections_list + 1] = {
+                left = {
+                    first_pos = { range[1], range[2] },
+                    last_pos = { range[3], range[4] },
+                },
+                right = {
+                    first_pos = { range[3], range[4] + 1 },
+                    last_pos = { range[3], range[4] },
+                },
+            }
+        end
+    end
+
     -- Filter out the best pair of selections from the list
     local best_selections = utils.filter_selections_list(selections_list)
     return best_selections

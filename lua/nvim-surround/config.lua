@@ -178,16 +178,16 @@ M.default_opts = {
                 end
             end,
             find = function()
-                if vim.g.loaded_nvim_treesitter then
-                    local selection = M.get_selection({
-                        query = {
-                            capture = "@call.outer",
-                            type = "textobjects",
-                        },
-                    })
-                    if selection then
-                        return selection
-                    end
+                local selection = M.get_selection({
+                    query = {
+                        capture = "@call.outer",
+                        type = "textobjects",
+                    },
+                })
+
+                -- We prioritize TreeSitter-based selections if they exist, otherwise fallback on pattern-based search
+                if selection then
+                    return selection
                 end
                 return M.get_selection({ pattern = "[^=%s%(%){}]+%b()" })
             end,
