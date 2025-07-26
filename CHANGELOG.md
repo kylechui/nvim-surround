@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.3](https://github.com/kylechui/nvim-surround/compare/v3.1.2...v3.1.3) (2025-07-26)
+
+
+### Bug Fixes
+
+* Use native `vim.treesitter` module when available. ([#391](https://github.com/kylechui/nvim-surround/issues/391)) ([a925c03](https://github.com/kylechui/nvim-surround/commit/a925c03681f393b589242ae26f8ff5dd6f8211aa))
+
 ## [3.1.2](https://github.com/kylechui/nvim-surround/compare/v3.1.1...v3.1.2) (2025-05-26)
 
 
