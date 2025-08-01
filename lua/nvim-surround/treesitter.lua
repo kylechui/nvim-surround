@@ -37,15 +37,7 @@ end
 ---@nodiscard
 M.get_root = function()
     local node = get_node()
-    if node == nil then
-        return nil
-    end
-
-    while node:parent() ~= nil do
-        node = node:parent()
-    end
-
-    return node
+    return node and node:tree():root()
 end
 
 -- Gets the current smallest node at the cursor.
