@@ -904,4 +904,23 @@ describe("nvim-surround", function()
         vim.cmd("normal 3csbr")
         check_lines({ "some [[more placeholder]] text" })
     end)
+
+    it("can perform operations on Windows", function()
+        vim.bo.fileformat = "dos"
+        set_lines({
+            "(removing these parenthesis works)",
+            "{",
+            "(removing these parenthesis creates behaves weirdly and changes characters)",
+            "}",
+        })
+        set_curpos({ 1, 1 })
+        vim.cmd("normal dsbjjds)")
+
+        check_lines({
+            "removing these parenthesis works",
+            "{",
+            "removing these parenthesis creates behaves weirdly and changes characters",
+            "}",
+        })
+    end)
 end)

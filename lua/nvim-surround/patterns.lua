@@ -2,6 +2,18 @@ local buffer = require("nvim-surround.buffer")
 
 local M = {}
 
+-- Gets the EOL character for the current buffer, based on the file format.
+---@returns string @The EOL character for the buffer.
+---@nodiscard
+local end_of_line = function()
+    if vim.bo.fileformat == "dos" then
+        return "\r\n"
+    elseif vim.bo.fileformat == "mac" then
+        return "\r"
+    end
+    return "\n"
+end
+
 -- Converts a 1D index into the buffer to the corresponding 2D buffer position.
 ---@param index integer The index of the character in the buffer (viewed as a single `\n`-joined string).
 ---@return position @The position of the character in the buffer.
@@ -18,7 +30,14 @@ end
 ---@return integer @The index of the character into the buffer.
 ---@nodiscard
 M.pos_to_index = function(pos)
-    return vim.api.nvim_buf_get_offset(0, pos[1] - 1) + pos[2]
+    local index = vim.api.nvim_buf_get_offset(0, pos[1] - 1) + pos[2]
+    -- The API call assumes that the EOL character is 1 byte, but on Windows machines CRLF is 2 bytes. Here we add back
+    -- the expected number of `\r` bytes when computing the index.
+    if vim.bo.fileformat == "dos" then
+        index = index + pos[1] - 1
+    end
+
+    return index
 end
 
 -- Expands a selection to properly contain multi-byte characters.
@@ -38,7 +57,7 @@ end
 M.get_selection = function(find)
     -- Get the current cursor position, buffer contents
     local curpos = buffer.get_curpos()
-    local buffer_text = table.concat(buffer.get_lines(1, -1), "\n")
+    local buffer_text = table.concat(buffer.get_lines(1, -1), end_of_line())
     -- Find which character the cursor is in the file
     local cursor_index = M.pos_to_index(curpos)
     -- Find the character positions of the pattern in the file (after/on the cursor)
@@ -48,7 +67,7 @@ M.get_selection = function(find)
     -- Linewise search for the pattern before/on the cursor
     for lnum = curpos[1], 1, -1 do
         -- Get the file contents from the first line to current line
-        local cur_text = table.concat(buffer.get_lines(1, lnum - 1), "\n")
+        local cur_text = table.concat(buffer.get_lines(1, lnum - 1), end_of_line())
         -- Find the character positions of the pattern in the file (before the cursor)
         b_first, b_last = buffer_text:find(find, #cur_text + 1)
         if b_first and b_first <= cursor_index then
@@ -112,7 +131,7 @@ end
 ---@nodiscard
 M.get_selections = function(selection, pattern)
     local offset = M.pos_to_index(selection.first_pos)
-    local str = table.concat(buffer.get_text(selection), "\n")
+    local str = table.concat(buffer.get_text(selection), end_of_line())
     -- Get the surrounding pair, and the start/end indices
     local ok, _, left_delimiter, first_index, right_delimiter, last_index = str:find(pattern)
     -- Validate that a match was found
