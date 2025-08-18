@@ -3,18 +3,13 @@ local buffer = require("nvim-surround.buffer")
 local M = {}
 
 -- Converts a 1D index into the buffer to the corresponding 2D buffer position.
----@param index integer The index of the character in the string.
+---@param index integer The index of the character in the buffer (viewed as a single `\n`-joined string).
 ---@return position @The position of the character in the buffer.
 ---@nodiscard
 M.index_to_pos = function(index)
-    local buffer_text = table.concat(buffer.get_lines(1, -1), "\n")
-    -- Counts the number of newline characters, plus one for the final character before the current line
-    local lnum = select(2, buffer_text:sub(1, math.max(1, index - 1)):gsub("\n", "\n")) + 1
-    -- Special case for first line, as there are no newline characters preceding it
-    if lnum == 1 then
-        return { 1, index }
-    end
-    local col = index - #table.concat(buffer.get_lines(1, lnum - 1), "\n") - 1
+    local lnum = vim.fn.byte2line(index)
+    local lnum_bytes = vim.fn.line2byte(lnum)
+    local col = index - lnum_bytes + 1
     return { lnum, col }
 end
 
@@ -23,11 +18,7 @@ end
 ---@return integer @The index of the character into the buffer.
 ---@nodiscard
 M.pos_to_index = function(pos)
-    -- Special case for first line, as there are no newline characters preceding it
-    if pos[1] == 1 then
-        return pos[2]
-    end
-    return #table.concat(buffer.get_lines(1, pos[1] - 1), "\n") + pos[2] + 1
+    return vim.api.nvim_buf_get_offset(0, pos[1] - 1) + pos[2]
 end
 
 -- Expands a selection to properly contain multi-byte characters.
