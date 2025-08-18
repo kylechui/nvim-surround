@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.1.4](https://github.com/kylechui/nvim-surround/compare/v3.1.3...v3.1.4) (2025-08-18)
+
+
+### Bug Fixes
+
+* **treesitter:** simpler root node calculation ([#396](https://github.com/kylechui/nvim-surround/issues/396)) ([c271c90](https://github.com/kylechui/nvim-surround/commit/c271c9082886a24866353764cf96c9d957e95b2b))
+
+
+### Performance Improvements
+
+* Convert between 1D and 2D indices in a non-stupid way. ([#399](https://github.com/kylechui/nvim-surround/issues/399)) ([fd40caf](https://github.com/kylechui/nvim-surround/commit/fd40caf990cb09e4f2dce6900f7554c7d4007c75))
+
 ## [3.1.3](https://github.com/kylechui/nvim-surround/compare/v3.1.2...v3.1.3) (2025-07-26)
 
 
