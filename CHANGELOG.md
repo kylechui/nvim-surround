@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.5](https://github.com/kylechui/nvim-surround/compare/v3.1.4...v3.1.5) (2025-08-18)
+
+
+### Bug Fixes
+
+* `index_to_pos` on Windows machines. ([#401](https://github.com/kylechui/nvim-surround/issues/401)) ([84492e8](https://github.com/kylechui/nvim-surround/commit/84492e88c8ce181778dd05bd72a772ae8d6b256c))
+
 ## [3.1.4](https://github.com/kylechui/nvim-surround/compare/v3.1.3...v3.1.4) (2025-08-18)
 
 
