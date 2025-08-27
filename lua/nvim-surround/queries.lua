@@ -42,7 +42,8 @@ M.get_selection = function(capture, type)
     local treesitter = require("nvim-surround.treesitter")
 
     local root = treesitter.get_root()
-    local query = get_query(vim.bo.filetype, type)
+    local language = vim.treesitter.language.get_lang(vim.bo.filetype) or vim.bo.filetype
+    local query = get_query(language, type)
     if root == nil or query == nil then
         return nil
     end
