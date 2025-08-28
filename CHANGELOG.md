@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.1.6](https://github.com/kylechui/nvim-surround/compare/v3.1.5...v3.1.6) (2025-08-28)
+
+
+### Bug Fixes
+
+* Compatibility issue with Neovim &lt;v0.11. ([#407](https://github.com/kylechui/nvim-surround/issues/407)) ([617fee0](https://github.com/kylechui/nvim-surround/commit/617fee02a857e577126492423f6a3c873d2c3e24))
+* Incorrect TreeSitter language for queries. ([#405](https://github.com/kylechui/nvim-surround/issues/405)) ([5cfaad2](https://github.com/kylechui/nvim-surround/commit/5cfaad2cb35e121b6b03337444ade94b0ba52905))
+
 ## [3.1.5](https://github.com/kylechui/nvim-surround/compare/v3.1.4...v3.1.5) (2025-08-18)
 
 
