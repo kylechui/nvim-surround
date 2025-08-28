@@ -3,6 +3,35 @@ local M = {}
 -- Some compatibility shims over the builtin `vim.treesitter` functions
 local get_query = vim.treesitter.get_query or vim.treesitter.query.get
 
+--- Returns the language name to be used when loading a parser for {filetype}.
+---
+--- If no language has been explicitly registered via |vim.treesitter.language.register()|,
+--- default to {filetype}. For composite filetypes like `html.glimmer`, only the main filetype is
+--- returned.
+---
+--- NOTE: This is a copy-pasted implementation from the Neovim v0.11 source code; it is to avoid nil-dereferencing
+---       issues on older versions of Neovim.
+--- @param filetype string
+--- @return string|nil
+local get_lang = function(filetype)
+    if filetype == "" then
+        return nil
+    end
+
+    ---@type table<string,string>
+    local ft_to_lang = {
+        help = "vimdoc",
+        checkhealth = "vimdoc",
+    }
+
+    if ft_to_lang[filetype] then
+        return ft_to_lang[filetype]
+    end
+    -- for subfiletypes like html.glimmer use only "main" filetype
+    filetype = vim.split(filetype, ".", { plain = true })[1]
+    return ft_to_lang[filetype] or filetype
+end
+
 -- Retrieves the node that corresponds exactly to a given selection.
 ---@param selection selection The given selection.
 ---@return TSNode|nil @The corresponding node.
@@ -42,9 +71,13 @@ M.get_selection = function(capture, type)
     local treesitter = require("nvim-surround.treesitter")
 
     local root = treesitter.get_root()
-    local language = vim.treesitter.language.get_lang(vim.bo.filetype) or vim.bo.filetype
+    local language = get_lang(vim.bo.filetype)
+    if root == nil or language == nil then
+        return nil
+    end
+
     local query = get_query(language, type)
-    if root == nil or query == nil then
+    if query == nil then
         return nil
     end
 
