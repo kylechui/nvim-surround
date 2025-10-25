@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.7](https://github.com/kylechui/nvim-surround/compare/v3.1.6...v3.1.7) (2025-10-25)
+
+
+### Bug Fixes
+
+* Allow custom textobject in `motion` of selection ([#412](https://github.com/kylechui/nvim-surround/issues/412)) ([0cadeb0](https://github.com/kylechui/nvim-surround/commit/0cadeb0f1930e6b25cf65395f8269bfcc36b6791))
+
 ## [3.1.6](https://github.com/kylechui/nvim-surround/compare/v3.1.5...v3.1.6) (2025-08-28)
 
 
