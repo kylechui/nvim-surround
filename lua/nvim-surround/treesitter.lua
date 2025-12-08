@@ -95,7 +95,10 @@ M.get_selection = function(node_types)
             nodes[#nodes + 1] = cur
             -- Compute the node's selection and add it to the list
             local selection = M.get_node_selection(cur)
-            selections_list[#selections_list + 1] = selection
+            selections_list[#selections_list + 1] = {
+                left = { first_pos = selection.first_pos },
+                right = { last_pos = selection.last_pos },
+            }
         end
         -- Pop off of the stack
         stack[#stack] = nil
