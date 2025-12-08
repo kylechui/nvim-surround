@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.8](https://github.com/kylechui/nvim-surround/compare/v3.1.7...v3.1.8) (2025-12-08)
+
+
+### Bug Fixes
+
+* fix TSNode selection ([#416](https://github.com/kylechui/nvim-surround/issues/416)) ([a0f5ab4](https://github.com/kylechui/nvim-surround/commit/a0f5ab44268d22c8b0b19cb89fd9cabbd21e361c))
+
 ## [3.1.7](https://github.com/kylechui/nvim-surround/compare/v3.1.6...v3.1.7) (2025-10-25)
 
 
