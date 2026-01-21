@@ -202,6 +202,38 @@ M.default_opts = {
                 end,
             },
         },
+        ["g"] = {
+            add = function()
+                local result = M.get_input("Enter the Type name: ")
+                if result then
+                    return { { result .. "<" }, { ">" } }
+                end
+            end,
+            find = function()
+                if vim.g.loaded_nvim_treesitter then
+                    local selection = M.get_selection({
+                        query = {
+                            capture = "@call.outer",
+                            type = "textobjects",
+                        },
+                    })
+                    if selection then
+                        return selection
+                    end
+                end
+                return M.get_selection({ pattern = "[^=%s%<%>{}]+%b<>" })
+            end,
+            delete = "^(.-%<)().-(%>)()$",
+            change = {
+                target = "^.-([%w_]+)()%<.-%>()()$",
+                replacement = function()
+                    local result = M.get_input("Enter the Type name: ")
+                    if result then
+                        return { { result }, { "" } }
+                    end
+                end,
+            },
+        },
         invalid_key_behavior = {
             -- By default, we ignore control characters for adding/finding because they are more likely typos than
             -- intentional. We choose NOT to for deletion, as users could have redefined the find key to something like
