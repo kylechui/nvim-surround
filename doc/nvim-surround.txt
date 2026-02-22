@@ -591,8 +591,8 @@ By default, |nvim-surround| uses the following function for indentation:
     end,
 <
 
-================================================================================
-4. Helpers                                             *nvim-surround.helpers*
+--------------------------------------------------------------------------------
+3.4. Helpers                                             *nvim-surround.helpers*
 
 |nvim-surround| exposes a few helper functions to assist in finding
 selection(s). In the following examples we assume:
