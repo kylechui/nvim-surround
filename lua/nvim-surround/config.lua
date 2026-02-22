@@ -314,9 +314,6 @@ end
                                                 End of Helper Functions
 --]====================================================================================================================]
 
--- Stores the global user-set options for the plugin.
-M.user_opts = nil
-
 -- Returns the buffer-local options for the plugin, or global options if buffer-local does not exist.
 ---@return options @The buffer-local options.
 ---@nodiscard
@@ -583,6 +580,9 @@ M.merge_opts = function(base_opts, new_opts)
     local opts = vim.tbl_deep_extend("force", base_opts, M.translate_opts(new_opts))
     return opts
 end
+
+-- Stores the global user-set options for the plugin.
+M.user_opts = M.translate_opts(M.default_opts)
 
 -- Setup the global user options for all files.
 ---@param user_opts user_options|nil The user-defined options to be merged with default_opts.
