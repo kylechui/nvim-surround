@@ -24,6 +24,8 @@ CONTENTS                                              *nvim-surround.contents*
         3.3.5 Indentation ................. |nvim-surround.setup.indent_lines|
     3.4. Helpers ..................................... |nvim-surround.helpers|
 4. Resources ....................................... |nvim-surround.resources|
+5. Migration Guides ................................ |nvim-surround.migrating|
+    5.1. Migrating v2 to v3 ............... |nvim-surround.migrating.v2_to_v3|
 
 ================================================================================
 1. Introduction                                   *nvim-surround.introduction*
@@ -726,5 +728,41 @@ Here are a few links to visit to get help/inspiration:
   * A place where people show off their configurations and custom surrounds
 * Wiki: https://github.com/kylechui/nvim-surround/wiki
   * A repository of helpful information about |nvim-surround|
+
+================================================================================
+5. Migration Guides                                  *nvim-surround.migrating*
+
+5.1. Migrating v2 to v3                     *nvim-surround.migrating.v2_to_v3*
+
+In |nvim-surround| v3, we simplify configuration by removing the {keymaps}
+field from `require("nvim-surround").setup(...)`. This emulates existing
+Vim plugins, where installing the plugin is sufficient to use it. The `setup`
+function is used solely for configuration, not initialization.
+
+To configure the |nvim-surround| keymaps, disable the defaults and bind the
+|<Plug>| mappings provided by this plugin (see |nvim-surround.keymaps|).
+
+For example, users familiar with `vim-sandwich` keymaps may want to use the
+following configuration:
+>lua
+    -- See `:h nvim-surround.options`
+    vim.g.nvim_surround_no_normal_mappings = true
+    -- See `:h nvim-surround.keymaps`
+    vim.keymap.set("n", "sa", "<Plug>(nvim-surround-normal)", {
+        desc = "Add a surrounding pair around a motion (normal mode)",
+    })
+    vim.keymap.set("n", "sd", "<Plug>(nvim-surround-delete)", {
+        desc = "Delete a surrounding pair",
+    })
+    vim.keymap.set("n", "sr", "<Plug>(nvim-surround-change)", {
+        desc = "Change a surrounding pair",
+    })
+<
+
+The default keymaps can be disabled entirely, or on a per-mode basis (as done
+above). See |nvim-surround.options| for a comprehensive list of options.
+
+h/t to Marc for writing about separated initialization and configuration:
+https://mrcjkb.dev/posts/2023-08-22-setup.html
 
 vim:tw=78:ts=8:ft=help:norl:conceallevel=0:

@@ -589,7 +589,7 @@ end
 M.setup = function(user_opts)
     if user_opts ~= nil and user_opts.keymaps then
         vim.notify(
-            "As of nvim-surround v3, keymaps are no longer set up using the setup function. Please see `:h nvim-surround.keymaps`.",
+            "As of nvim-surround v3, keymaps are no longer set up using the setup function. Please see `:h nvim-surround.migrating.v2_to_v3`.",
             vim.log.levels.ERROR
         )
     end
