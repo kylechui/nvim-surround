@@ -10,7 +10,7 @@ CONTENTS                                              *nvim-surround.contents*
 2. Usage ............................................... |nvim-surround.usage|
     2.1. The Basics ................................... |nvim-surround.basics|
     2.2. More Mappings ......................... |nvim-surround.more_mappings|
-    2.3. Default Pairs ......................... |nvim-surround.default_pairs|
+    2.3. Builtin Surrounds ................. |nvim-surround.builtin_surrounds|
     2.4. Aliasing ................................... |nvim-surround.aliasing|
     2.5. Jumps ......................................... |nvim-surround.jumps|
 3. Configuration ............................... |nvim-surround.configuration|
@@ -30,8 +30,8 @@ CONTENTS                                              *nvim-surround.contents*
 
 |nvim-surround| is a plugin for efficiently manipulating surrounding
 left/right delimiter pairs, e.g. parentheses, quotes, HTML tags, and more.
-This plugin provides keymaps for "adding" (through insert/normal/visual mode)
-and "modifying" (deleting/changing) delimiter pairs.
+This plugin provides keymaps for adding new delimiter pairs and
+deleting/changing existing delimiter pairs.
 
 ================================================================================
 2. Usage                                                 *nvim-surround.usage*
@@ -66,7 +66,7 @@ end of a visual selection:
 
     Old text                    Command         New text ~
     local str = *               <C-g>s"         local str = "*"
-    local tab = *               <C-g>s}         local str = {*}
+    local str = *               <C-g>s}         local str = {*}
     local str = |some text|     S'              local str = 'some text'
     |div id="test"|</div>       S>              <div id="test"></div>
 
@@ -134,7 +134,7 @@ but might be in an HTML file. See |nvim-surround.setup.indent_lines| for
 details.
 
 --------------------------------------------------------------------------------
-2.3. Default Pairs                               *nvim-surround.default_pairs*
+2.3. Builtin Surrounds                       *nvim-surround.builtin_surrounds*
 
 We've looked at a few of the built-in surround actions, but here we'll go a
 bit more in-depth. For all open/close pairs, e.g. `()`, adding a surround
@@ -207,6 +207,8 @@ supported.
     Old text                    Command         New text ~
     inner text                  yssi/<CR>\      /inner text\
 
+To configure custom surrounds, see |nvim-surround.setup.surrounds|.
+
 --------------------------------------------------------------------------------
 2.4. Aliasing                                         *nvim-surround.aliasing*
 
@@ -231,9 +233,10 @@ operator-mode maps:
 <
 The other type of alias is a "tabular alias", where each alias character
 represents some set of characters. Tabular aliases are only used when
-modifying existing delimiter pairs. For example, the default configuration
-uses `q` as an alias for the set { ', ", ` }. Modifications with tabular
-aliases modify the nearest such pair.
+deleting/changing existing delimiter pairs. For example, the default
+configuration uses `q` as an alias for the set { ', ", ` }. If multiple
+delimiter pairs are matched by the characters in the list, |nvim-surround|
+will delete/change the nearest such pair.
 
     Old text                    Command         New text ~
     "Nested '*quotes'"          dsq             "Nested quotes"
@@ -242,6 +245,9 @@ aliases modify the nearest such pair.
 
 Note: Tabular aliases cannot be used to add surrounding pairs, e.g. `ysa)q` is
 invalid, since it's ambiguous which pair should be added.
+
+For information about the default aliases and how to configure your own, see
+|nvim-surround.setup.aliases|.
 
 --------------------------------------------------------------------------------
 2.5. Jumps                                               *nvim-surround.jumps*
@@ -282,7 +288,7 @@ Default value: {false}.
 
 Disable the default keymaps via |g:nvim_surround_disable_default_keymaps|.
 
-`nvim-surround` exposes a set of |<Plug>| mappings that one may use to
+|nvim-surround| exposes a set of |<Plug>| mappings that one may use to
 configure their own keymaps. For example, the default keymaps are set via:
 >lua
     vim.keymap.set("i", "<C-g>s", "<Plug>(nvim-surround-insert)", {
@@ -466,10 +472,12 @@ containing the following keys:
     are directly used as the replacement pair. For example, when changing HTML
     tag types, only `cst` is needed, instead of `cstt`.
 
+
+                          *nvim-surround.setup.surrounds.invalid_key_behavior*
 There is a special key in the `surrounds` table, `invalid_key_behavior`, that
-defines how |nvim-surround| behaves when a given key in the delimiter table is
-omitted. It takes the same form as all other surrounds. The default behavior
-is to treat the character literally, and add/modify the surrounding pair:
+defines fallback behavior when the given key is undefined. It takes the same
+form as all other surrounds. The default behavior is to treat the character
+literally, and add/modify the surrounding pair:
 >lua
     invalid_key_behavior = {
         add = function(char)
