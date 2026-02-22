@@ -1,6 +1,11 @@
 --[====================================================================================================================[
                                                     DEFAULT KEYMAPS
 --]====================================================================================================================]
+
+-- Boolean value determining if the default keymaps are set. This variable must be set before the plugin is loaded in
+-- order to take effect. Default value: `false`
+---@type boolean
+vim.g.nvim_surround_disable_default_keymaps = vim.g.nvim_surround_disable_default_keymaps or false
 if not vim.g.nvim_surround_disable_default_keymaps then
     vim.keymap.set("i", "<C-g>s", "<Plug>(nvim-surround-insert)", {
         desc = "Add a surrounding pair around the cursor (insert mode)",

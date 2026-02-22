@@ -6,22 +6,24 @@ License: MIT License
 ================================================================================
 CONTENTS                                              *nvim-surround.contents*
 
-    1. Introduction ......................................... |nvim-surround|
-    2. Usage .......................................... |nvim-surround.usage|
-        2.1. The Basics .............................. |nvim-surround.basics|
-        2.2. More Mappings .................... |nvim-surround.more_mappings|
-        2.3. Default Pairs .................... |nvim-surround.default_pairs|
-        2.4. Aliasing .............................. |nvim-surround.aliasing|
-        2.5. Jumps .................................... |nvim-surround.jumps|
-    3. Configuration .......................... |nvim-surround.configuration|
-        3.1. Keymaps ......................... |nvim-surround.config.keymaps|
-        3.2. Surrounds ..................... |nvim-surround.config.surrounds|
-        3.3. Helper Functions ................ |nvim-surround.config.helpers|
-        3.4. Aliases ......................... |nvim-surround.config.aliases|
-        3.5. Highlights .................... |nvim-surround.config.highlight|
-        3.6. Cursor ...................... |nvim-surround.config.move_cursor|
-        3.7. Indentation ................ |nvim-surround.config.indent_lines|
-    4. Resources .................................. |nvim-surround.resources|
+1. Introduction .............................................. |nvim-surround|
+2. Usage ............................................... |nvim-surround.usage|
+    2.1. The Basics ................................... |nvim-surround.basics|
+    2.2. More Mappings ......................... |nvim-surround.more_mappings|
+    2.3. Default Pairs ......................... |nvim-surround.default_pairs|
+    2.4. Aliasing ................................... |nvim-surround.aliasing|
+    2.5. Jumps ......................................... |nvim-surround.jumps|
+3. Configuration ............................... |nvim-surround.configuration|
+    3.1. Options ..................................... |nvim-surround.options|
+    3.2. Keymaps ..................................... |nvim-surround.keymaps|
+    3.3. Setup ......................................... |nvim-surround.setup|
+        3.3.1 Surrounds ...................... |nvim-surround.setup.surrounds|
+        3.3.2 Aliases .......................... |nvim-surround.setup.aliases|
+        3.3.3 Highlights ..................... |nvim-surround.setup.highlight|
+        3.3.4 Cursor ....................... |nvim-surround.setup.move_cursor|
+        3.3.5 Indentation ................. |nvim-surround.setup.indent_lines|
+    3.4. Helpers ..................................... |nvim-surround.helpers|
+4. Resources ....................................... |nvim-surround.resources|
 
 ================================================================================
 1. Introduction                                   *nvim-surround.introduction*
@@ -128,7 +130,7 @@ delimiter pair is added
 Note: For surrounds that add a delimiter pair on new lines, |nvim-surround|
 re-indents the text inside the pair (which may be dependent on filetype!). For
 example, the contents of an HTML tag pair may not be indented in a text file,
-but might be in an HTML file. See |nvim-surround.config.indent_lines| for
+but might be in an HTML file. See |nvim-surround.setup.indent_lines| for
 details.
 
 --------------------------------------------------------------------------------
@@ -183,7 +185,7 @@ change the surrounding tag's type (leaving the attributes alone), while `csT`
 will change the entirety of the surrounding tag's contents.
 
 Note: When changing surrounding tags via `cst` or `csT`, a second replacement
-character is unnecessary. See |nvim-surround.config.surrounds|.
+character is unnecessary. See |nvim-surround.setup.surrounds|.
 
 Next are function calls, denoted by the key `f`. By default, they match a Lua
 pattern consisting of some non-whitespace characters, followed by a balanced
@@ -263,6 +265,64 @@ the `a"` text-object.
 ================================================================================
 3. Configuration                                 *nvim-surround.configuration*
 
+--------------------------------------------------------------------------------
+3.1. Options                                           *nvim-surround.options*
+
+                                     *g:nvim_surround_disable_default_keymaps*
+Boolean value determining if the default keymaps are set. This variable must
+be set before the plugin is loaded in order to take effect. Example usage:
+>lua
+    vim.g.nvim_surround_disable_default_keymaps = true
+<
+
+Default value: {false}.
+
+--------------------------------------------------------------------------------
+3.2. Keymaps                                           *nvim-surround.keymaps*
+
+Disable the default keymaps via |g:nvim_surround_disable_default_keymaps|.
+
+`nvim-surround` exposes a set of |<Plug>| mappings that one may use to
+configure their own keymaps. For example, the default keymaps are set via:
+>lua
+    vim.keymap.set("i", "<C-g>s", "<Plug>(nvim-surround-insert)", {
+        desc = "Add a surrounding pair around the cursor (insert mode)",
+    })
+    vim.keymap.set("i", "<C-g>S", "<Plug>(nvim-surround-insert-line)", {
+        desc = "Add a surrounding pair around the cursor, on new lines (insert mode)",
+    })
+    vim.keymap.set("n", "ys", "<Plug>(nvim-surround-normal)", {
+        desc = "Add a surrounding pair around a motion (normal mode)",
+    })
+    vim.keymap.set("n", "yss", "<Plug>(nvim-surround-normal-cur)", {
+        desc = "Add a surrounding pair around the current line (normal mode)",
+    })
+    vim.keymap.set("n", "yS", "<Plug>(nvim-surround-normal-line)", {
+        desc = "Add a surrounding pair around a motion, on new lines (normal mode)",
+    })
+    vim.keymap.set("n", "ySS", "<Plug>(nvim-surround-normal-cur-line)", {
+        desc = "Add a surrounding pair around the current line, on new lines (normal mode)",
+    })
+    vim.keymap.set("x", "S", "<Plug>(nvim-surround-visual)", {
+        desc = "Add a surrounding pair around a visual selection",
+    })
+    vim.keymap.set("x", "gS", "<Plug>(nvim-surround-visual-line)", {
+        desc = "Add a surrounding pair around a visual selection, on new lines",
+    })
+    vim.keymap.set("n", "ds", "<Plug>(nvim-surround-delete)", {
+        desc = "Delete a surrounding pair",
+    })
+    vim.keymap.set("n", "cs", "<Plug>(nvim-surround-change)", {
+        desc = "Change a surrounding pair",
+    })
+    vim.keymap.set("n", "cS", "<Plug>(nvim-surround-change-line)", {
+        desc = "Change a surrounding pair, putting replacements on new lines",
+    })
+<
+
+--------------------------------------------------------------------------------
+3.3. Setup                                               *nvim-surround.setup*
+
 To configure this plugin, call `require("nvim-surround").setup()` or
 `require("nvim-surround").buffer_setup()`. The former configures "global"
 options that are present in every buffer, while the latter configures
@@ -273,11 +333,10 @@ useful for setting up filetype-specific surrounds, i.e. by calling
 Both functions take a table as an argument, full of configuration options.
 >lua
     require("nvim-surround").setup({
-        keymaps =       -- Defines plugin keymaps
         surrounds =     -- Defines surround keys and behavior
         aliases =       -- Defines aliases
         highlight =     -- Defines highlight behavior
-        move_cursor =   -- Defines cursor behavior
+        move_cursor =   -- Defines cursor behavior after a surround action
         indent_lines =  -- Defines line indentation behavior
     })
 <
@@ -294,52 +353,12 @@ the `(` surround, call:
     })
 <
 --------------------------------------------------------------------------------
-3.1. Keymaps                                    *nvim-surround.config.keymaps*
-
-The `keymaps` table defines the keymaps used to perform surround actions. The
-general rule is that if the key ends in "_line", the delimiter pair is added
-on new lines. If the key ends in "_cur", the surround is performed around the
-current line.
-
-The default configuration is as follows:
->lua
-    keymaps = {
-        insert = "<C-g>s",
-        insert_line = "<C-g>S",
-        normal = "ys",
-        normal_cur = "yss",
-        normal_line = "yS",
-        normal_cur_line = "ySS",
-        visual = "S",
-        visual_line = "gS",
-        delete = "ds",
-        change = "cs",
-        change_line = "cS",
-    },
-<
-
-Additionally, there is a corresponding set of |<Plug>| mappings that one may
-use to set up their own custom keymaps:
->vim
-    <Plug>(nvim-surround-insert)
-    <Plug>(nvim-surround-insert-line)
-    <Plug>(nvim-surround-normal)
-    <Plug>(nvim-surround-normal-cur)
-    <Plug>(nvim-surround-normal-line)
-    <Plug>(nvim-surround-normal-cur-line)
-    <Plug>(nvim-surround-visual)
-    <Plug>(nvim-surround-visual-line)
-    <Plug>(nvim-surround-delete)
-    <Plug>(nvim-surround-change)
-    <Plug>(nvim-surround-change-line)
-<
---------------------------------------------------------------------------------
-3.2. Surrounds                                *nvim-surround.config.surrounds*
+3.3.1. Surrounds                               *nvim-surround.setup.surrounds*
 
 The `surrounds` table associates each key with a "surround", which is a table
 containing the following keys:
 
-                                                    *nvim-surround.config.add*
+                                           *nvim-surround.setup.surrounds.add*
     add: ~
         A function that returns the delimiter pair to be added to the buffer.
         For example, consider the function for adding parentheses:
@@ -374,7 +393,7 @@ containing the following keys:
             add = { "(", ")" },
         }
 <
-                                                   *nvim-surround.config.find*
+                                          *nvim-surround.setup.surrounds.find*
     find: ~
         A function that returns the "parent selection" for a surrounding pair.
         The selection returned should contain the surrounding pair and little
@@ -394,7 +413,7 @@ containing the following keys:
         For convenience, this key can also take a string as a value, which is
         then interpreted as a Lua pattern that represents the selection.
 
-                                                 *nvim-surround.config.delete*
+                                        *nvim-surround.setup.surrounds.delete*
     delete: ~
         A function that returns the pair of selections to remove from the
         buffer when deleting the surrounding pair.
@@ -406,13 +425,13 @@ containing the following keys:
 >lua
         delete = "^(.-%()().-(%))()$",
 <
-        The Lua pattern matches the function name and opening  parenthesis for
+        The Lua pattern matches the function name and opening parenthesis for
         the left delimiter, and the closing parenthesis for the right
         delimiter.
 
         See |nvim-surround.config.get_selections()| for more information.
 
-                                                 *nvim-surround.config.change*
+                                        *nvim-surround.setup.surrounds.change*
     change: ~
         A table of two keys: `target` and `replacement`.
 
@@ -484,10 +503,99 @@ default. Note that control characters are valid inputs, with the exception of
 <C-c>, which cancels the input (same as <Esc>).
 
 --------------------------------------------------------------------------------
-3.3. Helper Functions                           *nvim-surround.config.helpers*
+3.3.2. Aliases                                   *nvim-surround.setup.aliases*
+
+The aliases table maps characters to other characters, or lists of characters.
+Its behavior is described in |nvim-surround.aliasing|. The default set of
+aliases is defined by:
+
+>lua
+    aliases = {
+        ["a"] = ">",
+        ["b"] = ")",
+        ["B"] = "}",
+        ["r"] = "]",
+        ["q"] = { '"', "'", "`" },
+        ["s"] = { "}", "]", ")", ">", '"', "'", "`" },
+    },
+<
+
+--------------------------------------------------------------------------------
+3.3.3. Highlights                              *nvim-surround.setup.highlight*
+
+When adding a new delimiter pair to the buffer in normal mode, one can
+optionally highlight the selection to be surrounded. Similarly, when changing
+a surrounding pair, one can optionally highlight the pair to be replaced. The
+`highlight` table takes the following keys:
+
+    duration: ~
+        The amount of time (in ms) to highlight the selection(s) before
+        clearing them. If the value is zero, then the highlights persist
+        until the surround action is completed.
+
+                                                       *NvimSurroundHighlight*
+The relevant highlight group is `NvimSurroundHighlight`, which can be
+configured separately. The default highlight group used is `Visual`:
+>vim
+    highlight default link NvimSurroundHighlight Visual
+<
+--------------------------------------------------------------------------------
+3.3.4. Cursor                                *nvim-surround.setup.move_cursor*
+
+By default (or when `move_cursor = "begin"`), when a surround action is
+performed, the cursor moves to the beginning of the action.
+
+    Old text                    Command         New text ~
+    some_t*ext                  ysiw[           *[ some_text ]
+    another { sample *}         ds{             another *sample
+    (hello* world)              csbB            *{hello world}
+
+If `move_cursor` is set to `"sticky"`, the cursor will "stick" to the current
+character, and move with the text as the buffer changes.
+
+    Old text                    Command         New text ~
+    some_t*ext                  ysiw[           [ some_t*ext ]
+    another { sample *}         ds{             another sampl*e
+    (hello* world)              csbffoo<CR>     foo(hello* world)
+
+If `move_cursor` is set to `false`, the cursor won't move at all, regardless
+of how the buffer changes.
+
+    Old text                    Command         New text ~
+    some_t*ext                  ysiw[           [ some_*text ]
+    another { *sample }         ds{             another sa*mple
+    (hello* world)              csbffoo<CR>     foo(he*llo world)
+
+--------------------------------------------------------------------------------
+3.3.5. Indentation                          *nvim-surround.setup.indent_lines*
+
+By default, when a surround action is performed, |nvim-surround| tries to
+indent things "appropriately", i.e. when it is enabled by a Vim option. The
+`indent_lines` key corresponds to a function with parameters {start} and
+{stop}, which represent line numbers (inclusive). This indentation can be
+disabled by setting `indent_lines = false` in one of the setup functions.
+
+By default, |nvim-surround| uses the following function for indentation:
+>lua
+    indent_lines = function(start, stop)
+        local b = vim.bo
+        -- Only re-indent the selection if a formatter is set up already
+        if start < stop
+            and (b.equalprg ~= ""
+            or b.indentexpr ~= ""
+            or b.cindent
+            or b.smartindent
+            or b.lisp) then
+            vim.cmd(string.format("silent normal! %dG=%dG", start, stop))
+        end
+    end,
+<
+
+================================================================================
+4. Helpers                                             *nvim-surround.helpers*
 
 |nvim-surround| exposes a few helper functions to assist in finding
-selection(s). For the sake of brevity we assume
+selection(s). In the following examples we assume:
 >lua
     local config = require("nvim-surround.config")
 <
@@ -575,92 +683,6 @@ config.get_selections({args})
         The Lua pattern matches just the HTML tag type in both the beginning
         and end.
 
---------------------------------------------------------------------------------
-3.4. Aliases                                    *nvim-surround.config.aliases*
-
-The aliases table maps characters to other characters, or lists of characters.
-Its behavior is described in |nvim-surround.aliasing|. The default
-configuration is
->lua
-    aliases = {
-        ["a"] = ">",
-        ["b"] = ")",
-        ["B"] = "}",
-        ["r"] = "]",
-        ["q"] = { '"', "'", "`" },
-        ["s"] = { "}", "]", ")", ">", '"', "'", "`" },
-    },
-<
-
---------------------------------------------------------------------------------
-3.5. Highlights                               *nvim-surround.config.highlight*
-
-When adding a new delimiter pair to the buffer in normal mode, one can
-optionally highlight the selection to be surrounded. Similarly, when changing
-a surrounding pair, one can optionally highlight the pair to be replaced. The
-`highlight` table takes the following keys:
-
-    duration: ~
-        The amount of time (in ms) to highlight the selection(s) before
-        clearing them. If the value is zero, then the highlights persist
-        until the surround action is completed.
-
-The relevant highlight group is `NvimSurroundHighlight`, which can be
-configured separately. The default highlight group used is `Visual`:
->vim
-    highlight default link NvimSurroundHighlight Visual
-<
---------------------------------------------------------------------------------
-3.6. Cursor                                 *nvim-surround.config.move_cursor*
-
-By default (or when `move_cursor = "begin"`), when a surround action is
-performed, the cursor moves to the beginning of the action.
-
-    Old text                    Command         New text ~
-    some_t*ext                  ysiw[           *[ some_text ]
-    another { sample *}         ds{             another *sample
-    (hello* world)              csbB            *{hello world}
-
-If `move_cursor` is set to `"sticky"`, the cursor will "stick" to the current
-character, and move with the text as the buffer changes.
-
-    Old text                    Command         New text ~
-    some_t*ext                  ysiw[           [ some_t*ext ]
-    another { sample *}         ds{             another sampl*e
-    (hello* world)              csbffoo<CR>     foo(hello* world)
-
-If `move_cursor` is set to `false`, the cursor won't move at all, regardless
-of how the buffer changes.
-
-    Old text                    Command         New text ~
-    some_t*ext                  ysiw[           [ some_*text ]
-    another { *sample }         ds{             another sa*mple
-    (hello* world)              csbffoo<CR>     foo(he*llo world)
-
---------------------------------------------------------------------------------
-3.7. Indentation                           *nvim-surround.config.indent_lines*
-
-By default, when a surround action is performed, |nvim-surround| tries to
-indent things "appropriately", i.e. when it is enabled by a Vim option. The
-`indent_lines` key corresponds to a function with parameters {start} and
-{stop}, which represent line numbers (inclusive). This indentation can be
-disabled by setting `indent_lines = false` in one of the setup functions.
-
-By default, |nvim-surround| uses the following function for indentation:
->lua
-    indent_lines = function(start, stop)
-        local b = vim.bo
-        -- Only re-indent the selection if a formatter is set up already
-        if start < stop
-            and (b.equalprg ~= ""
-            or b.indentexpr ~= ""
-            or b.cindent
-            or b.smartindent
-            or b.lisp) then
-            vim.cmd(string.format("silent normal! %dG=%dG", start, stop))
-        end
-    end,
-<
 ================================================================================
 4. Resources                                         *nvim-surround.resources*
 
