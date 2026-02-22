@@ -545,18 +545,6 @@ describe("configuration", function()
         assert.are_not.same(require("nvim-surround.config").get_opts().surrounds.t.change, false)
     end)
 
-    it("can disable keymaps", function()
-        require("nvim-surround").buffer_setup({
-            keymaps = {
-                normal = false,
-            },
-        })
-
-        set_lines({ "Hello, world!" })
-        vim.cmd("normal ysiwb")
-        check_lines({ "wbHello, world!" })
-    end)
-
     it("can disable aliases", function()
         require("nvim-surround").buffer_setup({
             aliases = {

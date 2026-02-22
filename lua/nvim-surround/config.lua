@@ -2,19 +2,6 @@ local M = {}
 
 ---@type user_options
 M.default_opts = {
-    keymaps = {
-        insert = "<C-g>s",
-        insert_line = "<C-g>S",
-        normal = "ys",
-        normal_cur = "yss",
-        normal_line = "yS",
-        normal_cur_line = "ySS",
-        visual = "S",
-        visual_line = "gS",
-        delete = "ds",
-        change = "cs",
-        change_line = "cS",
-    },
     surrounds = {
         ["("] = {
             add = { "( ", " )" },
@@ -597,133 +584,11 @@ M.merge_opts = function(base_opts, new_opts)
     return opts
 end
 
--- Check if a keymap should be added before setting it.
----@param args table The arguments to set the keymap.
-M.set_keymap = function(args)
-    -- If the keymap is disabled
-    if not args.lhs then
-        -- If the mapping is disabled globally, do nothing
-        if not M.user_opts.keymaps[args.name] then
-            return
-        end
-        -- Otherwise disable the global keymap
-        args.lhs = M.user_opts.keymaps[args.name]
-        args.rhs = "<NOP>"
-    end
-    vim.keymap.set(args.mode, args.lhs, args.rhs, args.opts)
-end
-
--- Set up user-configured keymaps, globally or for the buffer.
----@param args { buffer: boolean } Whether the keymaps should be set for the buffer or not.
-M.set_keymaps = function(args)
-    -- Set up user-defined keymaps
-    M.set_keymap({
-        name = "insert",
-        mode = "i",
-        lhs = M.get_opts().keymaps.insert,
-        rhs = "<Plug>(nvim-surround-insert)",
-        opts = {
-            desc = "Add a surrounding pair around the cursor (insert mode)",
-        },
-    })
-    M.set_keymap({
-        name = "insert_line",
-        mode = "i",
-        lhs = M.get_opts().keymaps.insert_line,
-        rhs = "<Plug>(nvim-surround-insert-line)",
-        opts = {
-            desc = "Add a surrounding pair around the cursor, on new lines (insert mode)",
-        },
-    })
-    M.set_keymap({
-        name = "normal",
-        mode = "n",
-        lhs = M.get_opts().keymaps.normal,
-        rhs = "<Plug>(nvim-surround-normal)",
-        opts = {
-            desc = "Add a surrounding pair around a motion (normal mode)",
-        },
-    })
-    M.set_keymap({
-        name = "normal_cur",
-        mode = "n",
-        lhs = M.get_opts().keymaps.normal_cur,
-        rhs = "<Plug>(nvim-surround-normal-cur)",
-        opts = {
-            desc = "Add a surrounding pair around the current line (normal mode)",
-        },
-    })
-    M.set_keymap({
-        name = "normal_line",
-        mode = "n",
-        lhs = M.get_opts().keymaps.normal_line,
-        rhs = "<Plug>(nvim-surround-normal-line)",
-        opts = {
-            desc = "Add a surrounding pair around a motion, on new lines (normal mode)",
-        },
-    })
-    M.set_keymap({
-        name = "normal_cur_line",
-        mode = "n",
-        lhs = M.get_opts().keymaps.normal_cur_line,
-        rhs = "<Plug>(nvim-surround-normal-cur-line)",
-        opts = {
-            desc = "Add a surrounding pair around the current line, on new lines (normal mode)",
-        },
-    })
-    M.set_keymap({
-        name = "visual",
-        mode = "x",
-        lhs = M.get_opts().keymaps.visual,
-        rhs = "<Plug>(nvim-surround-visual)",
-        opts = {
-            desc = "Add a surrounding pair around a visual selection",
-        },
-    })
-    M.set_keymap({
-        name = "visual_line",
-        mode = "x",
-        lhs = M.get_opts().keymaps.visual_line,
-        rhs = "<Plug>(nvim-surround-visual-line)",
-        opts = {
-            desc = "Add a surrounding pair around a visual selection, on new lines",
-        },
-    })
-    M.set_keymap({
-        name = "delete",
-        mode = "n",
-        lhs = M.get_opts().keymaps.delete,
-        rhs = "<Plug>(nvim-surround-delete)",
-        opts = {
-            desc = "Delete a surrounding pair",
-        },
-    })
-    M.set_keymap({
-        name = "change",
-        mode = "n",
-        lhs = M.get_opts().keymaps.change,
-        rhs = "<Plug>(nvim-surround-change)",
-        opts = {
-            desc = "Change a surrounding pair",
-        },
-    })
-    M.set_keymap({
-        name = "change_line",
-        mode = "n",
-        lhs = M.get_opts().keymaps.change_line,
-        rhs = "<Plug>(nvim-surround-change-line)",
-        opts = {
-            desc = "Change a surrounding pair, putting replacements on new lines",
-        },
-    })
-end
-
 -- Setup the global user options for all files.
 ---@param user_opts user_options|nil The user-defined options to be merged with default_opts.
 M.setup = function(user_opts)
     -- Overwrite default options with user-defined options, if they exist
     M.user_opts = M.merge_opts(M.translate_opts(M.default_opts), user_opts)
-    M.set_keymaps({ buffer = false })
     -- Configure highlight group, if necessary
     if M.user_opts.highlight.duration then
         vim.cmd.highlight("default link NvimSurroundHighlight Visual")
@@ -743,7 +608,6 @@ end
 M.buffer_setup = function(buffer_opts)
     -- Merge the given table into the existing buffer-local options, or global options otherwise
     vim.b[0].nvim_surround_buffer_opts = M.merge_opts(M.get_opts(), buffer_opts)
-    M.set_keymaps({ buffer = true })
 end
 
 return M
