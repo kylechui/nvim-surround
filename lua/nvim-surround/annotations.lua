@@ -31,7 +31,6 @@
 ---@field change change_table
 
 ---@class options
----@field keymaps table<string, string>
 ---@field surrounds table<string, surround>
 ---@field aliases table<string, string|string[]>
 ---@field highlight { duration: integer }
@@ -54,7 +53,6 @@
 ---@field change? user_change
 
 ---@class user_options
----@field keymaps? table<string, false|string>
 ---@field surrounds? table<string, false|user_surround>
 ---@field aliases? table<string, false|string|string[]>
 ---@field highlight? { duration: false|integer }

@@ -587,6 +587,12 @@ end
 -- Setup the global user options for all files.
 ---@param user_opts user_options|nil The user-defined options to be merged with default_opts.
 M.setup = function(user_opts)
+    if user_opts ~= nil and user_opts.keymaps then
+        vim.notify(
+            "As of nvim-surround v3, keymaps are no longer set up using the setup function. Please see `:h nvim-surround.keymaps`.",
+            vim.log.levels.ERROR
+        )
+    end
     -- Overwrite default options with user-defined options, if they exist
     M.user_opts = M.merge_opts(M.translate_opts(M.default_opts), user_opts)
     -- Configure highlight group, if necessary
