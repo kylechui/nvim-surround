@@ -10,7 +10,7 @@ CONTENTS                                              *nvim-surround.contents*
 2. Usage ............................................... |nvim-surround.usage|
     2.1. The Basics ................................... |nvim-surround.basics|
     2.2. More Mappings ......................... |nvim-surround.more_mappings|
-    2.3. Builtin Surrounds ................. |nvim-surround.builtin_surrounds|
+    2.3. Built-in Surrounds ................ |nvim-surround.builtin_surrounds|
     2.4. Aliasing ................................... |nvim-surround.aliasing|
     2.5. Jumps ......................................... |nvim-surround.jumps|
 3. Configuration ............................... |nvim-surround.configuration|
@@ -134,13 +134,13 @@ but might be in an HTML file. See |nvim-surround.setup.indent_lines| for
 details.
 
 --------------------------------------------------------------------------------
-2.3. Builtin Surrounds                       *nvim-surround.builtin_surrounds*
+2.3. Built-in Surrounds                      *nvim-surround.builtin_surrounds*
 
-We've looked at a few of the built-in surround actions, but here we'll go a
-bit more in-depth. For all open/close pairs, e.g. `()`, adding a surround
-using the closing character will surround the selection with just the pair
-itself, whereas using the opening character will add a whitespace gap between
-the selection and delimiter pair.
+We've looked at using some of the built-in surrounds, but here we'll go a bit
+more in-depth. For all open/close pairs, e.g. `()`, adding a surround using
+the closing character will surround the selection with just the pair itself,
+whereas using the opening character will add a whitespace gap between the
+selection and delimiter pair.
 
     Old text                    Command         New text ~
     *sample_text                ysiw}           {sample_text}
@@ -182,7 +182,7 @@ the surrounding pair.
 
 The keys `t` and `T` are identical, except for the fact that `cst` will only
 change the surrounding tag's type (leaving the attributes alone), while `csT`
-will change the entirety of the surrounding tag's contents.
+will change the entirety of the start and end tags.
 
 Note: When changing surrounding tags via `cst` or `csT`, a second replacement
 character is unnecessary. See |nvim-surround.setup.surrounds|.
@@ -402,10 +402,9 @@ containing the following keys:
                                           *nvim-surround.setup.surrounds.find*
     find: ~
         A function that returns the "parent selection" for a surrounding pair.
-        The selection returned should contain the surrounding pair and little
-        else, as it is used by the `delete` and `change` keys to determine
-        what to modify. For example, HTML tags are found via the `at`
-        text-object:
+        The `delete` and `change` keys use this parent selection to determine
+        which delimiter pair to delete/change. For example, HTML tags are
+        found via the `at` text-object:
 >lua
         ["t"] = {
             find = function()
@@ -474,10 +473,18 @@ containing the following keys:
 
 
                           *nvim-surround.setup.surrounds.invalid_key_behavior*
-There is a special key in the `surrounds` table, `invalid_key_behavior`, that
-defines fallback behavior when the given key is undefined. It takes the same
-form as all other surrounds. The default behavior is to treat the character
-literally, and add/modify the surrounding pair:
+`invalid_key_behavior` is a special key in the `surrounds` table that defines
+fallback behavior when a surround key is not present in the `surrounds` table.
+It takes the same form as all other surrounds.
+
+The default behavior is to assume the delimiter pair is just the surround key
+for both the left and right delimiters. For example, `ysiw*` would surround a
+word with asterisks, and `ds*` would delete those same asterisks, despite the
+`*` surround not being configured by default. Note that control characters are
+valid inputs, with the exception of <C-c>, which cancels the input (same as
+<Esc>).
+
+Default value:
 >lua
     invalid_key_behavior = {
         add = function(char)
@@ -505,10 +512,6 @@ literally, and add/modify the surrounding pair:
         end,
     },
 <
-For example, `ysiw*` would surround a word with asterisks, and `ds*` would
-delete those same asterisks, despite the `*` surround not being configured by
-default. Note that control characters are valid inputs, with the exception of
-<C-c>, which cancels the input (same as <Esc>).
 
 --------------------------------------------------------------------------------
 3.3.2. Aliases                                   *nvim-surround.setup.aliases*
@@ -615,7 +618,7 @@ config.get_input({prompt})
                                         *nvim-surround.config.get_selection()*
 config.get_selection({args})
     Retrieves a selection from the buffer using {args}. The {args} table
-    currently takes one of two keys:
+    currently takes one of the following keys:
 
     motion: ~
         A string that represents any Neovim motion. For example, the default
@@ -646,7 +649,20 @@ config.get_selection({args})
             return config.get_selection({ node = "function_call" })
         end,
 <
-
+    query: ~
+        A Tree-sitter query capture group to be found in the buffer. This
+        pairs well with the |nvim-treesitter-textobjects| plugin. For example,
+        one could match on function call nodes, regardless of the language:
+>lua
+        find = function()
+            require("nvim-surround.config").get_selection({
+                query = {
+                    capture = "@call.outer",
+                    type = "textobjects",
+                },
+            })
+        end
+<
                                        *nvim-surround.config.get_selections()*
 config.get_selections({args})
     Retrieves a pair of selections from the buffer using {args}. The {args}
