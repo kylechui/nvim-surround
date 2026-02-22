@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.0.0](https://github.com/kylechui/nvim-surround/compare/v3.1.8...v4.0.0) (2026-02-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* Make `setup` optional. ([#296](https://github.com/kylechui/nvim-surround/issues/296))
+
+### Features
+
+* Make `setup` optional. ([#296](https://github.com/kylechui/nvim-surround/issues/296)) ([f91637b](https://github.com/kylechui/nvim-surround/commit/f91637bd4519a93bdedfb89e51f841dafd40f5b5))
+
 ## [3.1.8](https://github.com/kylechui/nvim-surround/compare/v3.1.7...v3.1.8) (2025-12-08)
 
 
