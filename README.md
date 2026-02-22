@@ -31,8 +31,8 @@ Surround selections, stylishly :sunglasses:
 
 ## :package: Installation
 
-Install this plugin using your favorite plugin manager, and then call
-`require("nvim-surround").setup()`.
+Install this plugin using your favorite plugin manager, and that's it! See
+`:h nvim-surround.configuration` for how to configure the plugin.
 
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
@@ -41,26 +41,13 @@ Install this plugin using your favorite plugin manager, and then call
     "kylechui/nvim-surround",
     version = "^3.0.0", -- Use for stability; omit to use `main` branch for the latest features
     event = "VeryLazy",
-    config = function()
-        require("nvim-surround").setup({
-            -- Configuration here, or leave empty to use defaults
-        })
-    end
+    -- Optional: See `:h nvim-surround.configuration` and `:h nvim-surround.setup` for details
+    -- config = function()
+    --     require("nvim-surround").setup({
+    --         -- Put your configuration here
+    --     })
+    -- end
 }
-```
-
-### [packer.nvim](https://github.com/wbthomason/packer.nvim)
-
-```lua
-use({
-    "kylechui/nvim-surround",
-    tag = "*", -- Use for stability; omit to use `main` branch for the latest features
-    config = function()
-        require("nvim-surround").setup({
-            -- Configuration here, or leave empty to use defaults
-        })
-    end
-})
 ```
 
 ## :rocket: Usage
@@ -82,9 +69,10 @@ respectively. For the following examples, `*` will denote the cursor position:
     delete(functi*on calls)     dsf             function calls
 ```
 
-Note that surrounding with an opening delimiter (e.g. `(`) will add a space before/after
-the selection, while surrounding with the closing delimiter (e.g. `)`) will not include
-the spaces. Detailed information on how to use this plugin can be found in
+Note that surrounding with an opening delimiter (e.g. `(`) will add a space
+before/after the selection, while surrounding with the closing delimiter (e.g.
+`)`) will not include the spaces. Detailed information on how to use this plugin
+can be found in
 [`:h nvim-surround.usage`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt).
 
 ## :gear: Configuration
