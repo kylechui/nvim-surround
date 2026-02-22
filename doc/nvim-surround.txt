@@ -274,14 +274,25 @@ the `a"` text-object.
 --------------------------------------------------------------------------------
 3.1. Options                                           *nvim-surround.options*
 
-                                     *g:nvim_surround_disable_default_keymaps*
-Boolean value determining if the default keymaps are set. This variable must
-be set before the plugin is loaded in order to take effect. Example usage:
->lua
-    vim.g.nvim_surround_disable_default_keymaps = true
-<
+The following options must be set before the plugin is loaded in order to take
+effect.
 
-Default value: {false}.
+                                                 *g:nvim_surround_no_mappings*
+Boolean value determining if the default keymaps are set. This option takes
+precedence over all other `g:nvim_surround_no_*_mappings` options.
+Default value: `false`.
+
+                                          *g:nvim_surround_no_normal_mappings*
+Boolean value determining if the default normal mode keymaps are set.
+Default value: `false`.
+
+                                          *g:nvim_surround_no_visual_mappings*
+Boolean value determining if the default visual mode keymaps are set.
+Default value: `false`.
+
+                                          *g:nvim_surround_no_insert_mappings*
+Boolean value determining if the default insert mode keymaps are set.
+Default value: `false`.
 
 --------------------------------------------------------------------------------
 3.2. Keymaps                                           *nvim-surround.keymaps*
