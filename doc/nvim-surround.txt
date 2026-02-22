@@ -297,7 +297,7 @@ Default value: `false`.
 --------------------------------------------------------------------------------
 3.2. Keymaps                                           *nvim-surround.keymaps*
 
-Disable the default keymaps via |g:nvim_surround_disable_default_keymaps|.
+Disable the default keymaps via |g:nvim_surround_no_mappings|.
 
 |nvim-surround| exposes a set of |<Plug>| mappings that one may use to
 configure their own keymaps. For example, the default keymaps are set via:
