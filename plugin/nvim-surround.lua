@@ -1,3 +1,12 @@
+-- Configure default highlight group.
+vim.cmd.highlight("default link NvimSurroundHighlight Visual")
+-- Intercept dot repeat action and save the cursor position, but only if the user is not currently completing a surround
+-- action. This is done so `move_cursor = false` works with dot-repeating.
+vim.on_key(function(key)
+    if key == "." and not require("nvim-surround").pending_surround then
+        require("nvim-surround").normal_curpos = require("nvim-surround.buffer").get_curpos()
+    end
+end)
 --[====================================================================================================================[
                                                     DEFAULT KEYMAPS
 --]====================================================================================================================]
