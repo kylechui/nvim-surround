@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1](https://github.com/kylechui/nvim-surround/compare/v4.0.0...v4.0.1) (2026-02-23)
+
+
+### Bug Fixes
+
+* Zero-config initialization. ([#423](https://github.com/kylechui/nvim-surround/issues/423)) ([79ce009](https://github.com/kylechui/nvim-surround/commit/79ce0093eda682084ddc702bcff5872d2b96c3ee))
+
 ## [4.0.0](https://github.com/kylechui/nvim-surround/compare/v3.1.8...v4.0.0) (2026-02-22)
 
 
