@@ -621,4 +621,18 @@ describe("configuration", function()
         check_lines({ "[(foo) bar [baz]]" })
         check_curpos({ 1, 9 })
     end)
+
+    it("handles consecutive surrounds on new lines", function()
+        require("nvim-surround").setup({
+            move_cursor = "sticky",
+            surrounds = {
+                d = {
+                    add = { { "foo" }, { "bar" } },
+                },
+            },
+        })
+        set_lines({ "foobarbaz" })
+        vim.cmd("normal VSdVSdVSd")
+        check_lines({ "foo", "foo", "foo", "foobarbaz", "bar", "bar", "bar" })
+    end)
 end)
