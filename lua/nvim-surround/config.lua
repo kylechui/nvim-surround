@@ -347,7 +347,7 @@ M.get_delimiters = function(char, line_mode)
     if raw_delimiters == nil then
         return nil
     end
-    local delimiters = utils.normalize_delimiters(raw_delimiters)
+    local delimiters = vim.deepcopy(utils.normalize_delimiters(raw_delimiters))
     local lhs = delimiters[1]
     local rhs = delimiters[2]
 
