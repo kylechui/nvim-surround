@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.3](https://github.com/kylechui/nvim-surround/compare/v4.0.2...v4.0.3) (2026-02-25)
+
+
+### Bug Fixes
+
+* Incorrect handling of consecutive newline visual surrounds. ([#430](https://github.com/kylechui/nvim-surround/issues/430)) ([c4b406f](https://github.com/kylechui/nvim-surround/commit/c4b406f4ec51fde25eb8ba71cc61cd2ec38f53eb))
+
 ## [4.0.2](https://github.com/kylechui/nvim-surround/compare/v4.0.1...v4.0.2) (2026-02-23)
 
 
