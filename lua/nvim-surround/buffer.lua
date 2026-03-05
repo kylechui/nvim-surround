@@ -299,7 +299,7 @@ end
 -- Highlights a given selection.
 ---@param selection selection|nil The selection to be highlighted.
 M.highlight_selection = function(selection)
-    if not selection then
+    if not selection or M.comes_before(selection.last_pos, selection.first_pos) then
         return
     end
 
