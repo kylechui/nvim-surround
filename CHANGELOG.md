@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.0.4](https://github.com/kylechui/nvim-surround/compare/v4.0.3...v4.0.4) (2026-03-07)
+
+
+### Bug Fixes
+
+* Disable highlighting for strict inequalities. ([#437](https://github.com/kylechui/nvim-surround/issues/437)) ([9d4e937](https://github.com/kylechui/nvim-surround/commit/9d4e937b9881d7fe612f4fe45c1b73b402a579d1))
+* Incorrect highlights when changing surrounds. ([#434](https://github.com/kylechui/nvim-surround/issues/434)) ([9488883](https://github.com/kylechui/nvim-surround/commit/9488883f58161c1e302ae6bfa5ecd79ac828b36e))
+
 ## [4.0.3](https://github.com/kylechui/nvim-surround/compare/v4.0.2...v4.0.3) (2026-02-25)
 
 
