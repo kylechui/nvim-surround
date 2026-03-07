@@ -299,7 +299,13 @@ end
 -- Highlights a given selection.
 ---@param selection selection|nil The selection to be highlighted.
 M.highlight_selection = function(selection)
-    if not selection or M.comes_before(selection.last_pos, selection.first_pos) then
+    if
+        not selection
+        or (
+            not vim.deep_equal(selection.first_pos, selection.last_pos)
+            and M.comes_before(selection.last_pos, selection.first_pos)
+        )
+    then
         return
     end
 
