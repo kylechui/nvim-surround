@@ -31,6 +31,8 @@ Surround selections, stylishly :sunglasses:
 
 ## :package: Installation
 
+[![LuaRocks](https://img.shields.io/luarocks/v/kylechui/nvim-surround?logo=lua&color=purple)](https://luarocks.org/modules/kylechui/nvim-surround)
+
 Install this plugin using your favorite plugin manager, and that's it! See
 `:h nvim-surround.configuration` for how to configure the plugin.
 
