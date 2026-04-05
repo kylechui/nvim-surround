@@ -1,0 +1,6 @@
+{
+  "expect": {
+    "29": "local str = \"Hello\"",
+    "30": "local str = \"Hello\""
+  }
+}

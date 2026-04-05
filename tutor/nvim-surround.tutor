@@ -1,0 +1,390 @@
+# Welcome to nvim-surround
+
+This tutorial is a basic guide through the features and usage of `nvim-surround`.
+For reference on how to configure the plugin, see [:h nvim-surround](*nvim-surround*).
+
+## 1. Introduction
+
+`nvim-surround` is a plugin for efficiently manipulating surrounding left/right
+delimiter pairs, e.g. parentheses, quotes, HTML tags, and more. This plugin
+provides three normal-mode [operator](*operator*)s for adding new delimiter pairs and
+deleting/changing existing delimiter pairs.
+
+## 2. The Basics
+
+### 2.1. Adding Delimiters
+
+The primary way of adding a new pair to the buffer is via the normal-mode `ys`{normal}
+operator, which stands for "you surround". It can be used via `ys{motion}{char}`,
+which surrounds a given [motion](*motion*) or [text-object](*text-object*) with a delimiter pair associated
+with {char}. For example, `ysiw"` means "you surround inner word with quotes".
+
+TODO: Interact with the following examples by putting your cursor below the `v`{normal},
+then type the bolded keymap!
+
+      **ysiw"**  v
+local str = Hello
+local str = "Hello"
+
+   **ysl'**  v
+char c = x;
+char c = 'x';
+
+        **ysa")**  v
+require"nvim-surround"
+require("nvim-surround")
+
+   **yst;{**  v
+int a[] = 0xDEADBEEF;
+int a[] = { 0xDEADBEEF };
+
+NOTE: Surrounding a selection using the "opening" delimiter in a pair will *add
+spaces around your selection*, while surrounding with the "closing" delimiter in
+a pair will not.
+
+      **ys${**  v
+local foo = "some", "table"
+local foo = { "some", "table" }
+
+      **ys$}**  v
+local foo = "some", "table"
+local foo = {"some", "table"}
+
+Furthermore, there are insert-mode (`<C-g>s`) and visual-mode (`S`) keymaps to add
+the delimiter pair around the cursor and visual selection, respectively.
+
+  **<C-g>s)**  v
+let unit =  in
+let unit = () in
+
+We'll also start using two `v`s to denote the start and end (inclusive) of a
+visual selection.
+
+        **S"**  v         v
+local str = hello world
+local str = "hello world"
+
+### 2.2. Deleting Delimiters
+
+To delete a delimiter pair, use the `ds`{normal} operator, which stands for "delete
+surrounding". It is used via `ds{char}`, deleting the surrounding pair associated
+with {char}. For example, `ds)`{normal} means "delete surrounding parentheses".
+
+TODO: As before, interact with the following examples by putting your cursor
+below the `v` and type the bolded keymap!
+
+       **ds'**  v
+See ':h help'
+See :h help
+
+     **ds)**  v
+local x = ({ 32 })
+local x = { 32 }
+
+        **ds]**  v
+local str = [[Hello]]
+local str = [Hello]
+
+NOTE: Similar to when adding delimiters using the `ys`{normal} operator, deleting a
+delimiter pair using the "opening" delimiter will include spaces (if they
+exist), while deleting using the "closing" delimiter will not.
+
+                **ds[**  v
+arr: list[str] = [ "foo", "bar" ]
+arr: list[str] = "foo", "bar"
+
+                **ds]**  v
+arr: list[str] = [ "foo", "bar" ]
+arr: list[str] =  "foo", "bar" 
+
+### 2.3. Changing Delimiters
+
+To change a delimiter pair, use the `cs`{normal} operator, which stands for "change
+surrounding". It is used via `cs{target}{replacement}`, changing the surrounding
+pair associated with `{target}` to a pair associated with `{replacement}`. For
+example, `cs'"` means "change surrounding single quotes to double quotes".
+
+   **cs'"**  v
+'some string'
+"some string"
+
+           **cs})**  v
+require{"nvim-surround"}
+require("nvim-surround")
+
+           **cs'`**  v
+an example of a 'code block'
+an example of a `code block`
+
+NOTE: The prior rules about opening/closing delimiters and whitespace still
+apply. You can manipulate whitespace pretty quickly by changing from the
+opening delimiter to the closing one, or vice versa.
+
+                **cs}{**  v
+local greeting = {"hello", "world"}
+local greeting = { "hello", "world" }
+
+                **cs{}**  v
+local greeting = { "hello", "world" }
+local greeting = {"hello", "world"}
+
+NOTE: Since changing using the opening delimiter still works even if there are
+no spaces, you can use `cs{char}{char}` to add spaces if none exist.
+
+  **cs[[**  v
+[foo, bar, baz]
+[ foo, bar, baz ]
+
+## 3. More Delimiters
+
+The plugin can express more than just single-character delimiter pairs, allowing
+for longer, asymmetric pairs as well. By default, `nvim-surround` provides `f` for
+function calls, and `t` and `T` for HTML tags.
+
+### 3.1. Function Calls
+
+When using `f` to add a function call, you will be prompted for the function name.
+
+     **ysiWfpcall**  v
+local ok, res = f(x)
+local ok, res = pcall(f(x))
+
+Deleting function calls works as you might expect.
+
+            **dsf**  v
+require("nvim-surround")
+"nvim-surround"
+
+However, when changing function calls, the plugin assumes you just want to
+change the function name, and not to a different delimiter pair. In other
+words, instead of the regular `csf{replacement}`, it's `csf{function name}`.
+
+         **csffrob**  v
+local result = frobinate(bar)
+local result = frob(bar)
+
+  **csfcamelCase**  v
+x = snake_case(args)
+x = camelCase(args)
+
+### 3.2. HTML Tags
+
+When you use `t` or `T` to add a new HTML tag, you will be prompted for additional
+input for the contents of the HTML tag.
+
+  **ysiwtem**  v
+Some emphasized text
+Some <em>emphasized</em> text
+
+This can include attributes as well!
+
+    **ysiwtdiv id="red"**  v
+What color is a firetruck?
+What color is a <div id="red">firetruck</div>?
+
+Similarly, `t` and `T` both delete tags, including all attributes.
+
+   **dsT**  v
+<p>some paragraph</p>
+some paragraph
+
+   **dst**  v
+<div id="foo">bar baz</div>
+bar baz
+
+Similarly to functions, when changing tags using `cs`, the plugin assumes that you
+want to change from one tag type to another, i.e. it is `cst{tag}` and not
+`cstt{tag}`. When changing tags using `t`, only the tag type is changed, while
+changing with `T` includes any attributes.
+
+    **cstb**  v
+some <em class="emph">emphasized</em> text
+some <b class="emph">emphasized</b> text
+
+    **csTb**  v
+some <em class="emph">emphasized</em> text
+some <b>emphasized</b> text
+
+To configure custom surrounds, see `:h nvim-surround.setup.surrounds`
+
+## 4. More Keymaps
+
+For most of the keymaps that add delimiters to the buffer, swapping out `s` for
+`S` adds delimiters on new lines. The only exception to this is the visual-mode
+`S`, where we use `gS` to add delimiters on new lines.
+
+  **ySiwffoo**  v
+local x = bar
+local x = foo(
+bar
+)
+
+  **<C-g>S)**  v
+let unit =  in
+let unit = (
+    
+) in
+
+           **cS))**  v
+(lambda (arg) (+ arg 1))
+(lambda (arg) (
++ arg 1
+))
+
+       **gS)**  v           v
+local str = "hello world"
+local str = (
+"hello world"
+)
+
+To match the built-in operators [d](*d*) and [y](*y*), repeating the last letter of the
+[ys](*ys*) and [yS](*yS*) operators makes them work on the current line. In particular, [yss](*yss*) and
+[ySS](*ySS*) both add delimiter pairs around the current line.
+
+NOTE: Since the motion is determined to be the current line, yss and ySS only
+take the surround character as input.
+
+  **yss"**  v
+some random quote
+"some random quote"
+
+  **ySS]**  v
+inside_arr
+[
+inside_arr
+]
+
+Moreover, similar to the built-in operations `dd`{normal} and `yy`{normal}, duplicating the last
+letter of the operator makes it work on the current line, i.e. `yss{char}`{normal} or
+`ySS{char}`{normal}.
+
+## 5. Aliases
+
+In `nvim-surround`, one can alias a character to "stand in for" another
+character. For example, the default configuration aliases `b` to represent `)`
+and `r` to represent `]`, so they can be used interchangeably.
+
+      **yssb**  v
+if nil "error" "value"
+(if nil "error" "value")
+
+      **dsb**  v
+(no parentheses!)
+no parentheses!
+
+      **csbr**  v
+local arr = (foo)
+local arr = [foo]
+
+NOTE: While `ysa"b` is a valid surround action, `ysarb` is not, since `ar` is
+not a valid Vim motion. This can be circumvented by creating the following
+operator-mode maps:
+~~~
+vim.keymap.set("o", "ir", "i[")
+vim.keymap.set("o", "ar", "a[")
+vim.keymap.set("o", "ia", "i<")
+vim.keymap.set("o", "aa", "a<")
+~~~
+
+Another type of alias is a "tabular alias", where each alias character
+represents a set of characters. When you delete/change while referring to a
+tabular alias, `nvim-surround` will modify the "nearest" such delimiter pair
+referred to by the characters in the set. For example, the default configuration
+defines `q` as an alias for all **q**uotes, i.e. ', ", \`.
+
+      **dsq**  v
+"Nested 'quotes'"
+"Nested quotes"
+
+  **dsq**  v
+"Nested 'quotes'"
+Nested 'quotes'
+
+  **csqb**  v
+"Nested 'quotes'"
+"Nested (quotes)"
+
+Note: Tabular aliases cannot be used to *add* surrounding pairs, e.g. `ysa)q` is
+invalid, since it's ambiguous which pair should be added.
+
+For information about the default aliases and how to configure your own, see
+[:h nvim-surround.setup.aliases](*:h nvim-surround.setup.aliases*).
+
+### 5.1. What does "nearest" mean?
+
+If the cursor is not located inside a surrounding pair, it can jump to the
+"nearest" pair. When jumping, `nvim-surround` always prefers pairs that occur
+after the cursor, before pairs that occur before the cursor.
+
+  **dsq**  v
+"hello" 'world'
+"hello" world
+
+    **csqr**  v
+"hello" world
+[hello] world
+
+  **dsq**  v
+some more "'nested' quotes"
+some more 'nested' quotes
+
+              **dsq**  v
+'"nested" quotes' text
+"nested" quotes text
+
+NOTE: `nvim-surround` jumps across lines to find the next/previous surrounding
+pair, except for quote characters. This is done to match existing behavior for
+the [a"]('aquote') (and similar) text-objects.
+
+## 6. Invalid key behavior
+
+If you try adding delimiters to the buffer using an unconfigured character,
+e.g. _, then nvim-surround assumes you wanted to add a copy of that character
+on either side of the selection. For example:
+
+     **ysiw_**  v
+I want to emphasize this!
+I want to _emphasize_ this!
+
+Similarly, if you try to delete/change an unconfigured character, then
+nvim-surround assumes you wanted to delete that character from both the left
+and right of the cursor. For example:
+
+     **ds|**  v
+Let this |word| out!
+Let this word out!
+
+     **cs~%**  v
+Some very ~random~ text
+Some very %random% text
+
+This behavior can be configured via [:h nvim-surround.setup.invalid_key_behavior](*:h nvim-surround.setup.invalid_key_behavior*)
+
+## 7. Number prefixing
+
+The operators also work with [count](|count|)s, so preceding them with a number
+N repeats that surround action N times. For example:
+
+        **2ysiw~ ** v
+Imagine some strikethrough
+Imagine some ~~strikethrough~~
+
+                   **3dsb**  v
+(Nested (parentheses (begone)!))
+Nested parentheses begone!
+
+             **2csbr**  v
+local str = ((She said, "Hello!"))
+local str = [[She said, "Hello!"]]
+
+## 8. Visual modes
+
+The `S` and `gS` visual-mode operators behave differently depending on which exact
+visual mode is used:
+- [charwise-visual](|charwise-visual|): Adds the pair around the selection
+- [linewise-visual](|linewise-visual|): Adds the pair around the selection, on new lines
+- [blockwise-visual](|blockwise-visual|): Adds the pair around the visual block, once per line
+
+For example
+
+vim:tw=78:ts=8:ft=tutor:norl:conceallevel=2:concealcursor=nvc:
