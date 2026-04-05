@@ -165,9 +165,9 @@ will change the entirety of the start and end tags.
 Note: When changing surrounding tags via `cst` or `csT`, a second replacement
 character is unnecessary. See |nvim-surround.setup.surrounds|.
 
-Next are function calls, denoted by the key `f`. By default, they match a Lua
-pattern consisting of some non-whitespace characters, followed by a balanced
-pair of parentheses.
+Next are function calls, triggerd by `f`. By default, they match a Lua pattern
+consisting of some non-whitespace characters, followed by a balanced pair of
+parentheses.
 
     Old text                    Command         New text ~
     arg*s                       ysiwffunc       func(args)
@@ -177,10 +177,9 @@ pair of parentheses.
 Note: Just like with HTML tags, a replacement character is unnecessary when
 changing (via `csf`).
 
-Finally, we have a "insert" key, denoted by `i`. It queries the user for what
-should go on the left and right hand sides of a selection, and adds the
-delimiter pair to the buffer. Currently, deletions and changes are not
-supported.
+Finally, we have a "insert" key, triggered by `i`. It prompts the user for the
+left and right delimiters, and adds the pair to the buffer. Currently,
+deletions and changes are not supported.
 
     Old text                    Command         New text ~
     *inner text                  ys$i/<CR>\     /inner text\
@@ -275,11 +274,10 @@ For information about the default aliases and how to configure your own, see
 --------------------------------------------------------------------------------
 2.5. Jumps                                               *nvim-surround.jumps*
 
-For delete/change actions, if the cursor is not located inside a surrounding
-pair, |nvim-surround| can jump to the "nearest" pair. When jumping,
-|nvim-surround| always prefers pairs that occur after the cursor over pairs
-that occur before the cursor. Delimiter pairs that already surround the cursor
-remain the highest priority.
+For delete/change actions, delimiter pairs that already surround the cursor
+are the highest priority. If there is no surrounding delimiter pair,
+|nvim-surround| can jump to the "nearest" pair, preferring pairs that occur
+after the cursor over pairs that occur before the cursor.
 
     Old text                    Command         New text ~
     "hello"* 'world'            dsq             "hello" world
