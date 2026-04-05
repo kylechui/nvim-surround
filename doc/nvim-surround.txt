@@ -67,7 +67,7 @@ For examples of custom surrounds, see:
 
 The primary way of adding a new pair to the buffer is via the normal-mode *ys*
 operator, which stands for "you surround". It is used via `ys{motion}{char}`,
-which surrounds a given |motion| or |text-object| with a delimiter pair
+which surrounds a given |motion| or |text-object| using the delimiter pair
 associated with {char}. For example, `ysa")` means "you surround around quotes
 with parentheses".
 
