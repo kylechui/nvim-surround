@@ -36,6 +36,20 @@ Surround selections, stylishly :sunglasses:
 Install this plugin using your favorite plugin manager, and that's it! See
 `:h nvim-surround.configuration` for how to configure the plugin.
 
+### [vim.pack](https://neovim.io/doc/user/pack/#_plugin-manager)
+
+```lua
+-- NOTE: This requires Neovim version 0.12 and greater!
+vim.pack.add({ {
+    src = "https://github.com/kylechui/nvim-surround",
+    version = vim.version.range("4.x"), -- Use for stability; omit to use `main` branch for the latest features
+} })
+-- Optional: See `:h nvim-surround.configuration` and `:h nvim-surround.setup` for details
+-- require("nvim-surround").setup({
+--     -- Put your configuration here
+-- })
+```
+
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
