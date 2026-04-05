@@ -37,6 +37,7 @@ Install this plugin using your favorite plugin manager, and that's it! See
 ### [vim.pack](https://neovim.io/doc/user/pack/#_plugin-manager)
 
 ```lua
+-- NOTE: This requires Neovim version 0.12 and greater!
 vim.pack.add({ {
     src = "https://github.com/kylechui/nvim-surround",
     version = vim.version.range("4.x"), -- Use for stability; omit to use `main` branch for the latest features
