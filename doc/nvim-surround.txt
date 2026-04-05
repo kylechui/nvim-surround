@@ -14,6 +14,7 @@ CONTENTS                                              *nvim-surround.contents*
     2.3. More Mappings ......................... |nvim-surround.more_mappings|
     2.4. Aliasing ................................... |nvim-surround.aliasing|
     2.5. Jumps ......................................... |nvim-surround.jumps|
+    2.6. Repeating Surrounds ....................... |nvim-surround.repeating|
 3. Configuration ............................... |nvim-surround.configuration|
     3.1. Options ..................................... |nvim-surround.options|
     3.2. Keymaps ..................................... |nvim-surround.keymaps|
@@ -288,6 +289,30 @@ after the cursor over pairs that occur before the cursor.
 Note: |nvim-surround| jumps across lines to find the next/previous surrounding
 pair, except for quote characters. This is done to match existing behavior for
 the `a"` family of text-objects.
+
+--------------------------------------------------------------------------------
+2.6. Repeating Surrounds                             *nvim-surround.repeating*
+                                                         *nvim-surround.count*
+All of the normal-mode and visual-mode operators compose well with
+|single-repeat| and |count|. Here are a few examples:
+
+    Old text                    Command         New text ~
+    tw*o words                  ysiw)W.         (two) (words)
+    Pyt*hon docstring           3yss"           """Python docstring"""
+    <wrong <b*rackets>>         2cs>}           {wrong {brackets}}
+    "Remove `all` 'qu*otes'"    3dsq            Remove all quotes
+
+Note: The |count| must occur before the action! Numeric counts occurring
+after the surround action will be considered a part of the |motion|, or
+the surround character itself. For example:
+
+    Old text                    Command         New text ~
+    one paren, *two words       ys2w)           one paren, (two words)
+    *three pipes, three WORDS   3ys2W|          |||three pipes, three||| WORDS
+    two dollars, *three chars   2ys3l$          two dollars, $$thr$$ee chars
+    number ne*eds to be prefix  ysiw2           number 2needs2 to be prefix
+    <wrong <b*rackets>>         cs>3           <wrong 3brackets3>
+    4why are there numbers4     ds4            why are there numbers
 
 ================================================================================
 3. Configuration                                 *nvim-surround.configuration*
