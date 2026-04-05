@@ -165,7 +165,7 @@ will change the entirety of the start and end tags.
 Note: When changing surrounding tags via `cst` or `csT`, a second replacement
 character is unnecessary. See |nvim-surround.setup.surrounds|.
 
-Next are function calls, triggerd by `f`. By default, they match a Lua pattern
+Next are function calls, triggered by `f`. By default, they match a Lua pattern
 consisting of some non-whitespace characters, followed by a balanced pair of
 parentheses.
 
