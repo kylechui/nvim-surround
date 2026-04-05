@@ -152,8 +152,8 @@ then queried for the tag type/attributes, after which they hit <CR> to create
 the surrounding pair.
 
     Old text                    Command         New text ~
-    div cont*ents               ysstdiv         <div>div contents</div>
-    h1 *contents                yssth1 id="x"   <h1 id="x">h1 contents</h1>
+    *div contents               ys$tdiv         <div>div contents</div>
+    *h1 contents                ys$th1 id="x"   <h1 id="x">h1 contents</h1>
     <div>d*iv contents</div>    dst             div contents
     <h1 id="head">t*ext</h1>    cstdiv          <div id="head">text</div>
     <h1 id="head">text*</h1>    csTdiv          <div>text</div>
@@ -183,7 +183,7 @@ delimiter pair to the buffer. Currently, deletions and changes are not
 supported.
 
     Old text                    Command         New text ~
-    inner text                  yssi/<CR>\      /inner text\
+    *inner text                  ys$i/<CR>\     /inner text\
 
 To configure custom surrounds, see |nvim-surround.setup.surrounds|.
 
