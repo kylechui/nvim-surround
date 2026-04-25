@@ -14,10 +14,17 @@ local get_query = vim.treesitter.get_query or vim.treesitter.query.get
 --- @param filetype string
 --- @return string|nil
 local get_lang = function(filetype)
+    if vim.treesitter.language and vim.treesitter.language.get_lang then
+        return vim.treesitter.language.get_lang(filetype)
+    end
+
     if filetype == "" then
         return nil
     end
 
+    -- NB: This table does not get updated when users register new parsers
+    -- using `vim.treesitter.language.register`, so this doesn't work for
+    -- parsers with names that differ from their filetypes.
     ---@type table<string,string>
     local ft_to_lang = {
         help = "vimdoc",
