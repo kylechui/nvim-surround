@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.5](https://github.com/kylechui/nvim-surround/compare/v4.0.4...v4.0.5) (2026-05-02)
+
+
+### Bug Fixes
+
+* Support treesitter parsers whose names differ from filetypes. ([#443](https://github.com/kylechui/nvim-surround/issues/443)) ([b2f3098](https://github.com/kylechui/nvim-surround/commit/b2f309873b2d946536ff576c65d68940e2ecf627))
+
 ## [4.0.4](https://github.com/kylechui/nvim-surround/compare/v4.0.3...v4.0.4) (2026-03-07)
 
 
