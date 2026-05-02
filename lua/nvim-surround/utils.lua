@@ -1,7 +1,3 @@
-local buffer = require("nvim-surround.buffer")
-local config = require("nvim-surround.config")
-local functional = require("nvim-surround.functional")
-
 local M = {}
 
 -- Do nothing.
@@ -42,12 +38,15 @@ end
 ---@return selections|nil @A table containing the start and end positions of the delimiters.
 ---@nodiscard
 M.get_nearest_selections = function(char, action)
+    local config = require("nvim-surround.config")
+    local functional = require("nvim-surround.functional")
     char = config.get_alias(char)
     local chars = functional.to_list(config.get_opts().aliases[char] or char)
     if not chars then
         return nil
     end
 
+    local buffer = require("nvim-surround.buffer")
     local curpos = buffer.get_curpos()
     local winview = vim.fn.winsaveview()
     local selections_list = {}
@@ -79,6 +78,7 @@ end
 ---@return selections|nil @The best selections from the list.
 ---@nodiscard
 M.filter_selections_list = function(selections_list)
+    local buffer = require("nvim-surround.buffer")
     local curpos = buffer.get_curpos()
     local best_selections
     for _, cur_selections in ipairs(selections_list) do

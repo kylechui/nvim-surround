@@ -1,5 +1,3 @@
-local config = require("nvim-surround.config")
-
 local M = {}
 
 M.namespace = {
@@ -34,6 +32,7 @@ end
 -- Move the cursor to a location in the buffer, depending on the `move_cursor` setting.
 ---@param pos { first_pos: position, sticky_pos: position, old_pos: position } Various positions in the buffer.
 M.restore_curpos = function(pos)
+    local config = require("nvim-surround.config")
     if config.get_opts().move_cursor == "begin" then
         M.set_curpos(pos.first_pos)
     elseif config.get_opts().move_cursor == "sticky" then
