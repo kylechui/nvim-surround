@@ -1,5 +1,3 @@
-local buffer = require("nvim-surround.buffer")
-
 local M = {}
 
 -- Gets the EOL character for the current buffer, based on the file format.
@@ -45,6 +43,7 @@ end
 ---@return selection @The adjusted selection, handling multi-byte characters.
 ---@nodiscard
 M.adjust_selection = function(selection)
+    local buffer = require("nvim-surround.buffer")
     selection.first_pos = buffer.get_first_byte(selection.first_pos)
     selection.last_pos = buffer.get_last_byte(selection.last_pos)
     return selection
@@ -55,6 +54,7 @@ end
 ---@return selection|nil @The closest selection matching the pattern, if any.
 ---@nodiscard
 M.get_selection = function(find)
+    local buffer = require("nvim-surround.buffer")
     -- Get the current cursor position, buffer contents
     local curpos = buffer.get_curpos()
     local buffer_text = table.concat(buffer.get_lines(1, -1), end_of_line())
@@ -130,6 +130,7 @@ end
 ---@return selections|nil @The selections for the left and right delimiters.
 ---@nodiscard
 M.get_selections = function(selection, pattern)
+    local buffer = require("nvim-surround.buffer")
     local offset = M.pos_to_index(selection.first_pos)
     local str = table.concat(buffer.get_text(selection), end_of_line())
     -- Get the surrounding pair, and the start/end indices

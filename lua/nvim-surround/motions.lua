@@ -1,6 +1,3 @@
-local buffer = require("nvim-surround.buffer")
-local config = require("nvim-surround.config")
-
 local M = {}
 
 -- Determines whether the input character is a quote character.
@@ -16,6 +13,8 @@ end
 ---@return selection|nil @The selection that represents the text-object.
 ---@nodiscard
 M.get_selection = function(motion)
+    local buffer = require("nvim-surround.buffer")
+    local config = require("nvim-surround.config")
     local char = config.get_alias(motion:sub(2, 2))
     local curpos = buffer.get_curpos()
 
