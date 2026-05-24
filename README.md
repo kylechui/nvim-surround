@@ -101,6 +101,11 @@ Simply call `require("nvim-surround").setup` or
 More information on how to configure this plugin can be found in
 [`:h nvim-surround.configuration`](https://github.com/kylechui/nvim-surround/blob/main/doc/nvim-surround.txt).
 
+### Which Key Support
+
+You can turn Which Key for showing surround hints with configured labels by
+calling `require("nvim-surround.wk-surround-plugin").set_up()`.
+
 ## Contributing
 
 See

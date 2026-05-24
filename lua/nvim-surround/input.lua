@@ -13,10 +13,19 @@ M.replace_termcodes = function(char)
     return vim.api.nvim_replace_termcodes(char, true, true, true)
 end
 
--- Gets a character input from the user.
+-- Gets a surround character input from the user.
+--
+-- If the user has set up the WK plugin, uses that instead of vim.fn.get_char
 ---@return string|nil @The input character, or nil if an escape character is pressed.
 ---@nodiscard
 M.get_char = function()
+    if require("nvim-surround.wk-surround-plugin").plugin_set_up then
+        local config = require("nvim-surround.config")
+        return require("nvim-surround.wk-surround-plugin").pick(
+            config.get_hints(config.get_opts().surrounds, config.get_opts().aliases),
+            "n"
+        )
+    end
     local ok, char = pcall(vim.fn.getcharstr)
     -- Return nil if input is cancelled (e.g. <C-c> or <Esc>)
     if not ok or char == "\27" then

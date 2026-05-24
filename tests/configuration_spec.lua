@@ -635,4 +635,35 @@ describe("configuration", function()
         vim.cmd("normal VSdVSdVSd")
         check_lines({ "foo", "foo", "foo", "foobarbaz", "bar", "bar", "bar" })
     end)
+
+    it("returns correct hints including formatted aliases", function()
+        require("nvim-surround").setup({})
+        local hints = require("nvim-surround.config").get_hints(
+            require("nvim-surround.config").get_opts().surrounds,
+            require("nvim-surround.config").get_opts().aliases
+        )
+        assert.are.same({
+            ['"'] = '"…"',
+            ["'"] = "'…'",
+            ["("] = "( … )",
+            [")"] = "(…)",
+            ["<"] = "< … >",
+            [">"] = "<…>",
+            ["["] = "[ … ]",
+            ["]"] = "[…]",
+            ["`"] = "`…`",
+            ["{"] = "{ … }",
+            ["}"] = "{…}",
+            B = "}",
+            T = "<tag>…</tag>",
+            a = ">",
+            b = ")",
+            f = "foo(…)",
+            i = "?…?",
+            q = "\",',`",
+            r = "]",
+            s = "},],),>,\",',`",
+            t = "<tag>…</tag>",
+        }, hints)
+    end)
 end)

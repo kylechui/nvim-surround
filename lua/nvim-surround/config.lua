@@ -9,6 +9,7 @@ M.default_opts = {
                 return M.get_selection({ motion = "a(" })
             end,
             delete = "^(. ?)().-( ?.)()$",
+            label = "( … )",
         },
         [")"] = {
             add = { "(", ")" },
@@ -16,6 +17,7 @@ M.default_opts = {
                 return M.get_selection({ motion = "a)" })
             end,
             delete = "^(.)().-(.)()$",
+            label = "(…)",
         },
         ["{"] = {
             add = { "{ ", " }" },
@@ -23,6 +25,7 @@ M.default_opts = {
                 return M.get_selection({ motion = "a{" })
             end,
             delete = "^(. ?)().-( ?.)()$",
+            label = "{ … }",
         },
         ["}"] = {
             add = { "{", "}" },
@@ -30,6 +33,7 @@ M.default_opts = {
                 return M.get_selection({ motion = "a}" })
             end,
             delete = "^(.)().-(.)()$",
+            label = "{…}",
         },
         ["<"] = {
             add = { "< ", " >" },
@@ -37,6 +41,7 @@ M.default_opts = {
                 return M.get_selection({ motion = "a<" })
             end,
             delete = "^(. ?)().-( ?.)()$",
+            label = "< … >",
         },
         [">"] = {
             add = { "<", ">" },
@@ -44,6 +49,7 @@ M.default_opts = {
                 return M.get_selection({ motion = "a>" })
             end,
             delete = "^(.)().-(.)()$",
+            label = "<…>",
         },
         ["["] = {
             add = { "[ ", " ]" },
@@ -51,6 +57,7 @@ M.default_opts = {
                 return M.get_selection({ motion = "a[" })
             end,
             delete = "^(. ?)().-( ?.)()$",
+            label = "[ … ]",
         },
         ["]"] = {
             add = { "[", "]" },
@@ -58,6 +65,7 @@ M.default_opts = {
                 return M.get_selection({ motion = "a]" })
             end,
             delete = "^(.)().-(.)()$",
+            label = "[…]",
         },
         ["'"] = {
             add = { "'", "'" },
@@ -65,6 +73,7 @@ M.default_opts = {
                 return M.get_selection({ motion = "a'" })
             end,
             delete = "^(.)().-(.)()$",
+            label = "'…'",
         },
         ['"'] = {
             add = { '"', '"' },
@@ -72,6 +81,7 @@ M.default_opts = {
                 return M.get_selection({ motion = 'a"' })
             end,
             delete = "^(.)().-(.)()$",
+            label = '"…"',
         },
         ["`"] = {
             add = { "`", "`" },
@@ -79,6 +89,7 @@ M.default_opts = {
                 return M.get_selection({ motion = "a`" })
             end,
             delete = "^(.)().-(.)()$",
+            label = "`…`",
         },
         ["i"] = { -- TODO: Add find/delete/change functions
             add = function()
@@ -90,6 +101,7 @@ M.default_opts = {
             end,
             find = function() end,
             delete = function() end,
+            label = "?…?",
         },
         ["t"] = {
             add = function()
@@ -123,6 +135,7 @@ M.default_opts = {
                     end
                 end,
             },
+            label = "<tag>…</tag>",
         },
         ["T"] = {
             add = function()
@@ -156,6 +169,7 @@ M.default_opts = {
                     end
                 end,
             },
+            label = "<tag>…</tag>",
         },
         ["f"] = {
             add = function()
@@ -188,6 +202,7 @@ M.default_opts = {
                     end
                 end,
             },
+            label = "foo(…)",
         },
         invalid_key_behavior = {
             -- By default, we ignore control characters for adding/finding because they are more likely typos than
@@ -331,6 +346,26 @@ M.get_alias = function(char)
         return aliases[char]
     end
     return char
+end
+
+---Creates a table of available hints given surrounds and aliases.
+---
+---@param surrounds table<string, surround>
+---@param aliases table<string, string|string[]>
+---@return table<string, string> hints
+---@nodiscard
+M.get_hints = function(surrounds, aliases)
+    local hints = {}
+    for char, surround in pairs(surrounds) do
+        -- Throw away "invalid_key_behavior" if present.
+        if string.len(char) == 1 then
+            hints[char] = surround.label or char
+        end
+    end
+    for char, alias in pairs(aliases) do
+        hints[char] = type(alias) == "table" and table.concat(alias, ",") or alias
+    end
+    return hints
 end
 
 -- Gets a delimiter pair for a user-inputted character.
@@ -485,6 +520,7 @@ M.translate_surround = function(char, user_surround)
         find = M.translate_find(user_surround.find),
         delete = M.translate_delete(char, user_surround.delete),
         change = M.translate_change(char, user_surround.change),
+        label = user_surround.label,
     }
 end
 

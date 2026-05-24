@@ -25,6 +25,7 @@ CONTENTS                                              *nvim-surround.contents*
         3.3.4 Cursor ....................... |nvim-surround.setup.move_cursor|
         3.3.5 Indentation ................. |nvim-surround.setup.indent_lines|
     3.4. Helpers ..................................... |nvim-surround.helpers|
+    3.5. Which Key Support ...................... |nvim-surround.which_key|
 4. Migration Guides ................................ |nvim-surround.migrating|
     4.1. Migrating v3 to v4 ............... |nvim-surround.migrating.v3_to_v4|
 
@@ -401,6 +402,7 @@ surrounds, for example setting up a `$` surround, but only in bash files:
                 add = { "${", "}" },
                 find = "$%b{}",
                 delete = "^(..)().-(.)()$",
+                label = "${…}",
             },
         },
     })
@@ -540,6 +542,11 @@ containing the following keys:
     are directly used as the replacement pair. For example, when changing HTML
     tag types, only `cst` is needed, instead of `cstt`.
 
+                                         *nvim-surround.setup.surrounds.label*
+    label: ~
+        An optional string that represents the label for the surround. This
+        is used by the Which Key plugin to show a descriptive hint for the
+        surround.
 
                           *nvim-surround.setup.surrounds.invalid_key_behavior*
 `invalid_key_behavior` is a special key in the `surrounds` table that defines
@@ -773,6 +780,18 @@ config.get_selections({args})
 <
         The Lua pattern matches just the HTML tag type in both the beginning
         and end.
+
+--------------------------------------------------------------------------------
+3.5. Which Key Support                               *nvim-surround.which_key*
+
+|nvim-surround| provides a plugin for |which-key.nvim| that shows a popup
+containing the available surrounds and their labels. To enable this, call:
+>lua
+    require("nvim-surround.wk-surround-plugin").set_up()
+<
+This will enable the Which Key popup for all surround actions. The labels
+shown in the popup can be configured via the `label` key in the `surrounds`
+table (see |nvim-surround.setup.surrounds.label|).
 
 ================================================================================
 4. Migration Guides                                  *nvim-surround.migrating*
