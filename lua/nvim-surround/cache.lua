@@ -8,6 +8,8 @@ M.normal = {}
 M.delete = {}
 ---@type { del_char: string, add_delimiters: add_func, line_mode: boolean, count: integer }
 M.change = {}
+---@type { char: string, line_mode: boolean, count: integer }
+M.toggle = {}
 
 -- Sets the callback function for dot-repeating.
 ---@param func_name string A string representing the callback function's name.

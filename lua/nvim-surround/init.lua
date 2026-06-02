@@ -269,6 +269,26 @@ M.change_surround = function(args)
     cache.set_callback("v:lua.require'nvim-surround'.change_callback")
 end
 
+-- Toggle a surrounding delimiter pair to the next entry in a configured cycle.
+---@param args { curpos: position, char: string, add_delimiters: add_func, line_mode: boolean }
+---@return "g@l"|nil
+M.toggle_surround = function(args)
+    local cache = require("nvim-surround.cache")
+    if not args.del_char or not args.add_delimiters then
+        cache.toggle = { line_mode = args.line_mode, count = vim.v.count1 }
+
+        vim.go.operatorfunc = "v:lua.require'nvim-surround'.toggle_callback"
+        return "g@l"
+    end
+
+    return M.change_surround({
+        curpos = args.curpos,
+        del_char = args.del_char,
+        add_delimiters = args.add_delimiters,
+        line_mode = args.line_mode,
+    })
+end
+
 --[====================================================================================================================[
                                                    Callback Functions
 --]====================================================================================================================]
@@ -423,6 +443,69 @@ M.change_callback = function()
             curpos = buffer.get_curpos(),
         })
     end
+end
+
+M.toggle_callback = function()
+    local config = require("nvim-surround.config")
+    local buffer = require("nvim-surround.buffer")
+    local cache = require("nvim-surround.cache")
+    local input = require("nvim-surround.input")
+    local utils = require("nvim-surround.utils")
+
+    cache.toggle.char = cache.toggle.char or input.get_char()
+    local char = cache.toggle.char
+    if not char then
+        return
+    end
+
+    local cycle = config.get_opts().cycles[char]
+    if not cycle or #cycle == 0 then
+        return
+    end
+
+    for _ = 1, cache.toggle.count do
+        local selections = utils.get_nearest_selections(char, "change")
+        if not selections then
+            return
+        end
+
+        local left_text = table.concat(buffer.get_text(selections.left))
+        local current_index
+        for index, candidate in ipairs(cycle) do
+            if candidate == left_text then
+                current_index = index
+                break
+            end
+        end
+        if not current_index then
+            return
+        end
+
+        local next_char = cycle[current_index % #cycle + 1]
+        local delimiters = config.get_delimiters(next_char, cache.toggle.line_mode)
+        if not delimiters then
+            return
+        end
+
+        local add_delimiters = function()
+            return delimiters
+        end
+        cache.change = {
+            del_char = char,
+            add_delimiters = add_delimiters,
+            line_mode = cache.toggle.line_mode,
+            count = 1,
+        }
+        M.change_surround({
+            del_char = char,
+            add_delimiters = add_delimiters,
+            line_mode = cache.toggle.line_mode,
+            count = 1,
+            curpos = buffer.get_curpos(),
+        })
+    end
+
+    cache.set_callback("v:lua.require'nvim-surround'.toggle_callback")
 end
 
 return M

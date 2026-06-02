@@ -21,9 +21,10 @@ CONTENTS                                              *nvim-surround.contents*
     3.3. Setup ......................................... |nvim-surround.setup|
         3.3.1 Surrounds ...................... |nvim-surround.setup.surrounds|
         3.3.2 Aliases .......................... |nvim-surround.setup.aliases|
-        3.3.3 Highlights ..................... |nvim-surround.setup.highlight|
-        3.3.4 Cursor ....................... |nvim-surround.setup.move_cursor|
-        3.3.5 Indentation ................. |nvim-surround.setup.indent_lines|
+        3.3.3 Cycles ........................... |nvim-surround.setup.cycles|
+        3.3.4 Highlights ..................... |nvim-surround.setup.highlight|
+        3.3.5 Cursor ....................... |nvim-surround.setup.move_cursor|
+        3.3.6 Indentation ................. |nvim-surround.setup.indent_lines|
     3.4. Helpers ..................................... |nvim-surround.helpers|
 4. Migration Guides ................................ |nvim-surround.migrating|
     4.1. Migrating v3 to v4 ............... |nvim-surround.migrating.v3_to_v4|
@@ -62,6 +63,7 @@ For examples of custom surrounds, see:
 * Adding a delimiter pair to the buffer
 * Deleting a delimiter pair from the buffer
 * Changing a delimiter pair to a different pair
+* Toggling a delimiter pair through a configured cycle
 
 --------------------------------------------------------------------------------
 2.1. The Basics                                         *nvim-surround.basics*
@@ -219,6 +221,18 @@ delimiter pair on new lines.
     func(a*rgs)                 cS))            func(
                                                 args
                                                 )
+
+Users can bind the |<Plug>(nvim-surround-toggle)| mapping to create a toggle
+operator, e.g. `ts`. When used, it toggles the nearest surrounding pair
+through a configured cycle.
+
+For example, with a `q` cycle configured to use double quotes, single quotes,
+and backticks:
+
+    Old text                    Command         New text ~
+    "some *text"                tsq             'some text'
+    'some *text'                tsq             `some text`
+    `some *text`                tsq             "some text"
 
 For the visual-mode `S` map, the type of visual mode determines how the
 delimiter pair is added
@@ -410,6 +424,7 @@ Both functions take a table as an argument, full of configuration options.
     require("nvim-surround").setup({
         surrounds =     -- Defines surround keys and behavior
         aliases =       -- Defines aliases
+        cycles =        -- Defines toggle cycles for user-defined toggle mappings
         highlight =     -- Defines highlight behavior
         move_cursor =   -- Defines cursor behavior after a surround action
         indent_lines =  -- Defines line indentation behavior
@@ -599,7 +614,42 @@ Default value:
     },
 <
 --------------------------------------------------------------------------------
-3.3.3. Highlights                              *nvim-surround.setup.highlight*
+3.3.3. Cycles                                     *nvim-surround.setup.cycles*
+
+The cycles table maps characters to ordered lists of surround keys. These
+cycles can be used by a user-defined mapping to
+|<Plug>(nvim-surround-toggle)|, toggling the nearest matching surround to the
+next entry in the list.
+
+For example, the following configuration defines a `q` cycle that rotates
+between double quotes, single quotes, and backticks, and binds it to `ts`:
+>lua
+    require("nvim-surround").setup({
+        cycles = {
+            ["q"] = { '"', "'", "`" },
+        },
+    })
+    vim.keymap.set("n", "ts", "<Plug>(nvim-surround-toggle)")
+<
+
+This means `tsq` will do the following:
+
+    Old text                    Command         New text ~
+    "some *text"                tsq             'some text'
+    'some *text'                tsq             `some text`
+    `some *text`                tsq             "some text"
+
+To toggle only between single and double quotes, override the cycle:
+>lua
+    require("nvim-surround").setup({
+        cycles = {
+            ["q"] = { '"', "'" },
+        },
+    })
+    vim.keymap.set("n", "ts", "<Plug>(nvim-surround-toggle)")
+<
+--------------------------------------------------------------------------------
+3.3.4. Highlights                              *nvim-surround.setup.highlight*
 
 When adding a new delimiter pair to the buffer in normal mode, one can
 optionally highlight the selection to be surrounded. Similarly, when changing
@@ -618,7 +668,7 @@ configured separately. The default highlight group used is `Visual`:
     highlight default link NvimSurroundHighlight Visual
 <
 --------------------------------------------------------------------------------
-3.3.4. Cursor                                *nvim-surround.setup.move_cursor*
+3.3.5. Cursor                                *nvim-surround.setup.move_cursor*
 
 By default (or when `move_cursor = "begin"`), when a surround action is
 performed, the cursor moves to the beginning of the action.
@@ -645,7 +695,7 @@ of how the buffer changes.
     (hello* world)              csbffoo<CR>     foo(he*llo world)
 
 --------------------------------------------------------------------------------
-3.3.5. Indentation                          *nvim-surround.setup.indent_lines*
+3.3.6. Indentation                          *nvim-surround.setup.indent_lines*
 
 By default, when a surround action is performed, |nvim-surround| tries to
 indent things "appropriately", i.e. when it is enabled by a Vim option. The

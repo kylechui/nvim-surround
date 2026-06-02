@@ -71,6 +71,37 @@ describe("jumps", function()
         })
     end)
 
+    it("can toggle quotes using a cycle", function()
+        require("nvim-surround").buffer_setup({
+            cycles = {
+                ["q"] = { '"', "'", "`" },
+            },
+        })
+        vim.keymap.set("n", "ts", "<Plug>(nvim-surround-toggle)")
+
+        set_lines({
+            [["hello "world""]],
+        })
+
+        set_curpos({ 1, 10 })
+        vim.cmd("normal tsq")
+        check_lines({
+            [["hello 'world'"]],
+        })
+
+        set_curpos({ 1, 10 })
+        vim.cmd("normal tsq")
+        check_lines({
+            [["hello `world`"]],
+        })
+
+        set_curpos({ 1, 10 })
+        vim.cmd("normal tsq")
+        check_lines({
+            [["hello "world""]],
+        })
+    end)
+
     it("for quotes only target the current line", function()
         set_lines({
             [[This 'line' has quotes]],
