@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.0](https://github.com/kylechui/nvim-surround/compare/v4.0.5...v4.1.0) (2026-06-08)
+
+
+### Features
+
+* add labels to surrounds ([#449](https://github.com/kylechui/nvim-surround/issues/449)) ([8b47db6](https://github.com/kylechui/nvim-surround/commit/8b47db616ef658b8fc27e61db2896aa2f40134de))
+
 ## [4.0.5](https://github.com/kylechui/nvim-surround/compare/v4.0.4...v4.0.5) (2026-05-02)
 
 
