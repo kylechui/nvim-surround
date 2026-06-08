@@ -401,6 +401,7 @@ surrounds, for example setting up a `$` surround, but only in bash files:
                 add = { "${", "}" },
                 find = "$%b{}",
                 delete = "^(..)().-(.)()$",
+                label = "${…}",
             },
         },
     })
@@ -540,6 +541,9 @@ containing the following keys:
     are directly used as the replacement pair. For example, when changing HTML
     tag types, only `cst` is needed, instead of `cstt`.
 
+                                         *nvim-surround.setup.surrounds.label*
+    label: ~
+        An optional string that represents the label for the surround.
 
                           *nvim-surround.setup.surrounds.invalid_key_behavior*
 `invalid_key_behavior` is a special key in the `surrounds` table that defines
