@@ -29,6 +29,7 @@
 ---@field find find_func
 ---@field delete delete_func
 ---@field change change_table
+---@field label? string
 
 ---@class options
 ---@field surrounds table<string, surround>
@@ -51,6 +52,7 @@
 ---@field find? user_find
 ---@field delete? user_delete
 ---@field change? user_change
+---@field label? string
 
 ---@class user_options
 ---@field surrounds? table<string, false|user_surround>
