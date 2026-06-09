@@ -154,3 +154,10 @@ end, {
     expr = true,
     silent = true,
 })
+vim.keymap.set("n", "<Plug>(nvim-surround-toggle)", function()
+    return require("nvim-surround").toggle_surround({ line_mode = false })
+end, {
+    desc = "Toggle a surrounding pair through a configured cycle",
+    expr = true,
+    silent = true,
+})

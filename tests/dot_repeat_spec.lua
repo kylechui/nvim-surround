@@ -40,6 +40,29 @@ describe("dot-repeat", function()
         check_lines({ "<<<test>>>" })
     end)
 
+    it("can dot-repeat quote toggles", function()
+        require("nvim-surround").buffer_setup({
+            cycles = {
+                ["q"] = { '"', "'" },
+            },
+        })
+        vim.keymap.set("n", "ts", "<Plug>(nvim-surround-toggle)")
+
+        set_lines({
+            [["one"]],
+            [["two"]],
+            [["three"]],
+        })
+        set_curpos({ 1, 3 })
+        vim.cmd("normal tsq")
+        vim.cmd("normal j.j.")
+        check_lines({
+            [['one']],
+            [['two']],
+            [['three']],
+        })
+    end)
+
     it("can add non-static delimiter pairs based on user input", function()
         set_lines({ "here", "are", "some", "lines" })
         vim.cmd("normal ysiwffunc_name" .. cr)

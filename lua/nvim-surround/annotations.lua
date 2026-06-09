@@ -34,6 +34,7 @@
 ---@class options
 ---@field surrounds table<string, surround>
 ---@field aliases table<string, string|string[]>
+---@field cycles table<string, string[]>
 ---@field highlight { duration: integer }
 ---@field move_cursor false|"begin"|"sticky"
 ---@field indent_lines function
@@ -57,6 +58,7 @@
 ---@class user_options
 ---@field surrounds? table<string, false|user_surround>
 ---@field aliases? table<string, false|string|string[]>
+---@field cycles? table<string, false|string[]>
 ---@field highlight? { duration: false|integer }
 ---@field move_cursor? false|"begin"|"sticky"
 ---@field indent_lines? false|function

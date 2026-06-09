@@ -136,6 +136,29 @@ describe("configuration", function()
         check_lines({ "hey! hello world" })
     end)
 
+    it("can configure custom toggle cycles", function()
+        require("nvim-surround").buffer_setup({
+            cycles = {
+                ["q"] = { '"', "'" },
+            },
+        })
+        vim.keymap.set("n", "ts", "<Plug>(nvim-surround-toggle)")
+
+        set_lines({
+            [["hello"]],
+            [['world']],
+        })
+
+        set_curpos({ 1, 3 })
+        vim.cmd("normal tsq")
+        set_curpos({ 2, 3 })
+        vim.cmd("normal tsq")
+        check_lines({
+            [['hello']],
+            [["world"]],
+        })
+    end)
+
     it("can use 'syntactic sugar' for add functions", function()
         require("nvim-surround").buffer_setup({
             surrounds = {

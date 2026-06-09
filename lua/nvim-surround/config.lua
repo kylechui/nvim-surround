@@ -241,6 +241,7 @@ M.default_opts = {
         ["q"] = { '"', "'", "`" },
         ["s"] = { "}", "]", ")", ">", '"', "'", "`" },
     },
+    cycles = {},
     highlight = {
         duration = 0,
     },
@@ -549,6 +550,22 @@ M.translate_alias = function(user_alias)
     return user_alias
 end
 
+-- Translates `cycle` into the internal form.
+---@param user_cycle false|string[] The user-provided `cycle`.
+---@return false|string[] @The translated `cycle`.
+M.translate_cycle = function(user_cycle)
+    if not user_cycle then
+        return user_cycle
+    end
+
+    local input = require("nvim-surround.input")
+    local cycle = {}
+    for _, char in ipairs(user_cycle) do
+        cycle[#cycle + 1] = input.replace_termcodes(char)
+    end
+    return cycle
+end
+
 -- Translates the user-provided configuration into the internal form.
 ---@param user_opts user_options The user-provided options.
 ---@return options @The translated options.
@@ -556,7 +573,7 @@ M.translate_opts = function(user_opts)
     local input = require("nvim-surround.input")
     local opts = {}
     for key, value in pairs(user_opts) do
-        if key == "surrounds" or key == "aliases" then
+        if key == "surrounds" or key == "aliases" or key == "cycles" then
         elseif key == "indent_lines" then
             opts[key] = value or function() end
         else
@@ -582,6 +599,13 @@ M.translate_opts = function(user_opts)
         for char, user_alias in pairs(user_opts.aliases) do
             char = input.replace_termcodes(char)
             opts.aliases[char] = M.translate_alias(user_alias)
+        end
+    end
+    if user_opts.cycles then
+        opts.cycles = {}
+        for char, user_cycle in pairs(user_opts.cycles) do
+            char = input.replace_termcodes(char)
+            opts.cycles[char] = M.translate_cycle(user_cycle)
         end
     end
     return opts
